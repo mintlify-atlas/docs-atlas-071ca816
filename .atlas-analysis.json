@@ -1,0 +1,171 @@
+{
+  "projectType": "sdk-library",
+  "projectName": "Canvas Editor",
+  "projectDescription": "A powerful rich text editor library built with TypeScript that renders content using HTML5 Canvas and SVG.",
+  "theme": "palm",
+  "primaryColor": "#1e90ff",
+  "lightColor": "#4da8ff",
+  "darkColor": "#0066cc",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/editor-instance",
+              "concepts/elements",
+              "concepts/commands",
+              "concepts/event-system"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/text-formatting",
+              "features/tables",
+              "features/images",
+              "features/controls",
+              "features/print-export"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/plugins",
+              "advanced/custom-shortcuts",
+              "advanced/context-menus",
+              "advanced/internationalization",
+              "advanced/override-system"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/configuration",
+              "guides/styling",
+              "guides/data-structure",
+              "guides/migration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Editor Class",
+            "pages": [
+              "api/editor",
+              "api/constructor-options"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "api/commands/text-operations",
+              "api/commands/formatting",
+              "api/commands/table-operations",
+              "api/commands/image-operations",
+              "api/commands/document-operations",
+              "api/commands/control-operations"
+            ]
+          },
+          {
+            "group": "Events & Listeners",
+            "pages": [
+              "api/listener",
+              "api/eventbus",
+              "api/events"
+            ]
+          },
+          {
+            "group": "Types & Interfaces",
+            "pages": [
+              "api/types/element",
+              "api/types/editor-data",
+              "api/types/options",
+              "api/types/control",
+              "api/types/table"
+            ]
+          },
+          {
+            "group": "Enums",
+            "pages": [
+              "api/enums/editor",
+              "api/enums/element",
+              "api/enums/control"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "api/utilities"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Canvas/SVG-based rendering engine",
+    "Rich text formatting (bold, italic, underline, strikeout, superscript/subscript)",
+    "Table operations with cell merging and splitting",
+    "Image handling with cropping and captions",
+    "Form controls (select, text, date, radio, checkbox)",
+    "Print and PDF export capabilities",
+    "Header, footer, and page number support",
+    "Watermark and pagination",
+    "Search and replace functionality",
+    "Undo/redo with history management",
+    "Custom shortcuts and context menus",
+    "Plugin system for extensibility",
+    "Event bus for lifecycle hooks",
+    "Internationalization (i18n) support",
+    "Multiple editor modes (edit, readonly, print, form)",
+    "List support (ordered and unordered)",
+    "Hyperlink management",
+    "Code blocks with syntax highlighting",
+    "LaTeX formula support",
+    "Comment and catalog features"
+  ],
+  "publicApiSurface": [
+    "Editor (default export)",
+    "Command.executeMode",
+    "Command.executeCut/Copy/Paste",
+    "Command.executeUndo/Redo",
+    "Command.executeFont/Size/Bold/Italic/Underline/Strikeout",
+    "Command.executeColor/Highlight",
+    "Command.executeTitle/List",
+    "Command.executeInsertTable",
+    "Command.executeInsertTableTopRow/BottomRow/LeftCol/RightCol",
+    "Command.executeDeleteTableRow/Col/Table",
+    "Command.executeMergeTableCell/CancelMergeTableCell",
+    "Command.executeImage/Hyperlink",
+    "Command.executeSearch/Replace",
+    "Command.executePrint",
+    "Command.executePageScale/PageMode",
+    "Command.executeGetValue/SetValue",
+    "Command.executeGetRangeText/GetRangeContext",
+    "Listener.rangeStyleChange",
+    "Listener.visiblePageNoListChange",
+    "Listener.contentChange",
+    "Listener.controlChange",
+    "EventBus",
+    "Register.contextMenu/shortcut/i18n",
+    "Override (for customizing internal behavior)",
+    "splitText",
+    "createDomFromElementList",
+    "getElementListByHTML",
+    "getTextFromElementList"
+  ]
+}
