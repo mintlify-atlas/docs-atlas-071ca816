@@ -1,0 +1,267 @@
+---
+title: Editor Instance
+description: Learn how to create and manage the Editor class instance
+---
+
+## Overview
+
+The `Editor` class is the main entry point for Canvas Editor. It manages the entire editor lifecycle, from initialization to destruction, and provides access to all core functionality through its public API.
+
+## Constructor
+
+The Editor constructor requires a container element, initial data, and optional configuration:
+
+```typescript
+import Editor from 'canvas-editor'
+
+const container = document.querySelector('#editor')
+
+const editor = new Editor(
+  container,      // HTMLDivElement
+  data,          // IEditorData | IElement[]
+  options        // IEditorOption (optional)
+)
+```
+
+### Parameters
+
+<AccordionGroup>
+  <Accordion title="container: HTMLDivElement">
+    The DOM element that will host the editor. Must be a `div` element. The editor will render its canvas inside this container.
+  </Accordion>
+
+  <Accordion title="data: IEditorData | IElement[]">
+    Initial document content. Can be:
+    - **Simple array**: `IElement[]` - Sets the main content area
+    - **Full document**: `IEditorData` - Includes header, main, footer, and graffiti
+
+    ```typescript
+    // Simple array
+    const data = [
+      { value: 'Hello World' }
+    ]
+
+    // Full document structure
+    const data = {
+      header: [{ value: 'Header text' }],
+      main: [{ value: 'Main content' }],
+      footer: [{ value: 'Footer text' }],
+      graffiti: []
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="options: IEditorOption">
+    Configuration object to customize editor behavior:
+
+    ```typescript
+    const options = {
+      mode: EditorMode.EDIT,           // EDIT, READONLY, PRINT, FORM
+      defaultFont: 'Microsoft YaHei',  // Default font family
+      defaultSize: 16,                 // Default font size
+      pageMode: PageMode.PAGING,       // PAGING, CONTINUOUS
+      renderMode: RenderMode.CANVAS,   // CANVAS, SVG
+      margins: [100, 120, 100, 120],   // [top, right, bottom, left]
+      header: {
+        disabled: false,
+        height: 100
+      },
+      footer: {
+        disabled: false,
+        height: 100
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Core Properties
+
+<CardGroup cols={2}>
+  <Card title="command" icon="terminal">
+    Execute operations and retrieve data
+    ```typescript
+    editor.command.executeBold()
+    editor.command.getValue()
+    ```
+  </Card>
+
+  <Card title="listener" icon="bell">
+    Legacy event handlers (callback-based)
+    ```typescript
+    editor.listener.contentChange = () => {}
+    ```
+  </Card>
+
+  <Card title="eventBus" icon="signal-stream">
+    Modern event system (pub/sub pattern)
+    ```typescript
+    editor.eventBus.on('contentChange', () => {})
+    ```
+  </Card>
+
+  <Card title="register" icon="plus">
+    Register custom context menus and shortcuts
+    ```typescript
+    editor.register.contextMenu({})
+    ```
+  </Card>
+</CardGroup>
+
+### Additional Properties
+
+```typescript
+editor.version      // string - Editor version (e.g., "1.0.0")
+editor.override     // Override - Customize internal behaviors
+editor.use          // UsePlugin - Load plugins
+editor.destroy      // Function - Cleanup and destroy editor
+```
+
+## Lifecycle
+
+<Steps>
+  <Step title="Initialization">
+    When you create a new Editor instance, the constructor:
+    1. Merges provided options with defaults
+    2. Deep clones the data to prevent mutations
+    3. Formats element lists (header, main, footer)
+    4. Initializes the Draw engine with the container
+    5. Sets up Command, ContextMenu, and Shortcut systems
+    6. Registers the destroy method
+  </Step>
+
+  <Step title="Active State">
+    The editor is now ready to use. You can:
+    - Execute commands via `editor.command`
+    - Listen to events via `editor.listener` or `editor.eventBus`
+    - Register custom functionality via `editor.register`
+    - Load plugins via `editor.use(plugin)`
+  </Step>
+
+  <Step title="Destruction">
+    Clean up the editor instance when done:
+    ```typescript
+    editor.destroy()
+    ```
+    This will:
+    - Destroy the Draw engine and cleanup canvas
+    - Remove all keyboard shortcuts
+    - Remove all context menu handlers
+    - Clear all event bus subscriptions
+  </Step>
+</Steps>
+
+## Complete Example
+
+```typescript
+import Editor, { EditorMode, PageMode } from 'canvas-editor'
+import type { IEditorData, IEditorOption } from 'canvas-editor'
+
+// Prepare container
+const container = document.querySelector<HTMLDivElement>('#editor')
+
+// Define initial data
+const data: IEditorData = {
+  main: [
+    {
+      value: 'Welcome to Canvas Editor',
+      size: 24,
+      bold: true
+    },
+    {
+      value: '\n'
+    },
+    {
+      value: 'Start typing your content here...'
+    }
+  ]
+}
+
+// Configure editor
+const options: IEditorOption = {
+  mode: EditorMode.EDIT,
+  pageMode: PageMode.PAGING,
+  defaultFont: 'Arial',
+  defaultSize: 16,
+  margins: [100, 120, 100, 120]
+}
+
+// Create editor instance
+const editor = new Editor(container, data, options)
+
+// Set up event listeners
+editor.eventBus.on('contentChange', () => {
+  console.log('Content changed')
+})
+
+// Execute commands
+editor.command.executeBold()
+
+// Get current value
+const currentData = editor.command.getValue()
+
+// Clean up when done
+window.addEventListener('beforeunload', () => {
+  editor.destroy()
+})
+```
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Can I create multiple editor instances on the same page?">
+    Yes, you can create multiple independent editor instances, each with their own container:
+
+    ```typescript
+    const editor1 = new Editor(container1, data1)
+    const editor2 = new Editor(container2, data2)
+    ```
+
+    Each instance manages its own state and operates independently.
+  </Accordion>
+
+  <Accordion title="What happens if I don't call destroy()?">
+    The editor will continue to listen for events and hold references in memory, potentially causing memory leaks in single-page applications. Always call `destroy()` when removing an editor instance.
+  </Accordion>
+
+  <Accordion title="Can I change options after initialization?">
+    Yes, use the `executeUpdateOptions()` command:
+
+    ```typescript
+    editor.command.executeUpdateOptions({
+      defaultSize: 18,
+      defaultColor: '#333'
+    })
+    ```
+
+    Note: Some options like `width`, `height`, `mode`, and `pageMode` cannot be updated after initialization.
+  </Accordion>
+
+  <Accordion title="How do I switch between edit and read-only modes?">
+    Use the `executeMode()` command:
+
+    ```typescript
+    import { EditorMode } from 'canvas-editor'
+
+    editor.command.executeMode(EditorMode.READONLY)
+    editor.command.executeMode(EditorMode.EDIT)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Elements" icon="cube" href="/concepts/elements">
+    Learn about the element data structure
+  </Card>
+  <Card title="Commands" icon="terminal" href="/concepts/commands">
+    Explore available commands
+  </Card>
+  <Card title="Event System" icon="bell" href="/concepts/event-system">
+    Subscribe to editor events
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/editor">
+    Complete API documentation
+  </Card>
+</CardGroup>

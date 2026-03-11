@@ -1,0 +1,669 @@
+---
+title: Commands
+description: Execute operations and retrieve data using the Command API
+---
+
+## Overview
+
+The Command API provides a comprehensive interface for interacting with the editor. All commands are accessed through the `editor.command` property and follow a consistent naming convention:
+
+- **Execute commands**: Start with `execute` (e.g., `executeBold()`)
+- **Query commands**: Start with `get` (e.g., `getValue()`)
+
+## Command Pattern
+
+Canvas Editor uses the Command pattern to encapsulate operations. The `Command` class delegates to `CommandAdapt`, which provides the actual implementation:
+
+```typescript
+export class Command {
+  constructor(adapt: CommandAdapt) {
+    this.executeBold = adapt.bold.bind(adapt)
+    this.executeItalic = adapt.italic.bind(adapt)
+    // ... all other commands
+  }
+}
+```
+
+<Info>
+This architecture protects internal editor context while exposing a clean, consistent API.
+</Info>
+
+## Document Operations
+
+### Getting Document Data
+
+<CodeGroup>
+```typescript Get Complete Document
+const data = editor.command.getValue()
+// Returns: {
+//   header: IElement[],
+//   main: IElement[],
+//   footer: IElement[]
+// }
+```
+
+```typescript Get Async (Large Documents)
+const data = await editor.command.getValueAsync()
+// Better performance for large documents
+```
+
+```typescript Get as HTML
+const html = editor.command.getHTML()
+// Returns: {
+//   header: '<p>Header HTML</p>',
+//   main: '<p>Main HTML</p>',
+//   footer: '<p>Footer HTML</p>'
+// }
+```
+
+```typescript Get Plain Text
+const text = editor.command.getText()
+// Returns: {
+//   header: 'Header text',
+//   main: 'Main text',
+//   footer: 'Footer text'
+// }
+```
+</CodeGroup>
+
+### Setting Document Data
+
+```typescript
+import type { IEditorData } from 'canvas-editor'
+
+const newData: IEditorData = {
+  main: [
+    { value: 'New content' },
+    { value: '\n' },
+    { value: 'More content', bold: true }
+  ]
+}
+
+editor.command.executeSetValue(newData)
+
+// Set with cursor positioning
+editor.command.executeSetValue(newData, {
+  isSetCursor: true  // Place cursor at start
+})
+```
+
+### Setting HTML Content
+
+```typescript
+const htmlContent = '<p>Hello <strong>World</strong></p>'
+
+editor.command.executeSetHTML(htmlContent)
+```
+
+## Text Formatting
+
+### Basic Formatting
+
+<Tabs>
+  <Tab title="Font Styling">
+    ```typescript
+    // Bold
+    editor.command.executeBold()
+
+    // Italic
+    editor.command.executeItalic()
+
+    // Underline
+    editor.command.executeUnderline()
+
+    // Strikethrough
+    editor.command.executeStrikeout()
+
+    // Superscript
+    editor.command.executeSuperscript()
+
+    // Subscript
+    editor.command.executeSubscript()
+    ```
+  </Tab>
+
+  <Tab title="Font Properties">
+    ```typescript
+    // Change font family
+    editor.command.executeFont('Arial')
+
+    // Change font size
+    editor.command.executeSize(18)
+
+    // Increase size
+    editor.command.executeSizeAdd()
+
+    // Decrease size
+    editor.command.executeSizeMinus()
+
+    // Text color
+    editor.command.executeColor('#ff0000')
+
+    // Highlight/background color
+    editor.command.executeHighlight('#ffff00')
+    ```
+  </Tab>
+
+  <Tab title="Paragraph">
+    ```typescript
+    import { RowFlex } from 'canvas-editor'
+
+    // Alignment
+    editor.command.executeRowFlex(RowFlex.LEFT)
+    editor.command.executeRowFlex(RowFlex.CENTER)
+    editor.command.executeRowFlex(RowFlex.RIGHT)
+    editor.command.executeRowFlex(RowFlex.JUSTIFY)
+
+    // Row margin/spacing
+    editor.command.executeRowMargin(20)
+    ```
+  </Tab>
+</Tabs>
+
+### Advanced Formatting
+
+```typescript
+import { TitleLevel, ListType, ListStyle } from 'canvas-editor'
+
+// Apply title/heading
+editor.command.executeTitle(TitleLevel.FIRST)
+editor.command.executeTitle(TitleLevel.SECOND)
+
+// Create list
+editor.command.executeList(ListType.UL, ListStyle.DISC)
+editor.command.executeList(ListType.OL, ListStyle.DECIMAL)
+
+// Clear formatting
+editor.command.executeFormat()
+```
+
+## Selection and Range
+
+### Working with Selection
+
+```typescript
+// Get current selection range
+const range = editor.command.getRange()
+// Returns: { startIndex: number, endIndex: number }
+
+// Set selection range
+editor.command.executeSetRange(10, 20)
+
+// Replace selection with new content
+editor.command.executeReplaceRange([
+  { value: 'Replacement text', bold: true }
+])
+
+// Select all
+editor.command.executeSelectAll()
+
+// Get selected text
+const selectedText = editor.command.getRangeText()
+
+// Get selection context (including elements)
+const context = editor.command.getRangeContext()
+```
+
+### Range Queries
+
+```typescript
+// Get paragraph at current selection
+const paragraph = editor.command.getRangeParagraph()
+
+// Get row at current selection  
+const row = editor.command.getRangeRow()
+
+// Find keyword occurrences
+const ranges = editor.command.getKeywordRangeList('search term')
+
+// Get context for keyword
+const keywordContext = editor.command.getKeywordContext('keyword')
+```
+
+## Clipboard Operations
+
+```typescript
+// Cut
+editor.command.executeCut()
+
+// Copy
+editor.command.executeCopy()
+
+// Paste
+editor.command.executePaste()
+
+// Format painter (copy formatting)
+editor.command.executePainter()
+
+// Apply copied formatting
+editor.command.executeApplyPainterStyle()
+```
+
+## History (Undo/Redo)
+
+```typescript
+// Undo
+editor.command.executeUndo()
+
+// Redo
+editor.command.executeRedo()
+```
+
+## Element Manipulation
+
+### Inserting Elements
+
+<CodeGroup>
+```typescript Insert at Cursor
+editor.command.executeInsertElementList([
+  { value: 'New text' },
+  { value: '\n' }
+])
+```
+
+```typescript Append to End
+editor.command.executeAppendElementList([
+  { value: 'Appended text' }
+])
+```
+
+```typescript Insert with Options
+editor.command.executeInsertElementList(
+  [{ value: 'Text' }],
+  {
+    isReplace: true,         // Replace selection
+    isSubmitHistory: true,   // Add to undo stack
+    ignoreContextKeys: ['bold', 'italic']  // Don't inherit these styles
+  }
+)
+```
+</CodeGroup>
+
+### Updating Elements
+
+```typescript
+// Update by element ID
+editor.command.executeUpdateElementById({
+  id: 'element-123',
+  properties: {
+    bold: true,
+    color: '#ff0000',
+    size: 20
+  }
+})
+
+// Update by concept ID (for grouped elements like tables)
+editor.command.executeUpdateElementById({
+  conceptId: 'table-1',
+  properties: {
+    borderColor: '#000000'
+  }
+})
+```
+
+### Deleting Elements
+
+```typescript
+// Delete by ID
+editor.command.executeDeleteElementById({ id: 'element-123' })
+
+// Delete by concept ID
+editor.command.executeDeleteElementById({ conceptId: 'table-1' })
+
+// Delete at cursor (backspace)
+editor.command.executeBackspace()
+```
+
+### Querying Elements
+
+```typescript
+// Get element by ID
+const element = editor.command.getElementById({ id: 'element-123' })
+
+// Get element by concept ID
+const element = editor.command.getElementById({ conceptId: 'table-1' })
+```
+
+## Table Operations
+
+### Creating Tables
+
+```typescript
+// Insert table
+editor.command.executeInsertTable({
+  row: 3,      // Number of rows
+  col: 4       // Number of columns
+})
+```
+
+### Modifying Tables
+
+<Tabs>
+  <Tab title="Rows">
+    ```typescript
+    // Insert row above
+    editor.command.executeInsertTableTopRow()
+
+    // Insert row below
+    editor.command.executeInsertTableBottomRow()
+
+    // Delete current row
+    editor.command.executeDeleteTableRow()
+    ```
+  </Tab>
+
+  <Tab title="Columns">
+    ```typescript
+    // Insert column left
+    editor.command.executeInsertTableLeftCol()
+
+    // Insert column right
+    editor.command.executeInsertTableRightCol()
+
+    // Delete current column
+    editor.command.executeDeleteTableCol()
+    ```
+  </Tab>
+
+  <Tab title="Cells">
+    ```typescript
+    import { VerticalAlign } from 'canvas-editor'
+
+    // Merge selected cells
+    editor.command.executeMergeTableCell()
+
+    // Unmerge cell
+    editor.command.executeCancelMergeTableCell()
+
+    // Split cell vertically
+    editor.command.executeSplitVerticalTableCell()
+
+    // Split cell horizontally
+    editor.command.executeSplitHorizontalTableCell()
+
+    // Set vertical alignment
+    editor.command.executeTableTdVerticalAlign(VerticalAlign.TOP)
+
+    // Set cell background
+    editor.command.executeTableTdBackgroundColor('#f0f0f0')
+    ```
+  </Tab>
+
+  <Tab title="Borders">
+    ```typescript
+    import { TableBorder, TdBorder } from 'canvas-editor'
+
+    // Table border type
+    editor.command.executeTableBorderType(TableBorder.ALL)
+
+    // Table border color
+    editor.command.executeTableBorderColor('#000000')
+
+    // Cell border type
+    editor.command.executeTableTdBorderType(TdBorder.TOP)
+    ```
+  </Tab>
+</Tabs>
+
+### Table Utilities
+
+```typescript
+// Select entire table
+editor.command.executeTableSelectAll()
+
+// Delete table
+editor.command.executeDeleteTable()
+```
+
+## Image Operations
+
+```typescript
+import { ImageDisplay } from 'canvas-editor'
+
+// Insert image
+editor.command.executeImage({
+  value: 'data:image/png;base64,...',
+  width: 300,
+  height: 200
+})
+
+// Replace existing image
+editor.command.executeReplaceImageElement('data:image/png;base64,...')
+
+// Save image element
+editor.command.executeSaveAsImageElement()
+
+// Set image display mode
+editor.command.executeChangeImageDisplay(ImageDisplay.INLINE)
+
+// Crop image
+editor.command.executeSetImageCrop({
+  x: 10,
+  y: 10,
+  width: 200,
+  height: 150
+})
+
+// Set image caption
+editor.command.executeSetImageCaption({
+  value: 'Figure 1: Example',
+  color: '#666',
+  size: 12
+})
+```
+
+## Hyperlink Operations
+
+```typescript
+// Create hyperlink from selection
+editor.command.executeHyperlink({
+  url: 'https://example.com',
+  text: 'Click here'
+})
+
+// Edit hyperlink
+editor.command.executeEditHyperlink({
+  url: 'https://new-url.com'
+})
+
+// Delete hyperlink (keep text)
+editor.command.executeDeleteHyperlink()
+
+// Remove hyperlink completely
+editor.command.executeCancelHyperlink()
+```
+
+## Search and Replace
+
+```typescript
+// Search
+const matches = editor.command.executeSearch('search term')
+
+// Navigate to next match
+editor.command.executeSearchNavigateNext()
+
+// Navigate to previous match
+editor.command.executeSearchNavigatePre()
+
+// Get search navigation info
+const info = editor.command.getSearchNavigateInfo()
+// Returns: { index: number, count: number }
+
+// Replace
+editor.command.executeReplace('replacement text')
+```
+
+## Page and View Operations
+
+### Page Settings
+
+```typescript
+import { PageMode, PaperDirection } from 'canvas-editor'
+
+// Page mode
+editor.command.executePageMode(PageMode.PAGING)
+editor.command.executePageMode(PageMode.CONTINUOUS)
+
+// Paper direction
+editor.command.executePaperDirection(PaperDirection.VERTICAL)
+editor.command.executePaperDirection(PaperDirection.HORIZONTAL)
+
+// Paper size
+editor.command.executePaperSize(595, 842)  // A4 in points
+
+// Margins [top, right, bottom, left]
+editor.command.executeSetPaperMargin([100, 120, 100, 120])
+
+// Get margins
+const margins = editor.command.getPaperMargin()
+```
+
+### Zoom and Scale
+
+```typescript
+// Set scale
+editor.command.executePageScale(1.5)  // 150%
+
+// Reset scale
+editor.command.executePageScaleRecovery()
+
+// Zoom in
+editor.command.executePageScaleAdd()
+
+// Zoom out
+editor.command.executePageScaleMinus()
+
+// Get current scale
+const scale = editor.command.getOptions().scale
+```
+
+## Editor Mode and Focus
+
+```typescript
+import { EditorMode } from 'canvas-editor'
+
+// Change editor mode
+editor.command.executeMode(EditorMode.EDIT)
+editor.command.executeMode(EditorMode.READONLY)
+editor.command.executeMode(EditorMode.PRINT)
+editor.command.executeMode(EditorMode.FORM)
+
+// Focus
+editor.command.executeFocus()
+
+// Blur (lose focus)
+editor.command.executeBlur()
+
+// Hide cursor
+editor.command.executeHideCursor()
+```
+
+## Utility Commands
+
+```typescript
+// Force re-render
+editor.command.executeForceUpdate()
+
+// Print
+editor.command.executePrint()
+
+// Get word count
+const wordCount = editor.command.getWordCount()
+
+// Get cursor position
+const position = editor.command.getCursorPosition()
+
+// Get container element
+const container = editor.command.getContainer()
+
+// Get options
+const options = editor.command.getOptions()
+
+// Update options
+editor.command.executeUpdateOptions({
+  defaultSize: 18,
+  defaultColor: '#333'
+})
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Batch Operations" icon="layer-group">
+    Group multiple related commands together for better performance:
+    ```typescript
+    editor.command.executeInsertElementList([
+      { value: 'Line 1' },
+      { value: '\n' },
+      { value: 'Line 2', bold: true }
+    ])
+    ```
+  </Card>
+
+  <Card title="Check Return Values" icon="circle-check">
+    Many commands return useful information:
+    ```typescript
+    const range = editor.command.getRange()
+    if (range) {
+      // Selection exists
+    }
+    ```
+  </Card>
+
+  <Card title="Use Async for Large Docs" icon="clock">
+    For large documents, use async methods:
+    ```typescript
+    const data = await editor.command.getValueAsync()
+    ```
+  </Card>
+
+  <Card title="History Management" icon="clock-rotate-left">
+    Control when operations are added to undo history:
+    ```typescript
+    editor.command.executeInsertElementList(
+      elements,
+      { isSubmitHistory: false }
+    )
+    ```
+  </Card>
+</CardGroup>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Do commands automatically update the view?">
+    Yes, all execute commands automatically trigger a re-render when necessary. You don't need to manually call update methods.
+  </Accordion>
+
+  <Accordion title="Can I create custom commands?">
+    Not directly. However, you can create wrapper functions that combine multiple commands:
+
+    ```typescript
+    function insertFormattedParagraph(text: string) {
+      editor.command.executeInsertElementList([
+        { value: text, size: 16, bold: true },
+        { value: '\n' }
+      ])
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="How do I know which commands are available?">
+    Use TypeScript autocomplete on `editor.command.` to see all available commands. The Command class exports all methods with full type information.
+  </Accordion>
+
+  <Accordion title="Are commands undoable?">
+    Most editing commands (formatting, insertion, deletion) are automatically added to the undo stack. Some commands like `executeForceUpdate()` or queries don't affect history.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Event System" icon="bell" href="/concepts/event-system">
+    React to command execution
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/commands/text-operations">
+    Complete command documentation
+  </Card>
+</CardGroup>

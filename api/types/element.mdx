@@ -1,0 +1,446 @@
+---
+title: IElement Interface
+description: Core element interface representing document content
+---
+
+The `IElement` interface represents a single content element in the document. Elements can be text, images, tables, controls, and more.
+
+## Interface Definition
+
+```typescript src/editor/interface/Element.ts
+type IElement = IElementBasic &
+  IElementStyle &
+  IElementRule &
+  IElementGroup &
+  ITable &
+  IHyperlinkElement &
+  ISuperscriptSubscript &
+  ISeparator &
+  IControlElement &
+  ICheckboxElement &
+  IRadioElement &
+  ILaTexElement &
+  IDateElement &
+  IImageElement &
+  IBlockElement &
+  ITitleElement &
+  IListElement &
+  IAreaElement &
+  ILabelElement
+```
+
+## Basic Properties
+
+### IElementBasic
+
+<ParamField path="value" type="string" required>
+  The text content or value of the element. Empty string for non-text elements.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Unique identifier for the element
+</ParamField>
+
+<ParamField path="type" type="ElementType">
+  Element type (TEXT, IMAGE, TABLE, CONTROL, etc.). Defaults to TEXT if not specified.
+</ParamField>
+
+<ParamField path="extension" type="unknown">
+  Custom extension data for storing arbitrary information
+</ParamField>
+
+<ParamField path="externalId" type="string">
+  External system identifier
+</ParamField>
+
+## Style Properties
+
+### IElementStyle
+
+<ParamField path="font" type="string">
+  Font family name
+</ParamField>
+
+<ParamField path="size" type="number">
+  Font size in pixels
+</ParamField>
+
+<ParamField path="width" type="number">
+  Element width (for images, controls, etc.)
+</ParamField>
+
+<ParamField path="height" type="number">
+  Element height (for images, controls, etc.)
+</ParamField>
+
+<ParamField path="bold" type="boolean">
+  Bold text formatting
+</ParamField>
+
+<ParamField path="color" type="string">
+  Text color (hex format, e.g., '#FF0000')
+</ParamField>
+
+<ParamField path="highlight" type="string">
+  Background highlight color
+</ParamField>
+
+<ParamField path="italic" type="boolean">
+  Italic text formatting
+</ParamField>
+
+<ParamField path="underline" type="boolean">
+  Underline text
+</ParamField>
+
+<ParamField path="strikeout" type="boolean">
+  Strikethrough text
+</ParamField>
+
+<ParamField path="rowFlex" type="RowFlex">
+  Row alignment (LEFT, CENTER, RIGHT, JUSTIFY, ALIGNMENT)
+</ParamField>
+
+<ParamField path="rowMargin" type="number">
+  Row margin/spacing
+</ParamField>
+
+<ParamField path="letterSpacing" type="number">
+  Letter spacing in pixels
+</ParamField>
+
+<ParamField path="textDecoration" type="ITextDecoration">
+  Advanced text decoration styling
+</ParamField>
+
+## Element Type Properties
+
+### Image Elements
+
+<ParamField path="imgDisplay" type="ImageDisplay">
+  How image is displayed: INLINE, BLOCK, FLOAT_TOP, FLOAT_BOTTOM
+</ParamField>
+
+<ParamField path="imgFloatPosition" type="{ x: number, y: number, pageNo?: number }">
+  Position for floating images
+</ParamField>
+
+<ParamField path="imgCrop" type="IImageCrop">
+  Crop coordinates (normalized 0-1)
+</ParamField>
+
+<ParamField path="imgCaption" type="IImageCaption">
+  Image caption configuration
+</ParamField>
+
+### Table Elements
+
+<ParamField path="colgroup" type="IColgroup[]">
+  Table column definitions
+</ParamField>
+
+<ParamField path="trList" type="ITr[]">
+  Table row data
+</ParamField>
+
+<ParamField path="borderType" type="TableBorder">
+  Table border style
+</ParamField>
+
+<ParamField path="borderColor" type="string">
+  Table border color
+</ParamField>
+
+<ParamField path="tdId" type="string">
+  Table cell ID (when inside a table)
+</ParamField>
+
+<ParamField path="trId" type="string">
+  Table row ID (when inside a table)
+</ParamField>
+
+<ParamField path="tableId" type="string">
+  Table ID (when inside a table)
+</ParamField>
+
+### Title/Heading Elements
+
+<ParamField path="level" type="TitleLevel">
+  Heading level (FIRST = H1, SECOND = H2, etc.)
+</ParamField>
+
+<ParamField path="titleId" type="string">
+  Title group identifier
+</ParamField>
+
+<ParamField path="valueList" type="IElement[]">
+  Child elements for title/hyperlink/list
+</ParamField>
+
+### List Elements
+
+<ParamField path="listType" type="ListType">
+  List type: UL (unordered) or OL (ordered)
+</ParamField>
+
+<ParamField path="listStyle" type="ListStyle">
+  List marker style (DISC, CIRCLE, DECIMAL, etc.)
+</ParamField>
+
+<ParamField path="listId" type="string">
+  List group identifier
+</ParamField>
+
+### Hyperlink Elements
+
+<ParamField path="url" type="string">
+  Hyperlink URL
+</ParamField>
+
+<ParamField path="hyperlinkId" type="string">
+  Hyperlink group identifier
+</ParamField>
+
+### Control Elements
+
+<ParamField path="control" type="IControl">
+  Form control configuration
+</ParamField>
+
+<ParamField path="controlId" type="string">
+  Control identifier
+</ParamField>
+
+<ParamField path="controlComponent" type="ControlComponent">
+  Control component type (PREFIX, POSTFIX, VALUE, etc.)
+</ParamField>
+
+### Other Element Types
+
+<ParamField path="checkbox" type="ICheckbox">
+  Standalone checkbox configuration
+</ParamField>
+
+<ParamField path="radio" type="IRadio">
+  Standalone radio button configuration
+</ParamField>
+
+<ParamField path="dateFormat" type="string">
+  Date formatting string
+</ParamField>
+
+<ParamField path="block" type="IBlock">
+  Block element configuration
+</ParamField>
+
+<ParamField path="areaId" type="string">
+  Area identifier
+</ParamField>
+
+<ParamField path="labelId" type="string">
+  Label identifier
+</ParamField>
+
+## Rules & Grouping
+
+<ParamField path="hide" type="boolean">
+  Whether element is hidden
+</ParamField>
+
+<ParamField path="groupIds" type="string[]">
+  Group identifiers for grouped elements
+</ParamField>
+
+## Element Examples
+
+### Simple Text
+
+```typescript
+const textElement: IElement = {
+  value: 'Hello World'
+}
+```
+
+### Formatted Text
+
+```typescript
+const boldText: IElement = {
+  value: 'Important',
+  bold: true,
+  color: '#FF0000',
+  size: 18
+}
+```
+
+### Image
+
+```typescript
+const image: IElement = {
+  type: ElementType.IMAGE,
+  value: 'data:image/png;base64,...',
+  width: 300,
+  height: 200,
+  imgDisplay: ImageDisplay.BLOCK
+}
+```
+
+### Heading
+
+```typescript
+const heading: IElement = {
+  value: 'Chapter 1',
+  level: TitleLevel.FIRST,
+  titleId: 'title-1'
+}
+```
+
+### Hyperlink
+
+```typescript
+const link: IElement = {
+  type: ElementType.HYPERLINK,
+  value: '',
+  url: 'https://example.com',
+  valueList: [
+    { value: 'Click here' }
+  ]
+}
+```
+
+### List Item
+
+```typescript
+const listItem: IElement = {
+  value: 'First item',
+  listType: ListType.UL,
+  listStyle: ListStyle.DISC,
+  listId: 'list-1'
+}
+```
+
+### Table
+
+```typescript
+const table: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  colgroup: [
+    { width: 100 },
+    { width: 200 }
+  ],
+  trList: [
+    {
+      tdList: [
+        { valueList: [{ value: 'Cell 1' }] },
+        { valueList: [{ value: 'Cell 2' }] }
+      ]
+    }
+  ]
+}
+```
+
+## Usage in Commands
+
+### Inserting Elements
+
+```typescript
+const elements: IElement[] = [
+  { value: 'Normal text ' },
+  { value: 'bold text', bold: true },
+  { value: ' and ' },
+  { value: 'italic', italic: true }
+]
+
+editor.command.executeInsertElementList(elements)
+```
+
+### Getting Elements
+
+```typescript
+const data = editor.command.getValue()
+// data.main is IElement[]
+
+data.main.forEach(element => {
+  if (element.type === ElementType.IMAGE) {
+    console.log('Found image:', element.width, element.height)
+  }
+})
+```
+
+### Updating Elements
+
+```typescript
+editor.command.executeUpdateElementById({
+  id: 'element-123',
+  properties: {
+    bold: true,
+    color: '#0000FF',
+    size: 20
+  }
+})
+```
+
+## Helper Functions
+
+Canvas Editor exports utility functions for working with elements:
+
+### splitText
+
+Splits text into individual character elements:
+
+```typescript
+import { splitText } from '@hufe921/canvas-editor'
+
+const elements = splitText('Hello')
+// Returns: [
+//   { value: 'H' },
+//   { value: 'e' },
+//   { value: 'l' },
+//   { value: 'l' },
+//   { value: 'o' }
+// ]
+```
+
+### getElementListByHTML
+
+Converts HTML to element list:
+
+```typescript
+import { getElementListByHTML } from '@hufe921/canvas-editor'
+
+const html = '<p>Hello <b>World</b></p>'
+const elements = getElementListByHTML(html)
+```
+
+### getTextFromElementList
+
+Extracts plain text from elements:
+
+```typescript
+import { getTextFromElementList } from '@hufe921/canvas-editor'
+
+const elements: IElement[] = [
+  { value: 'Hello ' },
+  { value: 'World', bold: true }
+]
+
+const text = getTextFromElementList(elements)
+// Returns: 'Hello World'
+```
+
+## TypeScript Usage
+
+```typescript
+import { IElement, ElementType } from '@hufe921/canvas-editor'
+
+function processElement(element: IElement) {
+  if (element.type === ElementType.IMAGE) {
+    // TypeScript knows element has image properties
+    console.log(element.width, element.height)
+  }
+  
+  if (element.bold) {
+    console.log('Bold text:', element.value)
+  }
+}
+```

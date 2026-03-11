@@ -1,0 +1,399 @@
+---
+title: EventBus
+description: Pub-sub event system for subscribing to editor events
+---
+
+The `EventBus` provides a publish-subscribe event system that allows multiple subscribers to listen to the same events.
+
+## Overview
+
+Access the event bus through the editor instance:
+
+```typescript
+const editor = new Editor(container, data)
+
+editor.eventBus.on('contentChange', () => {
+  console.log('Content changed')
+})
+```
+
+## API Methods
+
+### on
+
+Subscribes to an event.
+
+```typescript
+eventBus.on<K extends keyof EventBusMap>(
+  eventName: K,
+  callback: EventBusMap[K]
+): void
+```
+
+**Example:**
+
+```typescript
+const handleChange = () => {
+  console.log('Content changed')
+}
+
+editor.eventBus.on('contentChange', handleChange)
+```
+
+### emit
+
+Emits an event (typically used internally, but available for custom events).
+
+```typescript
+eventBus.emit<K extends keyof EventBusMap>(
+  eventName: K,
+  payload?: any
+): void
+```
+
+**Example:**
+
+```typescript
+// Typically used internally by the editor
+editor.eventBus.emit('contentChange')
+```
+
+### off
+
+Unsubscribes from an event.
+
+```typescript
+eventBus.off<K extends keyof EventBusMap>(
+  eventName: K,
+  callback: EventBusMap[K]
+): void
+```
+
+**Example:**
+
+```typescript
+const handleChange = () => {
+  console.log('Content changed')
+}
+
+// Subscribe
+editor.eventBus.on('contentChange', handleChange)
+
+// Unsubscribe
+editor.eventBus.off('contentChange', handleChange)
+```
+
+### isSubscribe
+
+Checks if an event has any subscribers.
+
+```typescript
+eventBus.isSubscribe<K extends keyof EventBusMap>(eventName: K): boolean
+```
+
+**Example:**
+
+```typescript
+if (editor.eventBus.isSubscribe('contentChange')) {
+  console.log('Content change has subscribers')
+}
+```
+
+## Available Events
+
+All events from the [Listener API](/api/listener) are available, plus additional events:
+
+### Document Events
+
+#### contentChange
+
+```typescript
+editor.eventBus.on('contentChange', () => {
+  // Content changed
+})
+```
+
+#### saved
+
+```typescript
+editor.eventBus.on('saved', (result: IEditorResult) => {
+  console.log('Document saved:', result)
+})
+```
+
+### Selection & Styling
+
+#### rangeStyleChange
+
+```typescript
+editor.eventBus.on('rangeStyleChange', (style: IRangeStyle) => {
+  console.log('Selection style:', style)
+})
+```
+
+### Page Events
+
+#### pageSizeChange
+
+```typescript
+editor.eventBus.on('pageSizeChange', (totalPages: number) => {
+  console.log('Total pages:', totalPages)
+})
+```
+
+#### pageScaleChange
+
+```typescript
+editor.eventBus.on('pageScaleChange', (scale: number) => {
+  console.log('Zoom:', scale)
+})
+```
+
+#### pageModeChange
+
+```typescript
+editor.eventBus.on('pageModeChange', (mode: PageMode) => {
+  console.log('Page mode:', mode)
+})
+```
+
+#### visiblePageNoListChange
+
+```typescript
+editor.eventBus.on('visiblePageNoListChange', (pages: number[]) => {
+  console.log('Visible pages:', pages)
+})
+```
+
+#### intersectionPageNoChange
+
+```typescript
+editor.eventBus.on('intersectionPageNoChange', (pageNo: number) => {
+  console.log('Current page:', pageNo)
+})
+```
+
+### Control Events
+
+#### controlChange
+
+```typescript
+editor.eventBus.on('controlChange', (payload: IControlChangeResult) => {
+  console.log('Control state:', payload.state)
+})
+```
+
+#### controlContentChange
+
+```typescript
+editor.eventBus.on('controlContentChange', (payload: IControlContentChangeResult) => {
+  console.log('Control value changed:', payload.control.value)
+})
+```
+
+### Zone Events
+
+#### zoneChange
+
+```typescript
+editor.eventBus.on('zoneChange', (zone: EditorZone) => {
+  console.log('Now in zone:', zone)
+})
+```
+
+### Mouse Events
+
+#### click
+
+```typescript
+editor.eventBus.on('click', (evt: MouseEvent) => {
+  console.log('Editor clicked', evt)
+})
+```
+
+#### mousedown
+
+```typescript
+editor.eventBus.on('mousedown', (evt: MouseEvent) => {
+  console.log('Mouse down', evt)
+})
+```
+
+#### mouseup
+
+```typescript
+editor.eventBus.on('mouseup', (evt: MouseEvent) => {
+  console.log('Mouse up', evt)
+})
+```
+
+#### mousemove
+
+```typescript
+editor.eventBus.on('mousemove', (evt: MouseEvent) => {
+  console.log('Mouse move', evt)
+})
+```
+
+#### mouseenter
+
+```typescript
+editor.eventBus.on('mouseenter', (evt: MouseEvent) => {
+  console.log('Mouse entered editor', evt)
+})
+```
+
+#### mouseleave
+
+```typescript
+editor.eventBus.on('mouseleave', (evt: MouseEvent) => {
+  console.log('Mouse left editor', evt)
+})
+```
+
+### Input Events
+
+#### input
+
+```typescript
+editor.eventBus.on('input', (evt: Event) => {
+  console.log('Input event', evt)
+})
+```
+
+### Position Context
+
+#### positionContextChange
+
+```typescript
+editor.eventBus.on('positionContextChange', (payload: IPositionContextChangePayload) => {
+  console.log('Position context changed:', payload.value)
+  console.log('Previous context:', payload.oldValue)
+})
+```
+
+### Image Events
+
+#### imageSizeChange
+
+```typescript
+editor.eventBus.on('imageSizeChange', ({ element }) => {
+  console.log('Image resized:', element.width, element.height)
+})
+```
+
+#### imageMousedown
+
+```typescript
+editor.eventBus.on('imageMousedown', ({ evt, element }) => {
+  console.log('Image clicked:', element)
+})
+```
+
+#### imageDblclick
+
+```typescript
+editor.eventBus.on('imageDblclick', ({ evt, element }) => {
+  console.log('Image double-clicked:', element)
+})
+```
+
+### Label Events
+
+#### labelMousedown
+
+```typescript
+editor.eventBus.on('labelMousedown', ({ evt, element }) => {
+  console.log('Label clicked:', element)
+})
+```
+
+## Complete Example
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Multiple subscribers for the same event
+editor.eventBus.on('contentChange', () => {
+  console.log('Handler 1: Content changed')
+})
+
+editor.eventBus.on('contentChange', () => {
+  console.log('Handler 2: Content changed')
+  autoSave()
+})
+
+// Track editing activity
+let lastActivity = Date.now()
+
+editor.eventBus.on('input', () => {
+  lastActivity = Date.now()
+})
+
+editor.eventBus.on('click', () => {
+  lastActivity = Date.now()
+})
+
+// Handle image interactions
+editor.eventBus.on('imageMousedown', ({ element }) => {
+  console.log('Image selected:', element.value)
+  showImageToolbar(element)
+})
+
+editor.eventBus.on('imageDblclick', ({ element }) => {
+  openImageEditor(element)
+})
+
+// Monitor page navigation
+editor.eventBus.on('intersectionPageNoChange', (pageNo) => {
+  updatePageIndicator(pageNo + 1)
+  
+  // Load page-specific data
+  loadPageData(pageNo)
+})
+
+// Handle form controls
+editor.eventBus.on('controlContentChange', ({ control }) => {
+  if (control.conceptId === 'email') {
+    validateEmail(control.value)
+  }
+})
+
+// Cleanup when done
+function cleanup() {
+  editor.eventBus.off('contentChange', handler1)
+  editor.eventBus.off('contentChange', handler2)
+  // Or destroy the entire editor
+  editor.destroy()
+}
+```
+
+## EventBus vs Listener
+
+**EventBus** (pub-sub):
+- Multiple subscribers per event
+- Must use `on`/`off` methods
+- Better for plugins and modular code
+- Supports checking if subscribed
+
+**Listener** (callbacks):
+- Single callback per event
+- Simple assignment (`editor.listener.eventName = callback`)
+- Better for primary/simple event handlers
+- Set to `null` to remove
+
+See [Listener](/api/listener) for the callback-based alternative.
+
+## TypeScript Support
+
+The EventBus is fully typed:
+
+```typescript
+import { EventBusMap } from '@hufe921/canvas-editor'
+
+// EventBusMap provides types for all events
+type ContentChangeHandler = EventBusMap['contentChange']
+type RangeStyleHandler = EventBusMap['rangeStyleChange']
+```

@@ -1,0 +1,435 @@
+---
+title: Control Enums
+description: Enums for control types, components, and states
+---
+
+Control enums define the types, components, and behaviors of form controls.
+
+## ControlType
+
+Defines the type of form control.
+
+```typescript src/editor/dataset/enum/Control.ts
+enum ControlType {
+  TEXT = 'text',
+  SELECT = 'select',
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio',
+  DATE = 'date',
+  NUMBER = 'number'
+}
+```
+
+### Values
+
+<ParamField path="TEXT" type="'text'">
+  **Text Input** - Single or multi-line text input control
+</ParamField>
+
+<ParamField path="SELECT" type="'select'">
+  **Dropdown Select** - Dropdown selection from predefined options
+</ParamField>
+
+<ParamField path="CHECKBOX" type="'checkbox'">
+  **Checkbox Group** - Multiple checkbox options
+</ParamField>
+
+<ParamField path="RADIO" type="'radio'">
+  **Radio Buttons** - Single selection from multiple options
+</ParamField>
+
+<ParamField path="DATE" type="'date'">
+  **Date Picker** - Date selection control
+</ParamField>
+
+<ParamField path="NUMBER" type="'number'">
+  **Number Input** - Numeric input with optional calculator
+</ParamField>
+
+### Usage
+
+```typescript
+import { ControlType } from '@hufe921/canvas-editor'
+
+// Text control
+editor.command.executeInsertControl({
+  type: ControlType.TEXT,
+  value: null,
+  conceptId: 'firstName',
+  placeholder: 'Enter first name'
+})
+
+// Select control
+editor.command.executeInsertControl({
+  type: ControlType.SELECT,
+  value: null,
+  code: null,
+  valueSets: [
+    { value: 'Option 1', code: '1' },
+    { value: 'Option 2', code: '2' }
+  ]
+})
+
+// Date control
+editor.command.executeInsertControl({
+  type: ControlType.DATE,
+  value: null,
+  dateFormat: 'YYYY-MM-DD'
+})
+```
+
+## ControlComponent
+
+Defines the component parts of a control.
+
+```typescript src/editor/dataset/enum/Control.ts
+enum ControlComponent {
+  PREFIX = 'prefix',
+  POSTFIX = 'postfix',
+  PRE_TEXT = 'preText',
+  POST_TEXT = 'postText',
+  PLACEHOLDER = 'placeholder',
+  VALUE = 'value',
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio'
+}
+```
+
+### Values
+
+<ParamField path="PREFIX" type="'prefix'">
+  Prefix text/symbol before the control
+</ParamField>
+
+<ParamField path="POSTFIX" type="'postfix'">
+  Postfix text/symbol after the control
+</ParamField>
+
+<ParamField path="PRE_TEXT" type="'preText'">
+  Text before the control value
+</ParamField>
+
+<ParamField path="POST_TEXT" type="'postText'">
+  Text after the control value
+</ParamField>
+
+<ParamField path="PLACEHOLDER" type="'placeholder'">
+  Placeholder text when empty
+</ParamField>
+
+<ParamField path="VALUE" type="'value'">
+  The actual control value
+</ParamField>
+
+<ParamField path="CHECKBOX" type="'checkbox'">
+  Checkbox component
+</ParamField>
+
+<ParamField path="RADIO" type="'radio'">
+  Radio button component
+</ParamField>
+
+### Example Structure
+
+```
+[PREFIX] [PRE_TEXT] [VALUE] [POST_TEXT] [POSTFIX]
+
+Example: $ Enter amount: [____] USD
+         ^              ^       ^
+      PREFIX         VALUE   POSTFIX
+```
+
+## ControlIndentation
+
+Defines how control content is indented.
+
+```typescript src/editor/dataset/enum/Control.ts
+enum ControlIndentation {
+  ROW_START = 'rowStart',
+  VALUE_START = 'valueStart'
+}
+```
+
+### Values
+
+<ParamField path="ROW_START" type="'rowStart'">
+  **Row Start** - Indent from the beginning of the row
+</ParamField>
+
+<ParamField path="VALUE_START" type="'valueStart'">
+  **Value Start** - Indent from where the value starts
+</ParamField>
+
+### Visual Comparison
+
+**ROW_START:**
+```
+Name: [John Doe____]
+      ^
+      Indent from here on new lines
+```
+
+**VALUE_START:**
+```
+Name: [John Doe____]
+            ^
+            Indent from here on new lines
+```
+
+### Usage
+
+```typescript
+import { ControlIndentation } from '@hufe921/canvas-editor'
+
+editor.command.executeInsertControl({
+  type: ControlType.TEXT,
+  value: null,
+  prefix: 'Address: ',
+  indentation: ControlIndentation.VALUE_START,
+  minWidth: 300
+})
+// Multi-line text will align with the start of the value
+```
+
+## ControlState
+
+Defines the state of a control.
+
+```typescript src/editor/dataset/enum/Control.ts
+enum ControlState {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive'
+}
+```
+
+### Values
+
+<ParamField path="ACTIVE" type="'active'">
+  **Active** - Control is focused and being edited
+</ParamField>
+
+<ParamField path="INACTIVE" type="'inactive'">
+  **Inactive** - Control is not focused
+</ParamField>
+
+### Usage
+
+```typescript
+import { ControlState } from '@hufe921/canvas-editor'
+
+// Listen for state changes
+editor.eventBus.on('controlChange', ({ state, control, controlId }) => {
+  if (state === ControlState.ACTIVE) {
+    console.log(`Control ${controlId} is now active`)
+    // Show control-specific toolbar
+    showControlToolbar(control)
+  } else if (state === ControlState.INACTIVE) {
+    console.log(`Control ${controlId} is now inactive`)
+    // Hide control-specific toolbar
+    hideControlToolbar()
+  }
+})
+```
+
+## Complete Example
+
+```typescript
+import Editor, {
+  ControlType,
+  ControlIndentation,
+  ControlState,
+  FlexDirection
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Create various control types
+const controls = [
+  // Text input with indentation
+  {
+    type: ControlType.TEXT,
+    conceptId: 'fullName',
+    prefix: 'Full Name: ',
+    value: null,
+    placeholder: 'Enter your full name',
+    minWidth: 300,
+    indentation: ControlIndentation.VALUE_START
+  },
+  
+  // Select dropdown
+  {
+    type: ControlType.SELECT,
+    conceptId: 'country',
+    prefix: 'Country: ',
+    code: null,
+    valueSets: [
+      { value: 'United States', code: 'us' },
+      { value: 'Canada', code: 'ca' },
+      { value: 'United Kingdom', code: 'uk' }
+    ]
+  },
+  
+  // Checkbox group
+  {
+    type: ControlType.CHECKBOX,
+    conceptId: 'interests',
+    prefix: 'Interests: ',
+    code: null,
+    valueSets: [
+      { value: 'Sports', code: 'sports' },
+      { value: 'Music', code: 'music' },
+      { value: 'Reading', code: 'reading' }
+    ],
+    flexDirection: FlexDirection.COLUMN,
+    min: 1,
+    max: 2
+  },
+  
+  // Radio buttons
+  {
+    type: ControlType.RADIO,
+    conceptId: 'subscribe',
+    prefix: 'Subscribe to newsletter: ',
+    code: null,
+    valueSets: [
+      { value: 'Yes', code: 'yes' },
+      { value: 'No', code: 'no' }
+    ],
+    flexDirection: FlexDirection.ROW
+  },
+  
+  // Date picker
+  {
+    type: ControlType.DATE,
+    conceptId: 'birthdate',
+    prefix: 'Birth Date: ',
+    value: null,
+    dateFormat: 'MM/DD/YYYY'
+  },
+  
+  // Number input
+  {
+    type: ControlType.NUMBER,
+    conceptId: 'age',
+    prefix: 'Age: ',
+    postfix: ' years',
+    value: null,
+    minWidth: 100
+  }
+]
+
+// Insert all controls
+controls.forEach(control => {
+  editor.command.executeInsertControl(control)
+})
+
+// Monitor control state
+editor.eventBus.on('controlChange', ({ state, control }) => {
+  if (state === ControlState.ACTIVE) {
+    // Highlight active control type
+    highlightControlType(control.type)
+  }
+})
+
+// Handle control interactions by type
+editor.eventBus.on('controlContentChange', ({ control }) => {
+  switch (control.type) {
+    case ControlType.TEXT:
+      console.log('Text changed:', control.value)
+      break
+    
+    case ControlType.SELECT:
+      console.log('Selected:', control.code)
+      break
+    
+    case ControlType.CHECKBOX:
+      console.log('Checkboxes:', control.code?.split(','))
+      break
+    
+    case ControlType.RADIO:
+      console.log('Radio selected:', control.code)
+      break
+    
+    case ControlType.DATE:
+      console.log('Date:', control.value)
+      break
+    
+    case ControlType.NUMBER:
+      console.log('Number:', parseFloat(control.value || '0'))
+      break
+  }
+})
+```
+
+## Control Type Comparison
+
+| Type | User Input | Value Type | Multiple | Options |
+|------|-----------|------------|----------|--------|
+| TEXT | Keyboard | String | No | - |
+| SELECT | Click | String | Optional | Required |
+| CHECKBOX | Click | String[] | Yes | Required |
+| RADIO | Click | String | No | Required |
+| DATE | Picker | String | No | - |
+| NUMBER | Keyboard | Number | No | - |
+
+## Best Practices
+
+### 1. Use Appropriate Control Types
+
+```typescript
+// Good - Use SELECT for limited options
+{
+  type: ControlType.SELECT,
+  valueSets: [/* 3-10 options */]
+}
+
+// Bad - Don't use TEXT for choices
+{
+  type: ControlType.TEXT,
+  placeholder: 'Enter option 1, 2, or 3'
+}
+```
+
+### 2. Provide Clear Labels
+
+```typescript
+// Good
+{
+  type: ControlType.TEXT,
+  prefix: 'Email Address: ',
+  placeholder: 'user@example.com'
+}
+
+// Bad - Unclear
+{
+  type: ControlType.TEXT,
+  placeholder: 'Type here'
+}
+```
+
+### 3. Use Validation
+
+```typescript
+editor.eventBus.on('controlContentChange', ({ control }) => {
+  if (control.conceptId === 'email') {
+    const isValid = /^[^@]+@[^@]+\.[^@]+$/.test(control.value || '')
+    if (!isValid) {
+      showError('Invalid email format')
+    }
+  }
+})
+```
+
+### 4. Group Related Controls
+
+```typescript
+// Use groupId to relate controls
+const personalInfoControls = [
+  { type: ControlType.TEXT, groupId: 'personal', conceptId: 'firstName' },
+  { type: ControlType.TEXT, groupId: 'personal', conceptId: 'lastName' },
+  { type: ControlType.DATE, groupId: 'personal', conceptId: 'birthDate' }
+]
+
+// Get all personal info controls
+const personalData = editor.command.getControlValue({ groupId: 'personal' })
+```

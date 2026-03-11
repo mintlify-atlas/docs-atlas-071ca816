@@ -1,80 +1,374 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: "Quick Start"
+description: "Create your first Canvas Editor instance in minutes"
 ---
 
-## Get started in three steps
+## Your First Editor
 
-Get your documentation site running locally and make your first customization.
+Get a working Canvas Editor instance up and running in just a few minutes. This guide walks you through creating a basic editor with text formatting capabilities.
 
-### Step 1: Set up your local environment
-
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Set up your HTML">
+    Create a container element for the editor. The container needs explicit dimensions:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```html index.html
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Canvas Editor</title>
+      </head>
+      <body>
+        <div class="canvas-editor"></div>
+      </body>
+    </html>
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    <Tip>
+      Canvas Editor requires a container with defined width and height. Use CSS or inline styles to set dimensions.
+    </Tip>
+  </Step>
+  
+  <Step title="Install the package">
+    Install Canvas Editor using your preferred package manager:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    <CodeGroup>
+    
+    ```bash npm
+    npm install @hufe921/canvas-editor
+    ```
+    
+    ```bash yarn
+    yarn add @hufe921/canvas-editor
+    ```
+    
+    ```bash pnpm
+    pnpm add @hufe921/canvas-editor
+    ```
+    
+    </CodeGroup>
+  </Step>
+  
+  <Step title="Create your editor instance">
+    Import the Editor class and initialize it with content:
+    
+    ```typescript main.ts
+    import Editor from '@hufe921/canvas-editor'
+    
+    // Get the container element
+    const container = document.querySelector('.canvas-editor')
+    
+    // Create editor instance
+    const editor = new Editor(container, {
+      main: [
+        {
+          value: 'Hello World'
+        }
+      ]
+    })
+    ```
+    
+    The editor will render immediately with the provided content.
+  </Step>
+  
+  <Step title="Try it out">
+    Open your application in a browser. You should see an editable text editor with "Hello World". Click to start typing and editing!
+  </Step>
+</Steps>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+## Complete Working Example
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Here's a complete example with TypeScript, including header, main content, and footer sections:
 
-### Step 3: Go live
+```typescript main.ts
+import Editor, { 
+  IEditorData, 
+  IEditorOption,
+  RowFlex,
+  ElementType 
+} from '@hufe921/canvas-editor'
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+// Define your document structure
+const data: IEditorData = {
+  header: [
+    {
+      value: 'Document Header',
+      size: 24,
+      bold: true,
+      rowFlex: RowFlex.CENTER
+    },
+    {
+      value: '\n',
+      type: ElementType.SEPARATOR
+    }
+  ],
+  main: [
+    {
+      value: 'Welcome to Canvas Editor! ',
+      size: 18,
+      bold: true
+    },
+    {
+      value: 'This is a powerful rich text editor built with TypeScript.\n\n'
+    },
+    {
+      value: 'Features include:'
+    },
+    {
+      value: '\n• Rich text formatting'
+    },
+    {
+      value: '\n• Table support'
+    },
+    {
+      value: '\n• Image handling'
+    },
+    {
+      value: '\n• Print and export'
+    }
+  ],
+  footer: [
+    {
+      value: 'Page ',
+      size: 12,
+      color: '#666666'
+    }
+  ]
+}
 
-## Next steps
+// Configure editor options
+const options: IEditorOption = {
+  defaultFont: 'Arial',
+  defaultSize: 16,
+  defaultColor: '#000000',
+  margins: {
+    top: 100,
+    right: 120,
+    bottom: 100,
+    left: 120
+  }
+}
 
-Now that you have your docs running, explore these key features:
+// Initialize editor
+const container = document.querySelector<HTMLDivElement>('.canvas-editor')!
+const editor = new Editor(container, data, options)
 
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
+// Access the command API
+console.log('Editor instance created:', editor)
+console.log('Version:', editor.version)
+```
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  The `header` and `footer` sections are optional. You can also pass just an array of elements as the second parameter, which will be treated as the main content.
 </Note>
+
+## Using Commands
+
+The Command API allows you to programmatically manipulate the editor content:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(
+  document.querySelector('.canvas-editor'),
+  { main: [{ value: 'Hello World' }] }
+)
+
+// Access command methods
+const { command } = editor
+
+// Format text
+command.executeBold()        // Toggle bold
+command.executeItalic()      // Toggle italic
+command.executeUnderline()   // Toggle underline
+
+// Change font and size
+command.executeFont('Times New Roman')
+command.executeSize(18)
+command.executeColor('#FF0000')
+
+// Insert elements
+command.executeInsertTable(3, 4)  // 3 rows, 4 columns
+command.executePageBreak()
+
+// Undo/Redo
+command.executeUndo()
+command.executeRedo()
+
+// Get editor content
+const value = command.getValue()
+console.log('Current content:', value)
+```
+
+<Tip>
+  All command methods follow the naming pattern `execute*`. Explore the full [Command API reference](/api/commands/text-operations) for available operations.
+</Tip>
+
+## Listening to Events
+
+React to editor changes using the Listener API:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(
+  document.querySelector('.canvas-editor'),
+  { main: [{ value: 'Hello World' }] }
+)
+
+// Listen to range style changes
+editor.listener.rangeStyleChange = (payload) => {
+  console.log('Selection changed:', payload)
+  console.log('Is bold?', payload.bold)
+  console.log('Font:', payload.font)
+  console.log('Size:', payload.size)
+}
+
+// Listen to content changes
+editor.listener.contentChange = () => {
+  console.log('Content was modified')
+  const value = editor.command.getValue()
+  // Save to backend, localStorage, etc.
+}
+
+// Listen to control value changes
+editor.listener.controlChange = (payload) => {
+  console.log('Control changed:', payload)
+}
+```
+
+## Practical Examples
+
+<Tabs>
+  <Tab title="Auto-save">
+    Implement automatic saving with debouncing:
+    
+    ```typescript
+    import Editor from '@hufe921/canvas-editor'
+    
+    const editor = new Editor(
+      document.querySelector('.canvas-editor'),
+      { main: [{ value: 'Start typing...' }] }
+    )
+    
+    // Debounce helper
+    function debounce(func: Function, wait: number) {
+      let timeout: NodeJS.Timeout
+      return (...args: any[]) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => func(...args), wait)
+      }
+    }
+    
+    // Auto-save on content change
+    const autoSave = debounce(() => {
+      const data = editor.command.getValue()
+      localStorage.setItem('editor-content', JSON.stringify(data))
+      console.log('Content saved!')
+    }, 1000)
+    
+    editor.listener.contentChange = autoSave
+    
+    // Load saved content on startup
+    const saved = localStorage.getItem('editor-content')
+    if (saved) {
+      editor.command.setValue(JSON.parse(saved))
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Toolbar Integration">
+    Create a custom toolbar that responds to selection:
+    
+    ```typescript
+    import Editor from '@hufe921/canvas-editor'
+    
+    const editor = new Editor(
+      document.querySelector('.canvas-editor'),
+      { main: [{ value: 'Hello World' }] }
+    )
+    
+    // Toolbar buttons
+    const boldBtn = document.querySelector('#bold-btn')
+    const italicBtn = document.querySelector('#italic-btn')
+    const fontSelect = document.querySelector('#font-select')
+    
+    // Update toolbar state based on selection
+    editor.listener.rangeStyleChange = (payload) => {
+      // Update button active states
+      boldBtn?.classList.toggle('active', payload.bold)
+      italicBtn?.classList.toggle('active', payload.italic)
+      
+      // Update font dropdown
+      if (fontSelect) {
+        fontSelect.value = payload.font || 'Arial'
+      }
+    }
+    
+    // Handle toolbar clicks
+    boldBtn?.addEventListener('click', () => {
+      editor.command.executeBold()
+    })
+    
+    italicBtn?.addEventListener('click', () => {
+      editor.command.executeItalic()
+    })
+    
+    fontSelect?.addEventListener('change', (e) => {
+      editor.command.executeFont(e.target.value)
+    })
+    ```
+  </Tab>
+  
+  <Tab title="Read-only Mode">
+    Switch between edit and read-only modes:
+    
+    ```typescript
+    import Editor, { EditorMode } from '@hufe921/canvas-editor'
+    
+    const editor = new Editor(
+      document.querySelector('.canvas-editor'),
+      { main: [{ value: 'Hello World' }] },
+      { mode: EditorMode.EDIT }
+    )
+    
+    const toggleBtn = document.querySelector('#toggle-mode')
+    let isReadonly = false
+    
+    toggleBtn?.addEventListener('click', () => {
+      isReadonly = !isReadonly
+      const mode = isReadonly ? EditorMode.READONLY : EditorMode.EDIT
+      editor.command.executeMode(mode)
+      toggleBtn.textContent = isReadonly ? 'Enable Editing' : 'Disable Editing'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+Now that you have a working editor, explore more features:
+
+<CardGroup cols={2}>
+  <Card title="Configuration Guide" icon="sliders" href="/guides/configuration">
+    Learn about all available configuration options
+  </Card>
+  <Card title="Text Formatting" icon="bold" href="/features/text-formatting">
+    Explore rich text formatting capabilities
+  </Card>
+  <Card title="Working with Tables" icon="table" href="/features/tables">
+    Insert and manipulate tables in your documents
+  </Card>
+  <Card title="Command API" icon="terminal" href="/api/commands/text-operations">
+    Master the complete Command API
+  </Card>
+</CardGroup>
+
+<Warning>
+  Remember to properly destroy editor instances when unmounting components to prevent memory leaks:
+  
+  ```typescript
+  // When you're done with the editor
+  editor.destroy()
+  ```
+</Warning>

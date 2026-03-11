@@ -1,0 +1,512 @@
+---
+title: Control Types
+description: Types and interfaces for form controls
+---
+
+Control types define the structure and configuration of form controls in Canvas Editor.
+
+## IControl
+
+Main control interface combining all control properties.
+
+```typescript src/editor/interface/Control.ts
+type IControl = IControlBasic &
+  IControlRule &
+  Partial<IControlStyle> &
+  Partial<IControlSelect> &
+  Partial<IControlCheckbox> &
+  Partial<IControlRadio> &
+  Partial<IControlDate> &
+  Partial<IControlNumber>
+```
+
+## IControlBasic
+
+Core control properties.
+
+<ParamField path="type" type="ControlType" required>
+  Control type: TEXT, SELECT, CHECKBOX, RADIO, DATE, NUMBER
+</ParamField>
+
+<ParamField path="value" type="IElement[] | null" required>
+  Control value as element array
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text when empty
+</ParamField>
+
+<ParamField path="conceptId" type="string">
+  Unique identifier for programmatic access
+</ParamField>
+
+<ParamField path="groupId" type="string">
+  Group identifier for related controls
+</ParamField>
+
+<ParamField path="prefix" type="string">
+  Text prefix before control
+</ParamField>
+
+<ParamField path="postfix" type="string">
+  Text postfix after control
+</ParamField>
+
+<ParamField path="minWidth" type="number">
+  Minimum control width in pixels
+</ParamField>
+
+<ParamField path="underline" type="boolean">
+  Show underline
+</ParamField>
+
+<ParamField path="border" type="boolean">
+  Show border
+</ParamField>
+
+<ParamField path="extension" type="unknown">
+  Custom extension data
+</ParamField>
+
+<ParamField path="indentation" type="ControlIndentation">
+  Content indentation mode: ROW_START or VALUE_START
+</ParamField>
+
+<ParamField path="rowFlex" type="RowFlex">
+  Row alignment
+</ParamField>
+
+<ParamField path="preText" type="string">
+  Text before control value
+</ParamField>
+
+<ParamField path="postText" type="string">
+  Text after control value
+</ParamField>
+
+## IControlRule
+
+Control behavior rules.
+
+<ParamField path="deletable" type="boolean">
+  Whether control can be deleted
+</ParamField>
+
+<ParamField path="disabled" type="boolean">
+  Whether control is disabled (readonly)
+</ParamField>
+
+<ParamField path="pasteDisabled" type="boolean">
+  Whether paste is disabled in this control
+</ParamField>
+
+<ParamField path="hide" type="boolean">
+  Whether control is hidden
+</ParamField>
+
+## IControlStyle
+
+Control text styling.
+
+<ParamField path="font" type="string">
+  Font family
+</ParamField>
+
+<ParamField path="size" type="number">
+  Font size
+</ParamField>
+
+<ParamField path="bold" type="boolean">
+  Bold text
+</ParamField>
+
+<ParamField path="highlight" type="string">
+  Highlight color
+</ParamField>
+
+<ParamField path="italic" type="boolean">
+  Italic text
+</ParamField>
+
+<ParamField path="strikeout" type="boolean">
+  Strikethrough
+</ParamField>
+
+## Type-Specific Interfaces
+
+### IControlSelect
+
+For SELECT controls (dropdowns).
+
+```typescript src/editor/interface/Control.ts
+interface IControlSelect {
+  code: string | null
+  valueSets: IValueSet[]
+  isMultiSelect?: boolean
+  multiSelectDelimiter?: string
+  selectExclusiveOptions?: {
+    inputAble?: boolean
+  }
+}
+```
+
+<ParamField path="code" type="string | null" required>
+  Selected option code
+</ParamField>
+
+<ParamField path="valueSets" type="IValueSet[]" required>
+  Available options
+</ParamField>
+
+<ParamField path="isMultiSelect" type="boolean">
+  Allow multiple selections
+</ParamField>
+
+<ParamField path="multiSelectDelimiter" type="string">
+  Delimiter for multi-select values (default: ',')
+</ParamField>
+
+<ParamField path="selectExclusiveOptions" type="object">
+  Additional options:
+  - `inputAble`: Allow custom input
+</ParamField>
+
+### IValueSet
+
+Option for SELECT controls.
+
+```typescript src/editor/interface/Control.ts
+interface IValueSet {
+  value: string
+  code: string
+}
+```
+
+**Example:**
+```typescript
+const options: IValueSet[] = [
+  { value: 'United States', code: 'us' },
+  { value: 'Canada', code: 'ca' },
+  { value: 'Mexico', code: 'mx' }
+]
+```
+
+### IControlCheckbox
+
+For CHECKBOX controls.
+
+```typescript src/editor/interface/Control.ts
+interface IControlCheckbox {
+  code: string | null
+  min?: number
+  max?: number
+  flexDirection: FlexDirection
+  valueSets: IValueSet[]
+}
+```
+
+<ParamField path="code" type="string | null" required>
+  Selected checkbox codes (comma-separated)
+</ParamField>
+
+<ParamField path="valueSets" type="IValueSet[]" required>
+  Checkbox options
+</ParamField>
+
+<ParamField path="flexDirection" type="FlexDirection" required>
+  Layout direction: ROW or COLUMN
+</ParamField>
+
+<ParamField path="min" type="number">
+  Minimum selections required
+</ParamField>
+
+<ParamField path="max" type="number">
+  Maximum selections allowed
+</ParamField>
+
+### IControlRadio
+
+For RADIO controls.
+
+```typescript src/editor/interface/Control.ts
+interface IControlRadio {
+  code: string | null
+  flexDirection: FlexDirection
+  valueSets: IValueSet[]
+}
+```
+
+<ParamField path="code" type="string | null" required>
+  Selected radio code
+</ParamField>
+
+<ParamField path="valueSets" type="IValueSet[]" required>
+  Radio button options
+</ParamField>
+
+<ParamField path="flexDirection" type="FlexDirection" required>
+  Layout direction
+</ParamField>
+
+### IControlDate
+
+For DATE controls.
+
+```typescript src/editor/interface/Control.ts
+interface IControlDate {
+  dateFormat?: string
+}
+```
+
+<ParamField path="dateFormat" type="string">
+  Date format string (e.g., 'YYYY-MM-DD', 'MM/DD/YYYY')
+</ParamField>
+
+### IControlNumber
+
+For NUMBER controls.
+
+```typescript src/editor/interface/Control.ts
+interface IControlNumber {
+  numberExclusiveOptions?: {
+    calculatorDisabled?: boolean
+  }
+}
+```
+
+<ParamField path="numberExclusiveOptions" type="object">
+  - `calculatorDisabled`: Disable built-in calculator
+</ParamField>
+
+## Control Examples
+
+### Text Control
+
+```typescript
+import { ControlType } from '@hufe921/canvas-editor'
+
+const textControl: IControl = {
+  type: ControlType.TEXT,
+  value: null,
+  conceptId: 'firstName',
+  placeholder: 'Enter your first name',
+  minWidth: 200,
+  prefix: 'Name: ',
+  underline: true
+}
+
+editor.command.executeInsertControl(textControl)
+```
+
+### Select Control
+
+```typescript
+const selectControl: IControl = {
+  type: ControlType.SELECT,
+  value: null,
+  conceptId: 'country',
+  code: null,
+  valueSets: [
+    { value: 'United States', code: 'us' },
+    { value: 'Canada', code: 'ca' },
+    { value: 'United Kingdom', code: 'uk' }
+  ],
+  placeholder: 'Select a country'
+}
+
+editor.command.executeInsertControl(selectControl)
+```
+
+### Checkbox Control
+
+```typescript
+import { FlexDirection } from '@hufe921/canvas-editor'
+
+const checkboxControl: IControl = {
+  type: ControlType.CHECKBOX,
+  value: null,
+  conceptId: 'interests',
+  code: null,
+  valueSets: [
+    { value: 'Sports', code: 'sports' },
+    { value: 'Music', code: 'music' },
+    { value: 'Reading', code: 'reading' }
+  ],
+  flexDirection: FlexDirection.COLUMN,
+  min: 1,
+  max: 2
+}
+
+editor.command.executeInsertControl(checkboxControl)
+```
+
+### Radio Control
+
+```typescript
+const radioControl: IControl = {
+  type: ControlType.RADIO,
+  value: null,
+  conceptId: 'gender',
+  code: null,
+  valueSets: [
+    { value: 'Male', code: 'm' },
+    { value: 'Female', code: 'f' },
+    { value: 'Other', code: 'o' }
+  ],
+  flexDirection: FlexDirection.ROW
+}
+
+editor.command.executeInsertControl(radioControl)
+```
+
+### Date Control
+
+```typescript
+const dateControl: IControl = {
+  type: ControlType.DATE,
+  value: null,
+  conceptId: 'birthDate',
+  dateFormat: 'YYYY-MM-DD',
+  placeholder: 'Select date'
+}
+
+editor.command.executeInsertControl(dateControl)
+```
+
+### Number Control
+
+```typescript
+const numberControl: IControl = {
+  type: ControlType.NUMBER,
+  value: null,
+  conceptId: 'age',
+  placeholder: 'Enter age',
+  minWidth: 100
+}
+
+editor.command.executeInsertControl(numberControl)
+```
+
+## Working with Controls
+
+### Setting Control Values
+
+```typescript
+// Set single value
+editor.command.executeSetControlValue([{
+  conceptId: 'firstName',
+  value: 'John'
+}])
+
+// Set multiple values
+editor.command.executeSetControlValue([
+  { conceptId: 'firstName', value: 'John' },
+  { conceptId: 'lastName', value: 'Doe' },
+  { conceptId: 'country', value: 'us' }
+])
+
+// Set with rich text
+editor.command.executeSetControlValue([{
+  conceptId: 'notes',
+  value: [
+    { value: 'Important: ', bold: true },
+    { value: 'Please review' }
+  ]
+}])
+```
+
+### Getting Control Values
+
+```typescript
+// Get all controls
+const allControls = editor.command.getControlValue()
+
+// Get specific control
+const firstName = editor.command.getControlValue({ 
+  conceptId: 'firstName' 
+})
+
+if (firstName.length > 0) {
+  console.log('First name:', firstName[0].value)
+}
+
+// Get by group
+const personalInfo = editor.command.getControlValue({ 
+  groupId: 'personal' 
+})
+```
+
+### Updating Control Properties
+
+```typescript
+// Make control readonly
+editor.command.executeSetControlProperties([{
+  conceptId: 'email',
+  properties: {
+    disabled: true,
+    highlight: '#EEEEEE'
+  }
+}])
+
+// Update placeholder
+editor.command.executeSetControlProperties([{
+  conceptId: 'phone',
+  properties: {
+    placeholder: '(555) 123-4567'
+  }
+}])
+```
+
+### Control Events
+
+```typescript
+// Listen for control activation
+editor.eventBus.on('controlChange', ({ state, control, controlId }) => {
+  if (state === 'active') {
+    console.log(`Control ${control.conceptId} activated`)
+  }
+})
+
+// Listen for value changes
+editor.eventBus.on('controlContentChange', ({ control }) => {
+  console.log(`Control ${control.conceptId} changed:`, control.value)
+  
+  // Validate
+  if (control.conceptId === 'email') {
+    validateEmail(control.value)
+  }
+})
+```
+
+## IGetControlValueResult
+
+Result type when getting control values.
+
+```typescript src/editor/interface/Control.ts
+type IGetControlValueResult = (Omit<IControl, 'value'> & {
+  value: string | null
+  innerText: string | null
+  zone: EditorZone
+  elementList?: IElement[]
+})[]
+```
+
+**Properties:**
+- All control properties except `value`
+- `value`: Plain text value
+- `innerText`: Inner text content
+- `zone`: Location (HEADER, MAIN, or FOOTER)
+- `elementList`: Rich element representation
+
+**Example:**
+```typescript
+const controls = editor.command.getControlValue()
+
+controls.forEach(control => {
+  console.log(`ID: ${control.conceptId}`)
+  console.log(`Value: ${control.value}`)
+  console.log(`Zone: ${control.zone}`)
+  console.log(`Type: ${control.type}`)
+})
+```

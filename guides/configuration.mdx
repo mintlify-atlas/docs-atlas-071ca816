@@ -1,0 +1,679 @@
+---
+title: 'Configuration'
+description: 'Complete guide to Canvas Editor configuration options'
+---
+
+The Canvas Editor provides extensive configuration options through the `IEditorOption` interface. This guide covers all available configuration options for customizing the editor's behavior and appearance.
+
+## Basic Setup
+
+When initializing the editor, you can pass configuration options as the third parameter:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const container = document.querySelector('#editor')
+const data = {
+  main: [
+    { value: 'Hello Canvas Editor!' }
+  ]
+}
+
+const options = {
+  mode: EditorMode.EDIT,
+  defaultFont: 'Microsoft YaHei',
+  defaultSize: 16,
+  margins: [100, 120, 100, 120]
+}
+
+const editor = new Editor(container, data, options)
+```
+
+## Editor Modes
+
+<ParamField path="mode" type="EditorMode" default="EditorMode.EDIT">
+  Controls the editor's operational mode.
+  
+  Available modes from `src/editor/dataset/enum/Editor.ts:17`:
+  - `EDIT` - Full editing mode with all features enabled
+  - `CLEAN` - Hides auxiliary elements for clean view
+  - `READONLY` - Document is read-only, no editing allowed
+  - `FORM` - Only form controls are editable
+  - `PRINT` - Print mode with hidden auxiliary elements
+  - `DESIGN` - Design mode ignoring readonly/deletable rules
+  - `GRAFFITI` - Graffiti mode for freehand drawing
+</ParamField>
+
+<CodeGroup>
+```typescript Edit Mode
+const editor = new Editor(container, data, {
+  mode: EditorMode.EDIT
+})
+```
+
+```typescript Form Mode
+const editor = new Editor(container, data, {
+  mode: EditorMode.FORM
+})
+```
+
+```typescript Readonly Mode
+const editor = new Editor(container, data, {
+  mode: EditorMode.READONLY
+})
+```
+</CodeGroup>
+
+## Default Text Styling
+
+Configure default text appearance for new content.
+
+<ParamField path="defaultFont" type="string">
+  Default font family for text content.
+</ParamField>
+
+<ParamField path="defaultSize" type="number">
+  Default font size in pixels.
+</ParamField>
+
+<ParamField path="defaultColor" type="string">
+  Default text color (CSS color format).
+</ParamField>
+
+<ParamField path="defaultType" type="string">
+  Default content type.
+</ParamField>
+
+<ParamField path="minSize" type="number">
+  Minimum allowed font size.
+</ParamField>
+
+<ParamField path="maxSize" type="number">
+  Maximum allowed font size.
+</ParamField>
+
+```typescript
+const options = {
+  defaultFont: 'Arial',
+  defaultSize: 14,
+  defaultColor: '#333333',
+  minSize: 8,
+  maxSize: 72
+}
+```
+
+## Page Layout
+
+<ParamField path="width" type="number">
+  Page width in pixels.
+</ParamField>
+
+<ParamField path="height" type="number">
+  Page height in pixels.
+</ParamField>
+
+<ParamField path="margins" type="IMargin">
+  Page margins as `[top, right, bottom, left]` array in pixels.
+  
+  Type definition from `src/editor/interface/Margin.ts:1`:
+  ```typescript
+  type IMargin = [top: number, right: number, bottom: number, left: number]
+  ```
+</ParamField>
+
+<ParamField path="pageMode" type="PageMode">
+  Controls page layout mode:
+  - `PageMode.PAGING` - Traditional paged layout
+  - `PageMode.CONTINUITY` - Continuous scroll layout
+</ParamField>
+
+<ParamField path="paperDirection" type="PaperDirection">
+  Paper orientation:
+  - `PaperDirection.VERTICAL` - Portrait orientation
+  - `PaperDirection.HORIZONTAL` - Landscape orientation
+</ParamField>
+
+<ParamField path="pageGap" type="number">
+  Gap between pages in pixels (for paged mode).
+</ParamField>
+
+```typescript
+const options = {
+  width: 794,
+  height: 1123,
+  margins: [100, 120, 100, 120],
+  pageMode: PageMode.PAGING,
+  paperDirection: PaperDirection.VERTICAL,
+  pageGap: 20
+}
+```
+
+## Rendering Configuration
+
+<ParamField path="scale" type="number">
+  Display scale factor (zoom level).
+</ParamField>
+
+<ParamField path="renderMode" type="RenderMode">
+  Rendering optimization mode:
+  - `RenderMode.SPEED` - Optimized for performance
+  - `RenderMode.COMPATIBILITY` - Better browser compatibility
+</ParamField>
+
+<ParamField path="printPixelRatio" type="number">
+  Pixel ratio for print output quality.
+</ParamField>
+
+```typescript
+const options = {
+  scale: 1.0,
+  renderMode: RenderMode.SPEED,
+  printPixelRatio: 2
+}
+```
+
+## Text Behavior
+
+<ParamField path="wordBreak" type="WordBreak">
+  Word breaking behavior:
+  - `WordBreak.BREAK_ALL` - Break anywhere
+  - `WordBreak.BREAK_WORD` - Break at word boundaries
+</ParamField>
+
+<ParamField path="defaultBasicRowMarginHeight" type="number">
+  Default basic row margin height.
+</ParamField>
+
+<ParamField path="defaultRowMargin" type="number">
+  Default row margin.
+</ParamField>
+
+<ParamField path="defaultTabWidth" type="number">
+  Default tab character width.
+</ParamField>
+
+```typescript
+const options = {
+  wordBreak: WordBreak.BREAK_WORD,
+  defaultBasicRowMarginHeight: 8,
+  defaultRowMargin: 0,
+  defaultTabWidth: 32
+}
+```
+
+## Selection and Highlighting
+
+<ParamField path="rangeColor" type="string">
+  Selection range color.
+</ParamField>
+
+<ParamField path="rangeAlpha" type="number">
+  Selection range opacity (0-1).
+</ParamField>
+
+<ParamField path="rangeMinWidth" type="number">
+  Minimum width for selection range.
+</ParamField>
+
+<ParamField path="highlightAlpha" type="number">
+  Highlight overlay opacity (0-1).
+</ParamField>
+
+<ParamField path="highlightMarginHeight" type="number">
+  Vertical margin for highlight areas.
+</ParamField>
+
+```typescript
+const options = {
+  rangeColor: '#AECBFA',
+  rangeAlpha: 0.6,
+  rangeMinWidth: 5,
+  highlightAlpha: 0.3,
+  highlightMarginHeight: 2
+}
+```
+
+## Search Configuration
+
+<ParamField path="searchMatchColor" type="string">
+  Background color for search matches.
+</ParamField>
+
+<ParamField path="searchNavigateMatchColor" type="string">
+  Background color for the active search match.
+</ParamField>
+
+<ParamField path="searchMatchAlpha" type="number">
+  Opacity for search match highlighting (0-1).
+</ParamField>
+
+```typescript
+const options = {
+  searchMatchColor: '#FFFF00',
+  searchNavigateMatchColor: '#FF9900',
+  searchMatchAlpha: 0.6
+}
+```
+
+## Text Decorations
+
+<ParamField path="underlineColor" type="string">
+  Default underline color.
+</ParamField>
+
+<ParamField path="strikeoutColor" type="string">
+  Default strikethrough color.
+</ParamField>
+
+<ParamField path="defaultHyperlinkColor" type="string">
+  Default color for hyperlinks.
+</ParamField>
+
+```typescript
+const options = {
+  underlineColor: '#000000',
+  strikeoutColor: '#FF0000',
+  defaultHyperlinkColor: '#0000FF'
+}
+```
+
+## Resizer and Indicators
+
+<ParamField path="resizerColor" type="string">
+  Color of element resizer handles.
+</ParamField>
+
+<ParamField path="resizerSize" type="number">
+  Size of resizer handles in pixels.
+</ParamField>
+
+<ParamField path="marginIndicatorSize" type="number">
+  Size of margin indicators.
+</ParamField>
+
+<ParamField path="marginIndicatorColor" type="string">
+  Color of margin indicators.
+</ParamField>
+
+```typescript
+const options = {
+  resizerColor: '#4285F4',
+  resizerSize: 5,
+  marginIndicatorSize: 35,
+  marginIndicatorColor: '#BABABA'
+}
+```
+
+## Interaction Configuration
+
+<ParamField path="inactiveAlpha" type="number">
+  Opacity for inactive elements (0-1).
+</ParamField>
+
+<ParamField path="historyMaxRecordCount" type="number">
+  Maximum number of undo/redo history records.
+</ParamField>
+
+<ParamField path="scrollContainerSelector" type="string">
+  CSS selector for custom scroll container.
+</ParamField>
+
+<ParamField path="pageOuterSelectionDisable" type="boolean">
+  Disable selection outside page boundaries.
+</ParamField>
+
+```typescript
+const options = {
+  inactiveAlpha: 0.6,
+  historyMaxRecordCount: 100,
+  scrollContainerSelector: '.editor-container',
+  pageOuterSelectionDisable: false
+}
+```
+
+## Feature Restrictions
+
+<ParamField path="contextMenuDisableKeys" type="string[]">
+  Array of context menu keys to disable.
+</ParamField>
+
+<ParamField path="shortcutDisableKeys" type="string[]">
+  Array of keyboard shortcut keys to disable.
+</ParamField>
+
+<ParamField path="letterClass" type="string[]">
+  Custom character classes for text processing.
+</ParamField>
+
+```typescript
+const options = {
+  contextMenuDisableKeys: ['copy', 'paste'],
+  shortcutDisableKeys: ['Ctrl+P'],
+  letterClass: ['custom-letter-class']
+}
+```
+
+## Advanced Options
+
+<ParamField path="maskMargin" type="IMargin">
+  Margins for mask overlay as `[top, right, bottom, left]`.
+</ParamField>
+
+<ParamField path="locale" type="string">
+  Locale code for internationalization (e.g., 'en', 'zh-CN').
+</ParamField>
+
+```typescript
+const options = {
+  maskMargin: [0, 0, 0, 0],
+  locale: 'en'
+}
+```
+
+## Component Options
+
+The editor supports extensive configuration for various components:
+
+<CardGroup cols={2}>
+  <Card title="Table Options" icon="table" href="#table-configuration">
+    Configure table appearance and behavior
+  </Card>
+  <Card title="Header & Footer" icon="bars" href="#header-footer">
+    Customize header and footer sections
+  </Card>
+  <Card title="Watermark" icon="stamp" href="#watermark">
+    Add and configure watermarks
+  </Card>
+  <Card title="Page Numbers" icon="hashtag" href="#page-numbers">
+    Configure page numbering
+  </Card>
+</CardGroup>
+
+### Table Configuration
+
+<ParamField path="table" type="ITableOption">
+  Configuration for table elements.
+</ParamField>
+
+From `src/editor/interface/table/Table.ts:3`:
+```typescript
+const options = {
+  table: {
+    tdPadding: [5, 10, 5, 10],
+    defaultTrMinHeight: 42,
+    defaultColMinWidth: 50,
+    defaultBorderColor: '#000000',
+    overflow: false
+  }
+}
+```
+
+### Header & Footer
+
+<ParamField path="header" type="IHeader">
+  Header section configuration (from `src/editor/interface/Header.ts:3`).
+</ParamField>
+
+<ParamField path="footer" type="IFooter">
+  Footer section configuration (similar structure to header).
+</ParamField>
+
+```typescript
+const options = {
+  header: {
+    top: 50,
+    maxHeightRadio: MaxHeightRatio.HALF,
+    disabled: false,
+    editable: true,
+    inactiveAlpha: 0.5
+  },
+  footer: {
+    bottom: 50,
+    maxHeightRadio: MaxHeightRatio.HALF,
+    disabled: false,
+    editable: true,
+    inactiveAlpha: 0.5
+  }
+}
+```
+
+### Watermark
+
+<ParamField path="watermark" type="IWatermark">
+  Watermark configuration (from `src/editor/interface/Watermark.ts:4`).
+</ParamField>
+
+```typescript
+const options = {
+  watermark: {
+    data: 'CONFIDENTIAL',
+    type: WatermarkType.TEXT,
+    color: '#AEB3B7',
+    opacity: 0.3,
+    size: 120,
+    font: 'Microsoft YaHei',
+    repeat: true,
+    gap: [100, 100]
+  }
+}
+```
+
+### Page Numbers
+
+<ParamField path="pageNumber" type="IPageNumber">
+  Page numbering configuration (from `src/editor/interface/PageNumber.ts:4`).
+</ParamField>
+
+```typescript
+const options = {
+  pageNumber: {
+    bottom: 60,
+    size: 12,
+    font: 'Microsoft YaHei',
+    color: '#000000',
+    rowFlex: RowFlex.CENTER,
+    format: '{pageNo}',
+    numberType: NumberType.ARABIC,
+    disabled: false,
+    startPageNo: 1
+  }
+}
+```
+
+### Additional Component Options
+
+<Accordion title="Control Options">
+  <ParamField path="control" type="IControlOption">
+    Form control appearance and behavior.
+  </ParamField>
+  
+  ```typescript
+  const options = {
+    control: {
+      placeholderColor: '#DCDFE6',
+      bracketColor: '#000000',
+      prefix: '{',
+      postfix: '}',
+      borderWidth: 1,
+      borderColor: '#000000',
+      activeBackgroundColor: '#ECF5FF',
+      disabledBackgroundColor: '#F5F7FA'
+    }
+  }
+  ```
+</Accordion>
+
+<Accordion title="Checkbox & Radio">
+  <ParamField path="checkbox" type="ICheckboxOption">
+    Checkbox element styling.
+  </ParamField>
+  
+  <ParamField path="radio" type="IRadioOption">
+    Radio button element styling.
+  </ParamField>
+</Accordion>
+
+<Accordion title="More Options">
+  - `cursor`: Cursor appearance configuration
+  - `title`: Document title configuration
+  - `placeholder`: Placeholder text configuration
+  - `group`: Element grouping options
+  - `pageBreak`: Page break configuration
+  - `zone`: Zone-specific settings
+  - `background`: Background configuration
+  - `lineBreak`: Line break behavior
+  - `whiteSpace`: Whitespace rendering
+  - `separator`: Separator line styling
+  - `lineNumber`: Line numbering configuration
+  - `pageBorder`: Page border styling
+  - `badge`: Badge element configuration
+  - `graffiti`: Graffiti mode settings
+  - `label`: Label element configuration
+  - `imgCaption`: Image caption defaults
+  - `list`: List element configuration
+</Accordion>
+
+### Mode Rules
+
+<ParamField path="modeRule" type="IModeRule">
+  Special rules for different editor modes (from `src/editor/interface/Editor.ts:168`).
+</ParamField>
+
+```typescript
+const options = {
+  modeRule: {
+    [EditorMode.PRINT]: {
+      imagePreviewerDisabled: true,
+      backgroundDisabled: false
+    },
+    [EditorMode.READONLY]: {
+      imagePreviewerDisabled: false
+    },
+    [EditorMode.FORM]: {
+      controlDeletableDisabled: true
+    }
+  }
+}
+```
+
+## Complete Configuration Example
+
+```typescript
+import Editor, {
+  EditorMode,
+  PageMode,
+  PaperDirection,
+  RenderMode,
+  WordBreak,
+  RowFlex
+} from '@hufe921/canvas-editor'
+
+const container = document.querySelector('#editor')
+const data = {
+  main: [
+    { value: 'Hello Canvas Editor!' }
+  ]
+}
+
+const options = {
+  // Editor mode
+  mode: EditorMode.EDIT,
+  locale: 'en',
+  
+  // Default styling
+  defaultFont: 'Microsoft YaHei',
+  defaultSize: 16,
+  defaultColor: '#333333',
+  minSize: 8,
+  maxSize: 72,
+  
+  // Page layout
+  width: 794,
+  height: 1123,
+  margins: [100, 120, 100, 120],
+  pageMode: PageMode.PAGING,
+  paperDirection: PaperDirection.VERTICAL,
+  pageGap: 20,
+  
+  // Rendering
+  scale: 1.0,
+  renderMode: RenderMode.SPEED,
+  printPixelRatio: 2,
+  
+  // Text behavior
+  wordBreak: WordBreak.BREAK_WORD,
+  defaultBasicRowMarginHeight: 8,
+  defaultRowMargin: 0,
+  defaultTabWidth: 32,
+  
+  // Selection
+  rangeColor: '#AECBFA',
+  rangeAlpha: 0.6,
+  highlightAlpha: 0.3,
+  
+  // Search
+  searchMatchColor: '#FFFF00',
+  searchNavigateMatchColor: '#FF9900',
+  searchMatchAlpha: 0.6,
+  
+  // Components
+  header: {
+    top: 50,
+    disabled: false
+  },
+  pageNumber: {
+    bottom: 60,
+    size: 12,
+    rowFlex: RowFlex.CENTER,
+    format: '{pageNo}'
+  },
+  watermark: {
+    data: 'DRAFT',
+    opacity: 0.2,
+    size: 100,
+    repeat: true
+  }
+}
+
+const editor = new Editor(container, data, options)
+```
+
+## Runtime Configuration Updates
+
+<Warning>
+  Some configuration options cannot be changed after initialization. The `IUpdateOption` type excludes these immutable options:
+  - `mode`
+  - `width`
+  - `height`
+  - `scale`
+  - `pageGap`
+  - `pageMode`
+  - `paperDirection`
+  - `historyMaxRecordCount`
+  - `scrollContainerSelector`
+</Warning>
+
+To update configuration at runtime, use the appropriate command methods:
+
+```typescript
+// Update specific options via commands
+editor.command.executeSetLocale('zh-CN')
+editor.command.executePageScale(1.5)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Styling Guide" icon="palette" href="/guides/styling">
+    Learn about styling and theming
+  </Card>
+  <Card title="Data Structure" icon="database" href="/guides/data-structure">
+    Understand the document data format
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/editor">
+    Explore all available API methods
+  </Card>
+  <Card title="Examples" icon="flask" href="/quickstart">
+    See real-world implementation examples
+  </Card>
+</CardGroup>

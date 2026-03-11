@@ -1,0 +1,823 @@
+---
+title: 'Data Structure'
+description: 'Understanding Canvas Editor document data structure for saving and loading content'
+---
+
+Canvas Editor uses a structured JSON format to represent documents. Understanding this data structure is essential for saving, loading, and manipulating document content programmatically.
+
+## Document Data Overview
+
+The editor's data follows the `IEditorData` interface (from `src/editor/interface/Editor.ts:37`):
+
+```typescript
+interface IEditorData {
+  header?: IElement[]
+  main: IElement[]
+  footer?: IElement[]
+  graffiti?: IGraffitiData[]
+}
+```
+
+<Note>
+  The `main` array is required and contains the primary document content. Header, footer, and graffiti data are optional.
+</Note>
+
+## Basic Document Structure
+
+<Tabs>
+  <Tab title="Minimal Document">
+    ```typescript
+    const data = {
+      main: [
+        { value: 'Hello World' }
+      ]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Complete Document">
+    ```typescript
+    const data = {
+      header: [
+        { value: 'Document Header' }
+      ],
+      main: [
+        { value: 'Main content goes here' },
+        { value: 'Second paragraph', bold: true }
+      ],
+      footer: [
+        { value: 'Page footer' }
+      ],
+      graffiti: [
+        // Graffiti drawing data
+      ]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Array Shorthand">
+    ```typescript
+    // For simple documents, you can pass just the main array
+    const data = [
+      { value: 'Hello World' },
+      { value: 'Second line' }
+    ]
+    ```
+  </Tab>
+</Tabs>
+
+## Element Structure
+
+Each element in the document follows the `IElement` interface (from `src/editor/interface/Element.ts:195`):
+
+```typescript
+type IElement = IElementBasic &
+  IElementStyle &
+  IElementRule &
+  IElementGroup &
+  ITable &
+  IHyperlinkElement &
+  ISuperscriptSubscript &
+  ISeparator &
+  IControlElement &
+  ICheckboxElement &
+  IRadioElement &
+  ILaTexElement &
+  IDateElement &
+  IImageElement &
+  IBlockElement &
+  ITitleElement &
+  IListElement &
+  IAreaElement &
+  ILabelElement
+```
+
+### Basic Element Properties
+
+From `src/editor/interface/Element.ts:19`:
+
+<ParamField path="value" type="string" required>
+  The text content of the element. Required for all elements.
+</ParamField>
+
+<ParamField path="id" type="string">
+  Unique identifier for the element. Auto-generated if not provided.
+</ParamField>
+
+<ParamField path="type" type="ElementType">
+  Element type (TEXT, IMAGE, TABLE, etc.). Defaults to TEXT.
+</ParamField>
+
+<ParamField path="extension" type="unknown">
+  Custom data attached to the element.
+</ParamField>
+
+<ParamField path="externalId" type="string">
+  External system identifier for integration.
+</ParamField>
+
+### Style Properties
+
+From `src/editor/interface/Element.ts:27`:
+
+```typescript
+const styledElement = {
+  value: 'Styled text',
+  
+  // Typography
+  font: 'Arial',
+  size: 16,
+  bold: true,
+  italic: false,
+  
+  // Colors
+  color: '#333333',
+  highlight: '#FFFF00',
+  
+  // Text decorations
+  underline: true,
+  strikeout: false,
+  
+  // Layout
+  rowFlex: RowFlex.LEFT,
+  rowMargin: 10,
+  letterSpacing: 1,
+  
+  // Advanced
+  width: 200,
+  height: 24
+}
+```
+
+## Element Types
+
+Canvas Editor supports various element types, defined in `src/editor/dataset/enum/Element.ts`:
+
+### Text Elements
+
+<CodeGroup>
+```typescript Plain Text
+{
+  value: 'Plain text content',
+  type: ElementType.TEXT
+}
+```
+
+```typescript Formatted Text
+{
+  value: 'Bold and colored',
+  type: ElementType.TEXT,
+  bold: true,
+  color: '#FF0000',
+  size: 18
+}
+```
+
+```typescript Hyperlink
+{
+  value: 'Click here',
+  type: ElementType.HYPERLINK,
+  url: 'https://example.com',
+  color: '#0000FF',
+  underline: true
+}
+```
+</CodeGroup>
+
+### Image Elements
+
+From `src/editor/interface/Element.ts:161`:
+
+```typescript
+{
+  value: '',
+  type: ElementType.IMAGE,
+  
+  // Image source (base64 or URL)
+  value: 'data:image/png;base64,...',
+  
+  // Dimensions
+  width: 300,
+  height: 200,
+  
+  // Display mode
+  imgDisplay: ImageDisplay.INLINE,
+  
+  // Floating position (for floating images)
+  imgFloatPosition: {
+    x: 100,
+    y: 100,
+    pageNo: 0
+  },
+  
+  // Cropping
+  imgCrop: {
+    x: 10,
+    y: 10,
+    width: 280,
+    height: 180
+  },
+  
+  // Caption
+  imgCaption: {
+    value: 'Figure 1: Example image',
+    color: '#666666',
+    size: 12
+  },
+  
+  // Restrictions
+  imgToolDisabled: false,
+  imgPreviewDisabled: false
+}
+```
+
+### Table Elements
+
+Tables have a complex nested structure (from `src/editor/interface/Element.ts:67`):
+
+```typescript
+{
+  value: '\n',
+  type: ElementType.TABLE,
+  
+  // Column definitions
+  colgroup: [
+    { width: 100 },
+    { width: 200 },
+    { width: 150 }
+  ],
+  
+  // Row data
+  trList: [
+    {
+      height: 50,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          verticalAlign: VerticalAlign.TOP,
+          value: [
+            { value: 'Cell 1' }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: 'Cell 2' }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: 'Cell 3' }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  // Styling
+  borderType: TableBorder.ALL,
+  borderColor: '#000000',
+  borderWidth: 1,
+  borderExternalWidth: 2
+}
+```
+
+### List Elements
+
+From `src/editor/interface/Element.ts:59`:
+
+```typescript
+{
+  value: '\n',
+  type: ElementType.LIST,
+  listType: ListType.UL,
+  listStyle: ListStyle.DISC,
+  listId: 'list-1',
+  valueList: [
+    { value: 'First item' },
+    { value: 'Second item' },
+    { value: 'Third item' }
+  ]
+}
+```
+
+### Title/Heading Elements
+
+From `src/editor/interface/Element.ts:52`:
+
+```typescript
+{
+  value: '\n',
+  type: ElementType.TITLE,
+  level: TitleLevel.FIRST,
+  titleId: 'heading-1',
+  valueList: [
+    { 
+      value: 'Chapter 1: Introduction',
+      bold: true,
+      size: 24
+    }
+  ]
+}
+```
+
+### Control Elements (Form Fields)
+
+From `src/editor/interface/Element.ts:107`:
+
+```typescript
+{
+  value: '\n',
+  type: ElementType.CONTROL,
+  control: {
+    type: ControlType.TEXT,
+    value: [
+      { value: 'Default text' }
+    ],
+    placeholder: 'Enter text here',
+    conceptId: 'field-1',
+    prefix: '[',
+    postfix: ']',
+    minWidth: 100
+  },
+  controlId: 'ctrl-1',
+  controlComponent: ControlComponent.VALUE
+}
+```
+
+<Accordion title="Control Types">
+  Available control types:
+  - `TEXT` - Single-line text input
+  - `SELECT` - Dropdown selection
+  - `CHECKBOX` - Checkbox group
+  - `RADIO` - Radio button group
+  - `DATE` - Date picker
+  - `NUMBER` - Numeric input
+</Accordion>
+
+### Special Elements
+
+<Tabs>
+  <Tab title="Page Break">
+    ```typescript
+    {
+      value: '\n',
+      type: ElementType.PAGE_BREAK
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Separator">
+    ```typescript
+    {
+      value: '\n',
+      type: ElementType.SEPARATOR,
+      dashArray: [5, 3],
+      lineWidth: 1
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Checkbox">
+    ```typescript
+    {
+      value: '',
+      type: ElementType.CHECKBOX,
+      checkbox: {
+        value: true
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="LaTeX">
+    ```typescript
+    {
+      value: 'E = mc^2',
+      type: ElementType.LATEX,
+      laTexSVG: '<svg>...</svg>'
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Date">
+    ```typescript
+    {
+      value: '2024-03-15',
+      type: ElementType.DATE,
+      dateFormat: 'YYYY-MM-DD',
+      dateId: 'date-1'
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Block (Iframe/Video)">
+    ```typescript
+    {
+      value: '\n',
+      type: ElementType.BLOCK,
+      block: {
+        type: BlockType.IFRAME,
+        iframeBlock: {
+          src: 'https://example.com'
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Saving and Loading
+
+### Getting Document Data
+
+<CodeGroup>
+```typescript Get Value (JSON)
+const data = editor.command.getValue()
+// Returns IEditorData
+console.log(data)
+// {
+//   header: [...],
+//   main: [...],
+//   footer: [...]
+// }
+```
+
+```typescript Get Complete Result
+const result = editor.command.getResult()
+// Returns IEditorResult with version and options
+console.log(result)
+// {
+//   version: '0.9.128',
+//   data: { main: [...] },
+//   options: { ... }
+// }
+```
+
+```typescript Get HTML
+const html = editor.command.getHTML()
+// Returns HTML representation
+console.log(html)
+// {
+//   header: '<p>Header HTML</p>',
+//   main: '<p>Main content HTML</p>',
+//   footer: '<p>Footer HTML</p>'
+// }
+```
+
+```typescript Get Plain Text
+const text = editor.command.getText()
+// Returns plain text
+console.log(text)
+// {
+//   header: 'Header text',
+//   main: 'Main content text',
+//   footer: 'Footer text'
+// }
+```
+</CodeGroup>
+
+### Setting Document Data
+
+<CodeGroup>
+```typescript Set Value
+const newData = {
+  main: [
+    { value: 'New content' }
+  ]
+}
+
+editor.command.setValue(newData)
+```
+
+```typescript Set from HTML
+const html = '<p>HTML content</p>'
+editor.command.executeSetHTML(html)
+```
+
+```typescript Append Elements
+const elements = [
+  { value: 'New paragraph 1' },
+  { value: 'New paragraph 2' }
+]
+
+editor.command.executeInsertElementList(elements)
+```
+</CodeGroup>
+
+### Persistence Patterns
+
+<Tabs>
+  <Tab title="Local Storage">
+    ```typescript
+    // Save to localStorage
+    function saveDocument() {
+      const data = editor.command.getValue()
+      localStorage.setItem('document', JSON.stringify(data))
+    }
+    
+    // Load from localStorage
+    function loadDocument() {
+      const saved = localStorage.getItem('document')
+      if (saved) {
+        const data = JSON.parse(saved)
+        editor.command.setValue(data)
+      }
+    }
+    
+    // Auto-save on change
+    editor.listener.rangeStyleChange = () => {
+      saveDocument()
+    }
+    ```
+  </Tab>
+  
+  <Tab title="API Integration">
+    ```typescript
+    // Save to backend
+    async function saveToServer() {
+      const data = editor.command.getValue()
+      const result = editor.command.getResult()
+      
+      await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: data,
+          version: result.version,
+          options: result.options
+        })
+      })
+    }
+    
+    // Load from backend
+    async function loadFromServer(id) {
+      const response = await fetch(`/api/documents/${id}`)
+      const { content, options } = await response.json()
+      
+      editor.command.setValue(content)
+    }
+    ```
+  </Tab>
+  
+  <Tab title="File Download/Upload">
+    ```typescript
+    // Download as JSON
+    function downloadDocument() {
+      const data = editor.command.getValue()
+      const blob = new Blob(
+        [JSON.stringify(data, null, 2)],
+        { type: 'application/json' }
+      )
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'document.json'
+      a.click()
+      URL.revokeObjectURL(url)
+    }
+    
+    // Upload from file
+    function uploadDocument(file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const data = JSON.parse(e.target.result)
+        editor.command.setValue(data)
+      }
+      reader.readAsText(file)
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Data Manipulation
+
+### Finding Elements
+
+```typescript
+// Get element by ID
+const element = editor.command.getElementById({ id: 'element-123' })
+
+// Get control values
+const controls = editor.command.getControlValue({
+  conceptId: 'user-name'
+})
+
+// Get range context
+const context = editor.command.getRangeContext()
+console.log(context)
+// {
+//   isReadonly: false,
+//   isTable: false,
+//   isControl: false,
+//   ...
+// }
+```
+
+### Updating Elements
+
+```typescript
+// Update element by ID
+editor.command.executeUpdateElementById({
+  id: 'element-123',
+  properties: {
+    color: '#FF0000',
+    bold: true,
+    size: 18
+  }
+})
+
+// Update control value
+editor.command.executeSetControlValue({
+  conceptId: 'user-name',
+  value: 'John Doe'
+})
+
+// Delete element by ID
+editor.command.executeDeleteElementById({
+  id: 'element-123'
+})
+```
+
+### Batch Operations
+
+```typescript
+// Insert multiple elements
+const elements = [
+  { value: 'Paragraph 1' },
+  { value: 'Paragraph 2', bold: true },
+  { value: 'Paragraph 3', color: '#0000FF' }
+]
+
+editor.command.executeInsertElementList(elements, {
+  isSubmitHistory: true,
+  isReplace: false
+})
+```
+
+## Data Validation
+
+<Warning>
+  Always validate and sanitize data before loading into the editor, especially when loading from untrusted sources.
+</Warning>
+
+```typescript
+function validateEditorData(data: unknown): IEditorData {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid data format')
+  }
+  
+  const editorData = data as IEditorData
+  
+  // Validate main array exists
+  if (!Array.isArray(editorData.main)) {
+    throw new Error('Main content array is required')
+  }
+  
+  // Validate elements
+  const validateElements = (elements: IElement[]) => {
+    elements.forEach((element, index) => {
+      if (typeof element.value !== 'string') {
+        throw new Error(`Element ${index} missing value property`)
+      }
+    })
+  }
+  
+  validateElements(editorData.main)
+  if (editorData.header) validateElements(editorData.header)
+  if (editorData.footer) validateElements(editorData.footer)
+  
+  return editorData
+}
+
+// Usage
+try {
+  const data = validateEditorData(untrustedData)
+  editor.command.setValue(data)
+} catch (error) {
+  console.error('Invalid document data:', error)
+}
+```
+
+## Utility Functions
+
+Canvas Editor provides utility functions for data manipulation (from `src/editor/index.ts:168`):
+
+```typescript
+import {
+  splitText,
+  createDomFromElementList,
+  getElementListByHTML,
+  getTextFromElementList
+} from '@hufe921/canvas-editor'
+
+// Split text into elements
+const elements = splitText('Hello\nWorld')
+
+// Convert elements to DOM
+const dom = createDomFromElementList([
+  { value: 'Hello', bold: true }
+])
+
+// Convert HTML to elements
+const elements = getElementListByHTML('<p><b>Bold text</b></p>')
+
+// Extract plain text from elements
+const text = getTextFromElementList([
+  { value: 'Hello' },
+  { value: 'World' }
+])
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Version Control" icon="code-branch">
+    Always store the editor version with saved documents for migration compatibility.
+  </Card>
+  
+  <Card title="Compression" icon="file-zipper">
+    Consider compressing large documents before storage using gzip or similar.
+  </Card>
+  
+  <Card title="Incremental Saves" icon="floppy-disk">
+    For large documents, implement incremental/delta saving to reduce payload size.
+  </Card>
+  
+  <Card title="Validation" icon="shield-check">
+    Always validate data structure before loading, especially from external sources.
+  </Card>
+</CardGroup>
+
+## Common Patterns
+
+### Template System
+
+```typescript
+const template = {
+  main: [
+    {
+      value: '{{userName}}',
+      controlId: 'user-name',
+      type: ElementType.CONTROL,
+      control: {
+        type: ControlType.TEXT,
+        conceptId: 'userName',
+        placeholder: 'Enter your name'
+      }
+    },
+    { value: '\n' },
+    {
+      value: '{{date}}',
+      type: ElementType.DATE,
+      dateFormat: 'YYYY-MM-DD'
+    }
+  ]
+}
+
+// Load template and fill data
+editor.command.setValue(template)
+editor.command.executeSetControlValue({
+  conceptId: 'userName',
+  value: 'John Doe'
+})
+```
+
+### Diff and Merge
+
+```typescript
+function compareDocuments(doc1: IEditorData, doc2: IEditorData) {
+  const changes = []
+  
+  // Compare main content
+  doc1.main.forEach((element, index) => {
+    const element2 = doc2.main[index]
+    if (JSON.stringify(element) !== JSON.stringify(element2)) {
+      changes.push({ index, old: element, new: element2 })
+    }
+  })
+  
+  return changes
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Learn about editor configuration
+  </Card>
+  <Card title="Migration Guide" icon="arrow-up-right-dots" href="/guides/migration">
+    Upgrade to the latest version
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/editor">
+    Explore data manipulation APIs
+  </Card>
+  <Card title="Examples" icon="flask" href="/quickstart">
+    See working data structure examples
+  </Card>
+</CardGroup>

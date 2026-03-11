@@ -1,0 +1,431 @@
+---
+title: 'Custom Keyboard Shortcuts'
+description: 'Register custom keyboard shortcuts using Register.shortcutList'
+icon: 'keyboard'
+---
+
+Canvas Editor provides a powerful shortcut system that allows you to register custom keyboard shortcuts for any editor command.
+
+## Basic Usage
+
+Register shortcuts using `editor.register.shortcutList()`:
+
+```typescript
+import Editor, { KeyMap, Command } from 'canvas-editor'
+
+const editor = new Editor(container, data, options)
+
+editor.register.shortcutList([
+  {
+    key: KeyMap.S,
+    mod: true, // Cmd on Mac, Ctrl on Windows
+    callback: (command: Command) => {
+      // Save document
+      console.log('Save triggered!')
+    }
+  }
+])
+```
+
+## Shortcut Configuration
+
+### IRegisterShortcut Interface
+
+```typescript
+interface IRegisterShortcut {
+  key: KeyMap                           // The key to bind
+  ctrl?: boolean                        // Require Ctrl key
+  meta?: boolean                        // Require Meta/Cmd key
+  mod?: boolean                         // Ctrl on Windows, Cmd on Mac
+  shift?: boolean                       // Require Shift key
+  alt?: boolean                         // Require Alt/Option key
+  isGlobal?: boolean                    // Listen globally (outside editor)
+  callback?: (command: Command) => void // Handler function
+  disable?: boolean                     // Temporarily disable shortcut
+}
+```
+
+### Modifier Keys
+
+<Tabs>
+  <Tab title="mod (Recommended)">
+    Use `mod: true` for cross-platform shortcuts:
+
+    ```typescript
+    {
+      key: KeyMap.S,
+      mod: true, // Cmd+S on Mac, Ctrl+S on Windows
+      callback: (command) => command.executeSave()
+    }
+    ```
+
+    This is the recommended approach for most shortcuts.
+  </Tab>
+
+  <Tab title="ctrl">
+    Explicitly require the Ctrl key:
+
+    ```typescript
+    {
+      key: KeyMap.D,
+      ctrl: true, // Ctrl+D only
+      callback: (command) => command.executeDuplicate()
+    }
+    ```
+  </Tab>
+
+  <Tab title="meta">
+    Explicitly require the Meta/Cmd key:
+
+    ```typescript
+    {
+      key: KeyMap.K,
+      meta: true, // Cmd+K only (Mac)
+      callback: (command) => command.executeInsertHyperlink()
+    }
+    ```
+  </Tab>
+
+  <Tab title="Multiple Modifiers">
+    Combine multiple modifier keys:
+
+    ```typescript
+    {
+      key: KeyMap.X,
+      ctrl: true,
+      shift: true, // Ctrl+Shift+X
+      callback: (command) => command.executeStrikeout()
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Available Keys
+
+Use the `KeyMap` enum for key values:
+
+<CodeGroup>
+```typescript Letters
+KeyMap.A, KeyMap.B, KeyMap.C, ..., KeyMap.Z
+```
+
+```typescript Numbers
+KeyMap.ZERO, KeyMap.ONE, KeyMap.TWO, ..., KeyMap.NINE
+```
+
+```typescript Special Keys
+KeyMap.Enter
+KeyMap.Backspace
+KeyMap.Delete
+KeyMap.ESC
+KeyMap.TAB
+KeyMap.Left
+KeyMap.Right
+KeyMap.Up
+KeyMap.Down
+KeyMap.Home
+KeyMap.End
+```
+
+```typescript Symbols
+KeyMap.LEFT_BRACKET    // [
+KeyMap.RIGHT_BRACKET   // ]
+KeyMap.COMMA           // ,
+KeyMap.PERIOD          // .
+KeyMap.EQUAL           // =
+KeyMap.MINUS           // -
+KeyMap.PLUS            // +
+```
+</CodeGroup>
+
+<Info>
+  See `/src/editor/dataset/enum/KeyMap.ts:1` in the source code for the complete list of available keys.
+</Info>
+
+## Built-in Shortcuts
+
+Canvas Editor includes built-in shortcuts for common text formatting:
+
+<AccordionGroup>
+  <Accordion title="Text Formatting">
+    | Shortcut | Action | Source |
+    |----------|--------|--------|
+    | `Mod+B` | Bold | `/src/editor/core/shortcut/keys/richtextKeys.ts:30` |
+    | `Mod+I` | Italic | `/src/editor/core/shortcut/keys/richtextKeys.ts:37` |
+    | `Mod+U` | Underline | `/src/editor/core/shortcut/keys/richtextKeys.ts:44` |
+    | `Ctrl+Shift+X` | Strikethrough | `/src/editor/core/shortcut/keys/richtextKeys.ts:8` |
+    | `Mod+]` | Increase font size | `/src/editor/core/shortcut/keys/richtextKeys.ts:16` |
+    | `Mod+[` | Decrease font size | `/src/editor/core/shortcut/keys/richtextKeys.ts:22` |
+  </Accordion>
+
+  <Accordion title="Text Alignment">
+    | Shortcut | Action | Source |
+    |----------|--------|--------|
+    | `Mod+L` | Align left | `/src/editor/core/shortcut/keys/richtextKeys.ts:67` |
+    | `Mod+E` | Align center | `/src/editor/core/shortcut/keys/richtextKeys.ts:73` |
+    | `Mod+R` | Align right | `/src/editor/core/shortcut/keys/richtextKeys.ts:79` |
+    | `Mod+J` | Alignment | `/src/editor/core/shortcut/keys/richtextKeys.ts:88` |
+    | `Mod+Shift+J` | Justify | `/src/editor/core/shortcut/keys/richtextKeys.ts:95` |
+  </Accordion>
+
+  <Accordion title="Subscript/Superscript">
+    | Shortcut | Action | Source |
+    |----------|--------|--------|
+    | `Mod+Shift+,` (Mac) / `Mod+Shift+>` (Win) | Superscript | `/src/editor/core/shortcut/keys/richtextKeys.ts:51` |
+    | `Mod+Shift+.` (Mac) / `Mod+Shift+<` (Win) | Subscript | `/src/editor/core/shortcut/keys/richtextKeys.ts:59` |
+  </Accordion>
+</AccordionGroup>
+
+## Real-World Examples
+
+<Steps>
+  <Step title="Save Document Shortcut">
+    ```typescript
+    editor.register.shortcutList([
+      {
+        key: KeyMap.S,
+        mod: true,
+        isGlobal: true, // Works even when editor not focused
+        callback: (command: Command) => {
+          const data = command.getValue()
+          // Save to server or local storage
+          saveDocument(data)
+        }
+      }
+    ])
+    ```
+  </Step>
+
+  <Step title="Quick Format Shortcuts">
+    ```typescript
+    import { KeyMap, RowFlex } from 'canvas-editor'
+
+    editor.register.shortcutList([
+      // Clear formatting
+      {
+        key: KeyMap.BACKSLASH,
+        mod: true,
+        callback: (command) => {
+          command.executeFormat()
+        }
+      },
+      // Insert horizontal rule
+      {
+        key: KeyMap.MINUS,
+        mod: true,
+        shift: true,
+        callback: (command) => {
+          command.executeInsertElementList([{
+            type: ElementType.SEPARATOR
+          }])
+        }
+      },
+      // Toggle heading
+      {
+        key: KeyMap.ONE,
+        mod: true,
+        shift: true,
+        callback: (command) => {
+          command.executeTitle(TitleLevel.FIRST)
+        }
+      }
+    ])
+    ```
+  </Step>
+
+  <Step title="Custom Command Shortcuts">
+    ```typescript
+    // First, create a plugin with custom command
+    function customCommandPlugin(editor: Editor) {
+      const command = editor.command as any
+      
+      command.executeInsertTimestamp = () => {
+        const timestamp = new Date().toLocaleString()
+        command.executeInsertElementList([{
+          value: timestamp
+        }])
+      }
+    }
+
+    // Register plugin
+    editor.use(customCommandPlugin)
+
+    // Then add shortcut
+    editor.register.shortcutList([
+      {
+        key: KeyMap.T,
+        mod: true,
+        shift: true,
+        callback: (command: any) => {
+          command.executeInsertTimestamp()
+        }
+      }
+    ])
+    ```
+  </Step>
+</Steps>
+
+## Global vs Editor Shortcuts
+
+<Tabs>
+  <Tab title="Editor Shortcuts (Default)">
+    By default, shortcuts only work when the editor is focused:
+
+    ```typescript
+    {
+      key: KeyMap.B,
+      mod: true,
+      // isGlobal: false (default)
+      callback: (command) => command.executeBold()
+    }
+    ```
+
+    Use this for most text editing shortcuts.
+  </Tab>
+
+  <Tab title="Global Shortcuts">
+    Set `isGlobal: true` to listen for shortcuts anywhere on the page:
+
+    ```typescript
+    {
+      key: KeyMap.S,
+      mod: true,
+      isGlobal: true, // Works even outside editor
+      callback: (command) => {
+        // Save document
+        saveDocument()
+      }
+    }
+    ```
+
+    Use this for application-level actions like save, print, or undo.
+  </Tab>
+</Tabs>
+
+<Warning>
+  Global shortcuts can conflict with browser shortcuts. Use them sparingly and choose key combinations that won't interfere with common browser functions.
+</Warning>
+
+## Disabling Shortcuts
+
+Temporarily disable a shortcut without removing it:
+
+```typescript
+const shortcuts = [
+  {
+    key: KeyMap.S,
+    mod: true,
+    disable: true, // Shortcut won't trigger
+    callback: (command) => command.executeSave()
+  }
+]
+
+editor.register.shortcutList(shortcuts)
+
+// Later, enable it by re-registering without disable flag
+shortcuts[0].disable = false
+editor.register.shortcutList(shortcuts)
+```
+
+## Disabling Built-in Shortcuts
+
+To disable built-in shortcuts, use the editor options:
+
+```typescript
+const editor = new Editor(container, data, {
+  shortcuts: {
+    // Disable specific built-in shortcuts
+    bold: false,
+    italic: false
+  }
+})
+```
+
+Alternatively, override them with your own:
+
+```typescript
+editor.register.shortcutList([
+  {
+    key: KeyMap.B,
+    mod: true,
+    callback: (command) => {
+      // Custom behavior instead of bold
+      console.log('Custom Mod+B action')
+    }
+  }
+])
+```
+
+<Note>
+  Shortcuts registered later take precedence. The system processes shortcuts in the order they were registered, with the most recent taking priority.
+</Note>
+
+## Accessing Registered Shortcuts
+
+Retrieve the list of registered shortcuts for debugging:
+
+```typescript
+// Note: This is an internal API and may change
+const shortcuts = editor.register.shortcutList
+console.log('Registered shortcuts:', shortcuts)
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use mod for cross-platform" icon="desktop">
+    Always use `mod: true` instead of `ctrl` or `meta` for shortcuts that should work on both platforms.
+  </Card>
+  
+  <Card title="Avoid browser conflicts" icon="triangle-exclamation">
+    Don't override common browser shortcuts like `Mod+T` (new tab) or `Mod+W` (close tab).
+  </Card>
+  
+  <Card title="Document your shortcuts" icon="book">
+    Maintain a list of custom shortcuts for your users, especially if you're building an application.
+  </Card>
+  
+  <Card title="Test on multiple platforms" icon="laptop-mobile">
+    Always test shortcuts on both Mac and Windows to ensure consistent behavior.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Shortcut not triggering">
+    - Check if the editor is focused (unless using `isGlobal: true`)
+    - Verify the key combination isn't conflicting with browser shortcuts
+    - Ensure `disable` is not set to `true`
+    - Check if another shortcut with the same combination was registered later
+  </Accordion>
+
+  <Accordion title="Global shortcut not working">
+    - Verify `isGlobal: true` is set
+    - Check browser console for JavaScript errors
+    - Some browsers may block certain key combinations for security
+  </Accordion>
+
+  <Accordion title="Cross-platform issues">
+    - Use `mod: true` instead of `ctrl` or `meta`
+    - Test on both macOS and Windows
+    - Consider platform-specific keys for special cases (see `/src/editor/core/shortcut/keys/richtextKeys.ts:51`)
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Context Menus" icon="bars" href="/advanced/context-menus">
+    Add custom context menu items
+  </Card>
+  <Card title="Commands API" icon="terminal" href="/api/commands/text-operations">
+    Explore available commands
+  </Card>
+  <Card title="Plugin System" icon="plug" href="/advanced/plugins">
+    Create custom plugins
+  </Card>
+  <Card title="Events" icon="bolt" href="/concepts/event-system">
+    Listen to editor events
+  </Card>
+</CardGroup>

@@ -1,0 +1,494 @@
+---
+title: 'Print & Export'
+description: 'Print documents and export to PDF or images with full fidelity'
+icon: 'print'
+---
+
+Canvas Editor provides robust printing and export capabilities, allowing you to generate PDFs, images, and print-ready documents directly from the canvas-rendered content.
+
+## Printing Documents
+
+### Basic Print
+
+Trigger the browser's print dialog:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, {
+  main: [{ value: 'Hello World' }]
+})
+
+// Open print dialog
+editor.command.executePrint()
+```
+
+<Tip>
+The print command converts the canvas content to images which are then sent to the printer, ensuring exact visual fidelity.
+</Tip>
+
+## Exporting to Images
+
+### Get Document as Images
+
+Export all pages as base64-encoded images:
+
+```typescript
+// Get all pages as images
+const imageList = await editor.command.getImage()
+
+// imageList is an array of base64 image data
+imageList.forEach((imageData, index) => {
+  console.log(`Page ${index + 1}:`, imageData)
+})
+```
+
+### Download Images
+
+Create downloadable image files:
+
+```typescript
+async function downloadAsImages() {
+  const images = await editor.command.getImage()
+  
+  images.forEach((imageData, index) => {
+    // Create download link
+    const link = document.createElement('a')
+    link.href = imageData
+    link.download = `page-${index + 1}.png`
+    link.click()
+  })
+}
+
+// Trigger download
+downloadAsImages()
+```
+
+<CodeGroup>
+```typescript Single Page
+const images = await editor.command.getImage()
+const firstPage = images[0]
+
+// Download first page
+const link = document.createElement('a')
+link.href = firstPage
+link.download = 'document-page-1.png'
+link.click()
+```
+
+```typescript All Pages ZIP
+// Requires JSZip library
+import JSZip from 'jszip'
+
+async function downloadAsZip() {
+  const images = await editor.command.getImage()
+  const zip = new JSZip()
+  
+  images.forEach((imageData, index) => {
+    const base64Data = imageData.split(',')[1]
+    zip.file(`page-${index + 1}.png`, base64Data, { base64: true })
+  })
+  
+  const content = await zip.generateAsync({ type: 'blob' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(content)
+  link.download = 'document.zip'
+  link.click()
+}
+```
+</CodeGroup>
+
+## PDF Export
+
+<Note>
+PDF export functionality is available in the `feature/pdf` branch. See the [Canvas Editor repository](https://github.com/Hufe921/canvas-editor/tree/feature/pdf) for implementation details.
+</Note>
+
+### Basic PDF Export
+
+Export document to PDF using a PDF library:
+
+```typescript
+import { jsPDF } from 'jspdf'
+
+async function exportToPDF() {
+  const images = await editor.command.getImage()
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  })
+  
+  images.forEach((imageData, index) => {
+    if (index > 0) {
+      pdf.addPage()
+    }
+    
+    // Add image to PDF (A4 size: 210x297mm)
+    pdf.addImage(imageData, 'PNG', 0, 0, 210, 297)
+  })
+  
+  pdf.save('document.pdf')
+}
+
+exportToPDF()
+```
+
+### Advanced PDF Options
+
+<Tabs>
+  <Tab title="Custom Size">
+    ```typescript
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: [200, 150]  // Custom dimensions
+    })
+    ```
+  </Tab>
+  <Tab title="High Quality">
+    ```typescript
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: false  // Disable compression for quality
+    })
+    ```
+  </Tab>
+  <Tab title="With Metadata">
+    ```typescript
+    const pdf = new jsPDF()
+    
+    // Set PDF metadata
+    pdf.setProperties({
+      title: 'My Document',
+      subject: 'Canvas Editor Export',
+      author: 'Your Name',
+      keywords: 'canvas, editor, pdf',
+      creator: 'Canvas Editor'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Page Configuration
+
+### Page Size
+
+Set the paper size before exporting:
+
+```typescript
+import { PaperSize } from '@hufe921/canvas-editor'
+
+// Set paper size
+editor.command.executePaperSize('A4')  // 'A4', 'A3', 'Letter', etc.
+```
+
+### Page Orientation
+
+```typescript
+import { PaperDirection } from '@hufe921/canvas-editor'
+
+// Set portrait orientation
+editor.command.executePaperDirection(PaperDirection.VERTICAL)
+
+// Set landscape orientation
+editor.command.executePaperDirection(PaperDirection.HORIZONTAL)
+```
+
+### Page Margins
+
+Customize page margins:
+
+```typescript
+// Set page margins (in pixels)
+editor.command.executeSetPaperMargin({
+  top: 100,
+  right: 80,
+  bottom: 100,
+  left: 80
+})
+
+// Get current margins
+const margins = editor.command.getPaperMargin()
+console.log('Current margins:', margins)
+```
+
+<CodeGroup>
+```typescript Standard Margins
+editor.command.executeSetPaperMargin({
+  top: 96,    // 1 inch
+  right: 96,
+  bottom: 96,
+  left: 96
+})
+```
+
+```typescript Narrow Margins
+editor.command.executeSetPaperMargin({
+  top: 48,    // 0.5 inch
+  right: 48,
+  bottom: 48,
+  left: 48
+})
+```
+
+```typescript Wide Margins
+editor.command.executeSetPaperMargin({
+  top: 144,   // 1.5 inches
+  right: 144,
+  bottom: 144,
+  left: 144
+})
+```
+</CodeGroup>
+
+## Page Mode
+
+Switch between editing and page modes:
+
+```typescript
+import { PageMode } from '@hufe921/canvas-editor'
+
+// Continuous mode (for editing)
+editor.command.executePageMode(PageMode.CONTINUOUS)
+
+// Paging mode (for preview/print)
+editor.command.executePageMode(PageMode.PAGING)
+```
+
+<Info>
+Paging mode shows explicit page breaks, making it easier to see how the document will print.
+</Info>
+
+## Page Scale
+
+Adjust the zoom level for better viewing:
+
+```typescript
+// Set specific scale (0.5 = 50%, 1 = 100%, 2 = 200%)
+editor.command.executePageScale(1.5)
+
+// Zoom in
+editor.command.executePageScaleAdd()
+
+// Zoom out
+editor.command.executePageScaleMinus()
+
+// Reset to 100%
+editor.command.executePageScaleRecovery()
+```
+
+<Warning>
+Page scale only affects the view - it does not change the printed output size.
+</Warning>
+
+## Complete Export Example
+
+Full-featured export with options:
+
+```typescript
+import Editor, { PaperDirection, PageMode } from '@hufe921/canvas-editor'
+import { jsPDF } from 'jspdf'
+
+const container = document.querySelector('.editor')
+const editor = new Editor(container, {
+  main: [
+    { value: 'Document Title', size: 24, bold: true },
+    { value: '\n\nThis is the content of the document.' }
+  ]
+})
+
+// Configure page settings
+function configurePage() {
+  // Set paper size
+  editor.command.executePaperSize('A4')
+  
+  // Set orientation
+  editor.command.executePaperDirection(PaperDirection.VERTICAL)
+  
+  // Set margins
+  editor.command.executeSetPaperMargin({
+    top: 96,
+    right: 80,
+    bottom: 96,
+    left: 80
+  })
+  
+  // Switch to paging mode
+  editor.command.executePageMode(PageMode.PAGING)
+}
+
+// Export to PDF
+async function exportDocument() {
+  configurePage()
+  
+  const images = await editor.command.getImage()
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  })
+  
+  pdf.setProperties({
+    title: 'My Document',
+    author: 'Canvas Editor',
+    subject: 'Document Export',
+    creator: 'Canvas Editor'
+  })
+  
+  images.forEach((imageData, index) => {
+    if (index > 0) {
+      pdf.addPage()
+    }
+    pdf.addImage(imageData, 'PNG', 0, 0, 210, 297)
+  })
+  
+  pdf.save('document.pdf')
+}
+
+// Export to images
+async function exportImages() {
+  configurePage()
+  
+  const images = await editor.command.getImage()
+  
+  images.forEach((imageData, index) => {
+    const link = document.createElement('a')
+    link.href = imageData
+    link.download = `document-page-${index + 1}.png`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  })
+}
+
+// Print document
+function printDocument() {
+  configurePage()
+  editor.command.executePrint()
+}
+```
+
+## Server-Side Export
+
+For server-side PDF generation:
+
+```typescript
+// Get document value
+const documentData = editor.command.getValue()
+
+// Send to server
+fetch('/api/export-pdf', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(documentData)
+})
+.then(response => response.blob())
+.then(blob => {
+  // Download PDF
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'document.pdf'
+  link.click()
+})
+```
+
+<Note>
+Server-side rendering requires implementing Canvas Editor on the backend (Node.js with canvas library) to generate images or PDFs.
+</Note>
+
+## Print Optimization
+
+<Steps>
+  <Step title="Configure Page Settings">
+    Set appropriate paper size, orientation, and margins.
+  </Step>
+  <Step title="Switch to Paging Mode">
+    Use paging mode to see exact page breaks before printing.
+  </Step>
+  <Step title="Preview">
+    Use `getImage()` to preview how pages will look.
+  </Step>
+  <Step title="Print or Export">
+    Execute print command or generate PDF/images.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Accordion title="Print Quality">
+  - Use high-resolution images in your document
+  - Set appropriate page margins before printing
+  - Preview using `getImage()` before final export
+  - Use paging mode to verify page breaks
+</Accordion>
+
+<Accordion title="Performance">
+  - Limit the number of pages for client-side export
+  - Consider server-side rendering for large documents
+  - Show loading indicators during export operations
+  - Cache generated images when possible
+</Accordion>
+
+<Accordion title="File Size">
+  - Compress images before including in document
+  - Use appropriate PDF compression settings
+  - Consider image quality vs. file size tradeoffs
+  - Optimize embedded images
+</Accordion>
+
+<Accordion title="User Experience">
+  - Provide export format options (PDF, PNG, etc.)
+  - Show progress for multi-page exports
+  - Allow users to preview before export
+  - Provide clear export success/failure feedback
+</Accordion>
+
+## Browser Print Dialog
+
+Customize the print experience:
+
+```typescript
+// Configure print styles
+const printStyles = `
+  @media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    body {
+      margin: 0;
+    }
+  }
+`
+
+const style = document.createElement('style')
+style.textContent = printStyles
+document.head.appendChild(style)
+
+// Then print
+editor.command.executePrint()
+```
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Tables" icon="table" href="/features/tables">
+    Export documents with tables
+  </Card>
+  <Card title="Images" icon="image" href="/features/images">
+    Export documents with images
+  </Card>
+  <Card title="Form Controls" icon="square-check" href="/features/controls">
+    Export filled forms
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+- [jsPDF Documentation](https://github.com/parallax/jsPDF)
+- [Canvas Editor PDF Branch](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+- [HTML Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)

@@ -1,0 +1,470 @@
+---
+title: Elements
+description: Understanding the IElement interface and element data structure
+---
+
+## Overview
+
+Elements are the fundamental building blocks of a Canvas Editor document. Every piece of content—text, images, tables, controls—is represented as an `IElement` object.
+
+## IElement Interface
+
+The `IElement` interface is a union of multiple interfaces that represent different element types and features:
+
+```typescript
+export type IElement = IElementBasic &
+  IElementStyle &
+  IElementRule &
+  IElementGroup &
+  ITable &
+  IHyperlinkElement &
+  ISuperscriptSubscript &
+  ISeparator &
+  IControlElement &
+  ICheckboxElement &
+  IRadioElement &
+  ILaTexElement &
+  IDateElement &
+  IImageElement &
+  IBlockElement &
+  ITitleElement &
+  IListElement &
+  IAreaElement &
+  ILabelElement
+```
+
+## Core Properties
+
+### Basic Properties (IElementBasic)
+
+Every element must have these fundamental properties:
+
+```typescript
+interface IElementBasic {
+  value: string        // The content/text of the element (required)
+  id?: string         // Unique identifier for the element
+  type?: ElementType  // Element type (TEXT, IMAGE, TABLE, etc.)
+  extension?: unknown // Custom data for your application
+  externalId?: string // External reference ID
+}
+```
+
+<Info>
+The `value` property is the only **required** field. For text elements, it contains the actual text. For images, it's the base64 data URL or image URL.
+</Info>
+
+### Style Properties (IElementStyle)
+
+Control the visual appearance of elements:
+
+```typescript
+interface IElementStyle {
+  font?: string              // Font family (e.g., 'Arial', 'Microsoft YaHei')
+  size?: number             // Font size in pixels
+  width?: number            // Element width (for images, separators)
+  height?: number           // Element height (for images)
+  bold?: boolean            // Bold text
+  color?: string            // Text color (hex or rgb)
+  highlight?: string        // Background highlight color
+  italic?: boolean          // Italic text
+  underline?: boolean       // Underlined text
+  strikeout?: boolean       // Strikethrough text
+  rowFlex?: RowFlex        // Row alignment (LEFT, CENTER, RIGHT, JUSTIFY)
+  rowMargin?: number        // Row spacing/margin
+  letterSpacing?: number    // Letter spacing
+  textDecoration?: ITextDecoration  // Advanced text decoration
+}
+```
+
+### Element Rules (IElementRule)
+
+Control element behavior and visibility:
+
+```typescript
+interface IElementRule {
+  hide?: boolean  // Whether the element is hidden
+}
+```
+
+## Element Types
+
+<Tabs>
+  <Tab title="Text">
+    The most basic element type. If `type` is omitted or set to `ElementType.TEXT`, the element is treated as text.
+
+    ```typescript
+    const textElement: IElement = {
+      value: 'Hello World',
+      size: 16,
+      bold: true,
+      color: '#333333'
+    }
+    ```
+  </Tab>
+
+  <Tab title="Image">
+    Images require `type: ElementType.IMAGE` and use the `value` field for the image source:
+
+    ```typescript
+    import { ElementType, ImageDisplay } from 'canvas-editor'
+
+    const imageElement: IElement = {
+      type: ElementType.IMAGE,
+      value: 'data:image/png;base64,...',  // Base64 or URL
+      width: 300,
+      height: 200,
+      imgDisplay: ImageDisplay.INLINE,     // INLINE, FLOAT, BLOCK
+      imgCaption: {
+        value: 'Figure 1: Example',
+        color: '#666',
+        size: 12
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Table">
+    Tables are complex structures with rows, columns, and cells:
+
+    ```typescript
+    import { ElementType, TableBorder } from 'canvas-editor'
+
+    const tableElement: IElement = {
+      type: ElementType.TABLE,
+      value: '',
+      colgroup: [
+        { width: 200 },
+        { width: 200 }
+      ],
+      trList: [
+        {
+          tdList: [
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: 'Cell 1' }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: 'Cell 2' }
+              ]
+            }
+          ]
+        }
+      ],
+      borderType: TableBorder.ALL,
+      borderColor: '#000000'
+    }
+    ```
+  </Tab>
+
+  <Tab title="Hyperlink">
+    Hyperlinks wrap other elements in a clickable link:
+
+    ```typescript
+    import { ElementType } from 'canvas-editor'
+
+    const hyperlinkElement: IElement = {
+      type: ElementType.HYPERLINK,
+      value: '',
+      url: 'https://example.com',
+      valueList: [
+        {
+          value: 'Click here',
+          color: '#0066cc',
+          underline: true
+        }
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="Title">
+    Title/heading elements with hierarchy levels:
+
+    ```typescript
+    import { ElementType, TitleLevel } from 'canvas-editor'
+
+    const titleElement: IElement = {
+      type: ElementType.TITLE,
+      value: '',
+      level: TitleLevel.FIRST,  // FIRST, SECOND, THIRD, etc.
+      valueList: [
+        {
+          value: 'Chapter 1: Introduction',
+          size: 24,
+          bold: true
+        }
+      ]
+    }
+    ```
+  </Tab>
+
+  <Tab title="List">
+    Ordered and unordered list items:
+
+    ```typescript
+    import { ElementType, ListType, ListStyle } from 'canvas-editor'
+
+    const listElement: IElement = {
+      type: ElementType.LIST,
+      value: '',
+      listType: ListType.UL,           // UL (bullets) or OL (numbers)
+      listStyle: ListStyle.DISC,       // DISC, CIRCLE, SQUARE, DECIMAL
+      valueList: [
+        { value: 'First item' }
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Working with Elements
+
+### Creating Elements
+
+<CodeGroup>
+```typescript Simple Text
+const element: IElement = {
+  value: 'Simple text'
+}
+```
+
+```typescript Styled Text
+const element: IElement = {
+  value: 'Styled text',
+  font: 'Arial',
+  size: 18,
+  bold: true,
+  italic: true,
+  color: '#ff0000',
+  highlight: '#ffff00'
+}
+```
+
+```typescript With Metadata
+const element: IElement = {
+  value: 'Text with metadata',
+  id: 'unique-id-123',
+  externalId: 'external-ref',
+  extension: {
+    customField: 'custom value',
+    metadata: { /* any data */ }
+  }
+}
+```
+</CodeGroup>
+
+### Inserting Elements
+
+Use the command API to insert elements into the document:
+
+```typescript
+// Insert at current cursor position
+editor.command.executeInsertElementList([
+  { value: 'First paragraph' },
+  { value: '\n' },
+  { value: 'Second paragraph', bold: true }
+])
+
+// Append to end of document
+editor.command.executeAppendElementList([
+  { value: 'Appended content' }
+])
+```
+
+### Updating Elements
+
+Update elements by ID:
+
+```typescript
+editor.command.executeUpdateElementById({
+  id: 'element-id',
+  properties: {
+    bold: true,
+    color: '#ff0000',
+    size: 20
+  }
+})
+```
+
+### Retrieving Elements
+
+Get elements from the document:
+
+```typescript
+// Get entire document structure
+const data = editor.command.getValue()
+// Returns: { header: IElement[], main: IElement[], footer: IElement[] }
+
+// Get specific element by ID
+const element = editor.command.getElementById({ id: 'element-id' })
+
+// Get current selection
+const range = editor.command.getRange()
+const selectedText = editor.command.getRangeText()
+```
+
+### Deleting Elements
+
+```typescript
+// Delete by ID
+editor.command.executeDeleteElementById({ id: 'element-id' })
+
+// Delete by concept ID (for grouped elements)
+editor.command.executeDeleteElementById({ conceptId: 'concept-id' })
+
+// Backspace at cursor
+editor.command.executeBackspace()
+```
+
+## Element Groups
+
+Group related elements together:
+
+```typescript
+const groupedElements: IElement[] = [
+  {
+    value: 'First element in group',
+    groupIds: ['group-1']
+  },
+  {
+    value: 'Second element in group',
+    groupIds: ['group-1']
+  }
+]
+
+editor.command.executeSetGroup({
+  groupIds: ['group-1']
+})
+```
+
+## Special Element Types
+
+### Line Break
+
+```typescript
+const lineBreak: IElement = {
+  value: '\n'
+}
+```
+
+### Page Break
+
+```typescript
+import { ElementType } from 'canvas-editor'
+
+const pageBreak: IElement = {
+  type: ElementType.PAGE_BREAK,
+  value: '\n'
+}
+```
+
+### Separator (Horizontal Line)
+
+```typescript
+import { ElementType } from 'canvas-editor'
+
+const separator: IElement = {
+  type: ElementType.SEPARATOR,
+  value: '\n',
+  dashArray: [5, 5],  // Dashed line pattern
+  lineWidth: 2
+}
+```
+
+### Checkbox
+
+```typescript
+import { ElementType } from 'canvas-editor'
+
+const checkbox: IElement = {
+  type: ElementType.CHECKBOX,
+  value: '',
+  checkbox: {
+    value: true  // checked or unchecked
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use IDs for Important Elements" icon="fingerprint">
+    Assign unique IDs to elements you need to reference or update later:
+    ```typescript
+    { value: 'Important text', id: 'title-1' }
+    ```
+  </Card>
+
+  <Card title="Leverage Extension Field" icon="puzzle-piece">
+    Store custom application data in the `extension` field:
+    ```typescript
+    {
+      value: 'Text',
+      extension: {
+        documentSection: 'introduction',
+        author: 'John Doe'
+      }
+    }
+    ```
+  </Card>
+
+  <Card title="Consistent Line Breaks" icon="grip-lines">
+    Always use `{ value: '\\n' }` for line breaks, not empty strings
+  </Card>
+
+  <Card title="Preserve Element Structure" icon="sitemap">
+    When working with complex elements (tables, lists, hyperlinks), preserve the complete structure including `valueList` properties
+  </Card>
+</CardGroup>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="What's the difference between value and valueList?">
+    - `value`: The actual text content for simple elements
+    - `valueList`: An array of child elements for complex types (tables, hyperlinks, titles, lists)
+
+    For example, a hyperlink has `value: ''` but its displayed text is in `valueList`.
+  </Accordion>
+
+  <Accordion title="Can I nest elements infinitely?">
+    No. Nesting is limited by element type:
+    - Table cells (`td.value`) can contain elements with formatting
+    - Hyperlinks, titles, and lists can contain formatted text elements
+    - Most other elements cannot be nested
+  </Accordion>
+
+  <Accordion title="How do I store custom data with elements?">
+    Use the `extension` field to store any custom data:
+    ```typescript
+    {
+      value: 'Text',
+      extension: {
+        customField: 'your data',
+        metadata: { /* anything */ }
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Are element IDs automatically generated?">
+    The editor can generate IDs internally for certain operations, but you should provide your own IDs for elements you need to reference or update programmatically.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Commands" icon="terminal" href="/concepts/commands">
+    Learn how to manipulate elements
+  </Card>
+  <Card title="Event System" icon="bell" href="/concepts/event-system">
+    React to element changes
+  </Card>
+</CardGroup>

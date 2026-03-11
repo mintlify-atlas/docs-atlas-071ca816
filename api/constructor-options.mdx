@@ -1,0 +1,363 @@
+---
+title: Constructor Options
+description: Configuration options for the Editor constructor (IEditorOption)
+---
+
+The `IEditorOption` interface defines all available configuration options when creating an Editor instance.
+
+## Editor Mode
+
+<ParamField path="mode" type="EditorMode" default="EditorMode.EDIT">
+  Editor operating mode:
+  - `EDIT` - Full editing capabilities (default)
+  - `CLEAN` - Hide auxiliary elements
+  - `READONLY` - View-only mode
+  - `FORM` - Only controls are editable
+  - `PRINT` - Print preview mode
+  - `DESIGN` - Design mode (ignores readonly/deletable rules)
+  - `GRAFFITI` - Drawing/annotation mode
+</ParamField>
+
+## Locale
+
+<ParamField path="locale" type="string" default="'en'">
+  Language/locale code for internationalization (e.g., 'en', 'zh-CN')
+</ParamField>
+
+## Default Styles
+
+<ParamField path="defaultType" type="string" default="'TEXT'">
+  Default element type for new content
+</ParamField>
+
+<ParamField path="defaultColor" type="string" default="'#000000'">
+  Default text color (hex format)
+</ParamField>
+
+<ParamField path="defaultFont" type="string" default="'Microsoft YaHei'">
+  Default font family
+</ParamField>
+
+<ParamField path="defaultSize" type="number" default="16">
+  Default font size in pixels
+</ParamField>
+
+<ParamField path="minSize" type="number" default="5">
+  Minimum allowed font size
+</ParamField>
+
+<ParamField path="maxSize" type="number" default="72">
+  Maximum allowed font size
+</ParamField>
+
+## Layout & Dimensions
+
+<ParamField path="width" type="number" default="794">
+  Page width in pixels (A4: 794px at 96dpi)
+</ParamField>
+
+<ParamField path="height" type="number" default="1123">
+  Page height in pixels (A4: 1123px at 96dpi)
+</ParamField>
+
+<ParamField path="scale" type="number" default="1">
+  Zoom scale factor (1 = 100%)
+</ParamField>
+
+<ParamField path="pageGap" type="number" default="20">
+  Gap between pages in pixels
+</ParamField>
+
+<ParamField path="margins" type="IMargin">
+  Page margins:
+  ```typescript
+  {
+    top: number    // default: 100
+    right: number  // default: 120
+    bottom: number // default: 100
+    left: number   // default: 120
+  }
+  ```
+</ParamField>
+
+<ParamField path="pageMode" type="PageMode" default="PageMode.PAGING">
+  Page layout mode:
+  - `PAGING` - Multi-page with page breaks
+  - `CONTINUITY` - Continuous scroll (no pages)
+</ParamField>
+
+<ParamField path="paperDirection" type="PaperDirection" default="PaperDirection.VERTICAL">
+  Paper orientation:
+  - `VERTICAL` - Portrait
+  - `HORIZONTAL` - Landscape
+</ParamField>
+
+## Text & Spacing
+
+<ParamField path="defaultBasicRowMarginHeight" type="number" default="8">
+  Base row margin height
+</ParamField>
+
+<ParamField path="defaultRowMargin" type="number" default="0">
+  Default row margin
+</ParamField>
+
+<ParamField path="defaultTabWidth" type="number" default="32">
+  Width of tab character in pixels
+</ParamField>
+
+<ParamField path="wordBreak" type="WordBreak" default="WordBreak.BREAK_WORD">
+  Word breaking behavior:
+  - `BREAK_WORD` - Break at word boundaries
+  - `BREAK_ALL` - Break anywhere
+</ParamField>
+
+## Selection & Highlighting
+
+<ParamField path="rangeColor" type="string" default="'#AECBFA'">
+  Selection background color
+</ParamField>
+
+<ParamField path="rangeAlpha" type="number" default="0.6">
+  Selection opacity (0-1)
+</ParamField>
+
+<ParamField path="rangeMinWidth" type="number" default="5">
+  Minimum selection width in pixels
+</ParamField>
+
+<ParamField path="highlightAlpha" type="number" default="0.6">
+  Text highlight opacity (0-1)
+</ParamField>
+
+<ParamField path="highlightMarginHeight" type="number" default="2">
+  Vertical margin for highlights
+</ParamField>
+
+## Search
+
+<ParamField path="searchMatchColor" type="string" default="'#ffff00'">
+  Search match highlight color
+</ParamField>
+
+<ParamField path="searchNavigateMatchColor" type="string" default="'#ff9900'">
+  Active search match color
+</ParamField>
+
+<ParamField path="searchMatchAlpha" type="number" default="0.6">
+  Search highlight opacity (0-1)
+</ParamField>
+
+## Decorations
+
+<ParamField path="underlineColor" type="string">
+  Default underline color (defaults to text color)
+</ParamField>
+
+<ParamField path="strikeoutColor" type="string">
+  Default strikeout color (defaults to text color)
+</ParamField>
+
+<ParamField path="defaultHyperlinkColor" type="string" default="'#0000FF'">
+  Default hyperlink text color
+</ParamField>
+
+## Resizer & Indicators
+
+<ParamField path="resizerColor" type="string" default="'#4182D9'">
+  Color of image/table resize handles
+</ParamField>
+
+<ParamField path="resizerSize" type="number" default="5">
+  Size of resize handles in pixels
+</ParamField>
+
+<ParamField path="marginIndicatorSize" type="number" default="35">
+  Size of margin indicators
+</ParamField>
+
+<ParamField path="marginIndicatorColor" type="string" default="'#BABABA'">
+  Color of margin indicators
+</ParamField>
+
+## Rendering
+
+<ParamField path="renderMode" type="RenderMode" default="RenderMode.SPEED">
+  Rendering optimization mode:
+  - `SPEED` - Faster rendering
+  - `COMPATIBILITY` - Better compatibility
+</ParamField>
+
+<ParamField path="inactiveAlpha" type="number" default="0.6">
+  Opacity for inactive elements (0-1)
+</ParamField>
+
+## Printing
+
+<ParamField path="printPixelRatio" type="number" default="2">
+  Pixel ratio for print output (higher = better quality)
+</ParamField>
+
+<ParamField path="maskMargin" type="IMargin">
+  Margins for print mask overlay
+</ParamField>
+
+## History
+
+<ParamField path="historyMaxRecordCount" type="number" default="100">
+  Maximum number of undo/redo history entries
+</ParamField>
+
+## Advanced
+
+<ParamField path="letterClass" type="string[]">
+  CSS classes that should be treated as letters
+</ParamField>
+
+<ParamField path="contextMenuDisableKeys" type="string[]">
+  Context menu item keys to disable
+</ParamField>
+
+<ParamField path="shortcutDisableKeys" type="string[]">
+  Keyboard shortcut keys to disable
+</ParamField>
+
+<ParamField path="scrollContainerSelector" type="string">
+  CSS selector for custom scroll container
+</ParamField>
+
+<ParamField path="pageOuterSelectionDisable" type="boolean" default="false">
+  Disable selection outside page boundaries
+</ParamField>
+
+## Feature-Specific Options
+
+<ParamField path="table" type="ITableOption">
+  Table-specific configuration
+</ParamField>
+
+<ParamField path="header" type="IHeader">
+  Header configuration
+</ParamField>
+
+<ParamField path="footer" type="IFooter">
+  Footer configuration
+</ParamField>
+
+<ParamField path="pageNumber" type="IPageNumber">
+  Page number configuration
+</ParamField>
+
+<ParamField path="watermark" type="IWatermark">
+  Watermark configuration
+</ParamField>
+
+<ParamField path="control" type="IControlOption">
+  Form control styling options
+</ParamField>
+
+<ParamField path="checkbox" type="ICheckboxOption">
+  Checkbox configuration
+</ParamField>
+
+<ParamField path="radio" type="IRadioOption">
+  Radio button configuration
+</ParamField>
+
+<ParamField path="cursor" type="ICursorOption">
+  Cursor appearance options
+</ParamField>
+
+<ParamField path="title" type="ITitleOption">
+  Title/heading configuration
+</ParamField>
+
+<ParamField path="placeholder" type="IPlaceholder">
+  Placeholder text configuration
+</ParamField>
+
+<ParamField path="group" type="IGroup">
+  Element grouping configuration
+</ParamField>
+
+<ParamField path="pageBreak" type="IPageBreak">
+  Page break appearance
+</ParamField>
+
+<ParamField path="zone" type="IZoneOption">
+  Zone (header/main/footer) options
+</ParamField>
+
+<ParamField path="background" type="IBackgroundOption">
+  Page background configuration
+</ParamField>
+
+<ParamField path="lineBreak" type="ILineBreakOption">
+  Line break visualization
+</ParamField>
+
+<ParamField path="whiteSpace" type="IWhiteSpaceOption">
+  Whitespace handling
+</ParamField>
+
+<ParamField path="separator" type="ISeparatorOption">
+  Separator line configuration
+</ParamField>
+
+<ParamField path="lineNumber" type="ILineNumberOption">
+  Line number display options
+</ParamField>
+
+<ParamField path="pageBorder" type="IPageBorderOption">
+  Page border configuration
+</ParamField>
+
+<ParamField path="badge" type="IBadgeOption">
+  Badge/seal configuration
+</ParamField>
+
+<ParamField path="graffiti" type="IGraffitiOption">
+  Graffiti/drawing options
+</ParamField>
+
+<ParamField path="label" type="ILabelOption">
+  Label styling options
+</ParamField>
+
+<ParamField path="imgCaption" type="IImgCaptionOption">
+  Image caption configuration
+</ParamField>
+
+<ParamField path="list" type="IListOption">
+  List styling options
+</ParamField>
+
+<ParamField path="modeRule" type="IModeRule">
+  Mode-specific behavior rules
+</ParamField>
+
+## Example
+
+```typescript
+import Editor, { EditorMode, PageMode } from '@hufe921/canvas-editor'
+
+const options: IEditorOption = {
+  mode: EditorMode.EDIT,
+  defaultFont: 'Arial',
+  defaultSize: 16,
+  defaultColor: '#333333',
+  width: 794,
+  height: 1123,
+  margins: {
+    top: 100,
+    right: 120,
+    bottom: 100,
+    left: 120
+  },
+  pageMode: PageMode.PAGING,
+  rangeColor: '#AECBFA',
+  rangeAlpha: 0.6
+}
+
+const editor = new Editor(container, data, options)
+```

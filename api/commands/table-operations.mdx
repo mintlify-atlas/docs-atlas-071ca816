@@ -1,0 +1,405 @@
+---
+title: Table Operations
+description: Commands for creating and manipulating tables
+---
+
+Table operation commands allow you to create tables and modify their structure.
+
+## executeInsertTable
+
+Inserts a new table at the current cursor position.
+
+```typescript
+editor.command.executeInsertTable(options: {
+  row: number
+  col: number
+}): void
+```
+
+### Parameters
+
+<ParamField path="row" type="number" required>
+  Number of rows in the table
+</ParamField>
+
+<ParamField path="col" type="number" required>
+  Number of columns in the table
+</ParamField>
+
+### Example
+
+```typescript
+// Insert 3x3 table
+editor.command.executeInsertTable({ row: 3, col: 3 })
+
+// Insert 5x4 table
+editor.command.executeInsertTable({ row: 5, col: 4 })
+```
+
+## executeInsertTableTopRow
+
+Inserts a row above the current cell.
+
+```typescript
+editor.command.executeInsertTableTopRow(): void
+```
+
+### Example
+
+```typescript
+// Place cursor in a table cell, then:
+editor.command.executeInsertTableTopRow()
+```
+
+### Notes
+
+- Cursor must be inside a table cell
+- New row inherits formatting from current row
+
+## executeInsertTableBottomRow
+
+Inserts a row below the current cell.
+
+```typescript
+editor.command.executeInsertTableBottomRow(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeInsertTableBottomRow()
+```
+
+## executeInsertTableLeftCol
+
+Inserts a column to the left of the current cell.
+
+```typescript
+editor.command.executeInsertTableLeftCol(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeInsertTableLeftCol()
+```
+
+## executeInsertTableRightCol
+
+Inserts a column to the right of the current cell.
+
+```typescript
+editor.command.executeInsertTableRightCol(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeInsertTableRightCol()
+```
+
+## executeDeleteTableRow
+
+Deletes the current row.
+
+```typescript
+editor.command.executeDeleteTableRow(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeDeleteTableRow()
+```
+
+### Notes
+
+- If only one row remains, deletes the entire table
+
+## executeDeleteTableCol
+
+Deletes the current column.
+
+```typescript
+editor.command.executeDeleteTableCol(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeDeleteTableCol()
+```
+
+### Notes
+
+- If only one column remains, deletes the entire table
+
+## executeDeleteTable
+
+Deletes the entire table.
+
+```typescript
+editor.command.executeDeleteTable(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeDeleteTable()
+```
+
+## executeMergeTableCell
+
+Merges selected table cells.
+
+```typescript
+editor.command.executeMergeTableCell(): void
+```
+
+### Example
+
+```typescript
+// Select multiple cells, then:
+editor.command.executeMergeTableCell()
+```
+
+### Notes
+
+- Must have a cell range selected
+- Cells must form a rectangular selection
+
+## executeCancelMergeTableCell
+
+Unmerges a previously merged cell.
+
+```typescript
+editor.command.executeCancelMergeTableCell(): void
+```
+
+### Example
+
+```typescript
+// Place cursor in merged cell, then:
+editor.command.executeCancelMergeTableCell()
+```
+
+## executeSplitVerticalTableCell
+
+Splits a cell vertically (creates columns within the cell).
+
+```typescript
+editor.command.executeSplitVerticalTableCell(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSplitVerticalTableCell()
+```
+
+## executeSplitHorizontalTableCell
+
+Splits a cell horizontally (creates rows within the cell).
+
+```typescript
+editor.command.executeSplitHorizontalTableCell(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSplitHorizontalTableCell()
+```
+
+## executeTableTdVerticalAlign
+
+Sets vertical alignment for table cells.
+
+```typescript
+editor.command.executeTableTdVerticalAlign(align: VerticalAlign): void
+```
+
+### Parameters
+
+<ParamField path="align" type="VerticalAlign" required>
+  Vertical alignment:
+  - `VerticalAlign.TOP`
+  - `VerticalAlign.MIDDLE`
+  - `VerticalAlign.BOTTOM`
+</ParamField>
+
+### Example
+
+```typescript
+import { VerticalAlign } from '@hufe921/canvas-editor'
+
+editor.command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+```
+
+## executeTableBorderType
+
+Sets the border type for the entire table.
+
+```typescript
+editor.command.executeTableBorderType(borderType: TableBorder): void
+```
+
+### Parameters
+
+<ParamField path="borderType" type="TableBorder" required>
+  Border style:
+  - `TableBorder.ALL` - All borders
+  - `TableBorder.EMPTY` - No borders
+  - `TableBorder.EXTERNAL` - Only outer borders
+</ParamField>
+
+### Example
+
+```typescript
+import { TableBorder } from '@hufe921/canvas-editor'
+
+editor.command.executeTableBorderType(TableBorder.ALL)
+```
+
+## executeTableBorderColor
+
+Sets the border color for the entire table.
+
+```typescript
+editor.command.executeTableBorderColor(color: string): void
+```
+
+### Parameters
+
+<ParamField path="color" type="string" required>
+  Hex color code (e.g., '#000000')
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeTableBorderColor('#0000FF')
+```
+
+## executeTableTdBorderType
+
+Sets border type for selected cells.
+
+```typescript
+editor.command.executeTableTdBorderType(borderTypes: TdBorder[]): void
+```
+
+### Parameters
+
+<ParamField path="borderTypes" type="TdBorder[]" required>
+  Array of border positions:
+  - `TdBorder.TOP`
+  - `TdBorder.RIGHT`
+  - `TdBorder.BOTTOM`
+  - `TdBorder.LEFT`
+</ParamField>
+
+### Example
+
+```typescript
+import { TdBorder } from '@hufe921/canvas-editor'
+
+// Only top and bottom borders
+editor.command.executeTableTdBorderType([TdBorder.TOP, TdBorder.BOTTOM])
+```
+
+## executeTableTdSlashType
+
+Adds diagonal slash lines to table cells.
+
+```typescript
+editor.command.executeTableTdSlashType(slashType: TdSlash | null): void
+```
+
+### Parameters
+
+<ParamField path="slashType" type="TdSlash | null" required>
+  Slash type:
+  - `TdSlash.FORWARD` - / (forward slash)
+  - `TdSlash.BACK` - \ (backslash)
+  - `null` - Remove slash
+</ParamField>
+
+### Example
+
+```typescript
+import { TdSlash } from '@hufe921/canvas-editor'
+
+editor.command.executeTableTdSlashType(TdSlash.FORWARD)
+```
+
+## executeTableTdBackgroundColor
+
+Sets background color for selected cells.
+
+```typescript
+editor.command.executeTableTdBackgroundColor(color: string | null): void
+```
+
+### Parameters
+
+<ParamField path="color" type="string | null" required>
+  Hex color code or null to remove background
+</ParamField>
+
+### Example
+
+```typescript
+// Light gray background
+editor.command.executeTableTdBackgroundColor('#F0F0F0')
+
+// Remove background
+editor.command.executeTableTdBackgroundColor(null)
+```
+
+## executeTableSelectAll
+
+Selects all cells in the current table.
+
+```typescript
+editor.command.executeTableSelectAll(): void
+```
+
+### Example
+
+```typescript
+// Place cursor in table, then:
+editor.command.executeTableSelectAll()
+```
+
+## Complete Example
+
+```typescript
+import Editor, { 
+  TableBorder, 
+  TdBorder, 
+  VerticalAlign 
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Create a formatted table
+editor.command.executeInsertTable({ row: 4, col: 3 })
+
+// Style the table
+editor.command.executeTableBorderType(TableBorder.ALL)
+editor.command.executeTableBorderColor('#333333')
+
+// Add a header row with background
+editor.command.executeTableSelectAll()
+editor.command.executeSetRange(0, 10) // First row
+editor.command.executeTableTdBackgroundColor('#CCCCCC')
+editor.command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+
+// Add more rows
+editor.command.executeInsertTableBottomRow()
+editor.command.executeInsertTableBottomRow()
+
+// Merge cells in header
+editor.command.executeMergeTableCell()
+```

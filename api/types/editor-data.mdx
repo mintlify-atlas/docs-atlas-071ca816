@@ -1,0 +1,376 @@
+---
+title: Editor Data Types
+description: Types for editor data structures (IEditorData, IEditorResult)
+---
+
+These interfaces define the structure of document data used by Canvas Editor.
+
+## IEditorData
+
+Represents the complete document structure with header, main, and footer sections.
+
+```typescript src/editor/interface/Editor.ts
+interface IEditorData {
+  header?: IElement[]
+  main: IElement[]
+  footer?: IElement[]
+  graffiti?: IGraffitiData[]
+}
+```
+
+### Properties
+
+<ParamField path="main" type="IElement[]" required>
+  Main document content. This is required and contains the primary document elements.
+</ParamField>
+
+<ParamField path="header" type="IElement[]">
+  Optional header content that appears at the top of each page
+</ParamField>
+
+<ParamField path="footer" type="IElement[]">
+  Optional footer content that appears at the bottom of each page
+</ParamField>
+
+<ParamField path="graffiti" type="IGraffitiData[]">
+  Optional graffiti/drawing data for annotations
+</ParamField>
+
+### Example
+
+```typescript
+import { IEditorData, IElement } from '@hufe921/canvas-editor'
+
+const data: IEditorData = {
+  header: [
+    { value: 'Document Title', size: 20, bold: true }
+  ],
+  main: [
+    { value: 'This is the main content.' },
+    { value: 'It can have multiple elements.' }
+  ],
+  footer: [
+    { value: 'Page ' },
+    { value: '1' }
+  ]
+}
+```
+
+## IEditorResult
+
+Represents the complete editor state including data, version, and options.
+
+```typescript src/editor/interface/Editor.ts
+interface IEditorResult {
+  version: string
+  data: IEditorData
+  options: IEditorOption
+}
+```
+
+### Properties
+
+<ParamField path="version" type="string" required>
+  Canvas Editor version that generated this result
+</ParamField>
+
+<ParamField path="data" type="IEditorData" required>
+  Complete document data
+</ParamField>
+
+<ParamField path="options" type="IEditorOption" required>
+  Editor configuration options
+</ParamField>
+
+### Example
+
+```typescript
+const result: IEditorResult = editor.command.getValue()
+
+console.log('Editor version:', result.version)
+console.log('Main content:', result.data.main)
+console.log('Options:', result.options)
+```
+
+### Use Cases
+
+**Saving Document:**
+```typescript
+editor.listener.saved = (result: IEditorResult) => {
+  // Save to server
+  fetch('/api/documents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(result)
+  })
+}
+```
+
+**Getting Current State:**
+```typescript
+const currentState = editor.command.getValue()
+// currentState is IEditorResult
+```
+
+## IEditorHTML
+
+Represents document data as HTML strings.
+
+```typescript src/editor/interface/Editor.ts
+interface IEditorHTML {
+  header: string
+  main: string
+  footer: string
+}
+```
+
+### Properties
+
+<ParamField path="header" type="string" required>
+  Header content as HTML
+</ParamField>
+
+<ParamField path="main" type="string" required>
+  Main content as HTML
+</ParamField>
+
+<ParamField path="footer" type="string" required>
+  Footer content as HTML
+</ParamField>
+
+### Example
+
+```typescript
+const html = editor.command.getHTML()
+
+console.log('Main HTML:', html.main)
+// Output: '<p>This is <b>bold</b> text</p>'
+
+// Use in preview
+document.querySelector('#preview').innerHTML = html.main
+```
+
+## IEditorText
+
+Alias for `IEditorHTML` - represents plain text for each section.
+
+```typescript src/editor/interface/Editor.ts
+type IEditorText = IEditorHTML
+```
+
+### Example
+
+```typescript
+const text = editor.command.getText()
+
+console.log('Main text:', text.main)
+console.log('Header text:', text.header)
+console.log('Footer text:', text.footer)
+```
+
+## Working with Document Data
+
+### Creating a New Document
+
+```typescript
+import Editor, { IEditorData, ElementType } from '@hufe921/canvas-editor'
+
+const data: IEditorData = {
+  main: [
+    { value: 'Chapter 1', level: TitleLevel.FIRST },
+    { value: 'Introduction paragraph.' }
+  ]
+}
+
+const editor = new Editor(container, data)
+```
+
+### Simplified Array Format
+
+You can also pass just an array for the main content:
+
+```typescript
+import { IElement } from '@hufe921/canvas-editor'
+
+const elements: IElement[] = [
+  { value: 'Simple document' }
+]
+
+const editor = new Editor(container, elements)
+// Equivalent to: { main: elements }
+```
+
+### Loading Existing Document
+
+```typescript
+// Fetch from server
+const response = await fetch('/api/documents/123')
+const result: IEditorResult = await response.json()
+
+// Create editor with loaded data
+const editor = new Editor(
+  container,
+  result.data,
+  result.options
+)
+```
+
+### Getting Document Data
+
+```typescript
+// Get as IEditorResult (includes version and options)
+const result = editor.command.getValue()
+
+// Get specific sections
+const mainContent: IElement[] = result.data.main
+const headerContent: IElement[] = result.data.header || []
+
+// Get as HTML
+const html = editor.command.getHTML()
+console.log(html.main)
+
+// Get as plain text
+const text = editor.command.getText()
+console.log(text.main)
+```
+
+### Setting Document Data
+
+```typescript
+import { IEditorData } from '@hufe921/canvas-editor'
+
+const newData: IEditorData = {
+  main: [
+    { value: 'New content' }
+  ]
+}
+
+editor.command.executeSetValue(newData)
+```
+
+### Async Operations
+
+```typescript
+// Get value asynchronously (waits for rendering)
+const result = await editor.command.getValueAsync()
+
+// Useful when you need up-to-date rendered positions
+const positions = result.data.main.map(el => el.metrics)
+```
+
+## Document Structure Best Practices
+
+### 1. Always Include Main Content
+
+```typescript
+// Good
+const data: IEditorData = {
+  main: [{ value: 'Content' }]
+}
+
+// Bad - will cause error
+const data: IEditorData = {
+  header: [{ value: 'Header only' }]
+  // Missing main!
+}
+```
+
+### 2. Use Header/Footer for Repeated Content
+
+```typescript
+const data: IEditorData = {
+  header: [
+    { value: 'Company Name', bold: true, size: 18 },
+    { value: '\n' },
+    { value: 'Confidential Document', color: '#FF0000' }
+  ],
+  main: [
+    { value: 'Page content...' }
+  ],
+  footer: [
+    { value: 'Page ' },
+    { value: '{{pageNo}}' }, // Dynamic page number
+    { value: ' of ' },
+    { value: '{{pageCount}}' }
+  ]
+}
+```
+
+### 3. Preserve Document Structure
+
+```typescript
+// When modifying, maintain structure
+const result = editor.command.getValue()
+
+// Modify main content
+result.data.main.push({ value: 'New paragraph' })
+
+// Keep header/footer intact
+editor.command.executeSetValue(result.data)
+```
+
+### 4. Handle Optional Sections
+
+```typescript
+const result = editor.command.getValue()
+
+// Safe access to optional sections
+const header = result.data.header || []
+const footer = result.data.footer || []
+
+if (header.length > 0) {
+  console.log('Document has header')
+}
+```
+
+## Export Formats
+
+### JSON
+
+```typescript
+const result = editor.command.getValue()
+const json = JSON.stringify(result, null, 2)
+
+// Save to file
+const blob = new Blob([json], { type: 'application/json' })
+const url = URL.createObjectURL(blob)
+const a = document.createElement('a')
+a.href = url
+a.download = 'document.json'
+a.click()
+```
+
+### HTML
+
+```typescript
+const html = editor.command.getHTML()
+const fullHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Document</title>
+</head>
+<body>
+  <header>${html.header}</header>
+  <main>${html.main}</main>
+  <footer>${html.footer}</footer>
+</body>
+</html>
+`
+```
+
+### Plain Text
+
+```typescript
+const text = editor.command.getText()
+const fullText = [
+  '=== HEADER ===',
+  text.header,
+  '',
+  '=== CONTENT ===',
+  text.main,
+  '',
+  '=== FOOTER ===',
+  text.footer
+].join('\n')
+```

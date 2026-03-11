@@ -1,0 +1,287 @@
+---
+title: 'Text Formatting'
+description: 'Apply rich text formatting including bold, italic, underline, colors, and font styles'
+icon: 'text'
+---
+
+Canvas Editor provides comprehensive text formatting capabilities to style your content. All formatting can be applied programmatically through the command API.
+
+## Font Styles
+
+<CardGroup cols={2}>
+  <Card title="Bold Text" icon="bold">
+    Apply bold weight to selected text
+  </Card>
+  <Card title="Italic Text" icon="italic">
+    Apply italic styling to selected text
+  </Card>
+  <Card title="Underline" icon="underline">
+    Add underline decoration to text
+  </Card>
+  <Card title="Strikeout" icon="strikethrough">
+    Add strikethrough decoration to text
+  </Card>
+</CardGroup>
+
+### Applying Font Styles
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, {
+  main: [{ value: 'Hello World' }]
+})
+
+// Select text range (start index, length)
+editor.command.executeSetRange(0, 11)
+
+// Apply bold
+editor.command.executeBold()
+
+// Apply italic
+editor.command.executeItalic()
+
+// Apply underline
+editor.command.executeUnderline()
+
+// Apply strikeout
+editor.command.executeStrikeout()
+```
+
+## Superscript and Subscript
+
+Create mathematical formulas or chemical notations with superscript and subscript text.
+
+<CodeGroup>
+```typescript Superscript
+// Apply superscript (e.g., x²)
+editor.command.executeSetRange(0, 5)
+editor.command.executeSuperscript()
+```
+
+```typescript Subscript
+// Apply subscript (e.g., H₂O)
+editor.command.executeSetRange(0, 5)
+editor.command.executeSubscript()
+```
+</CodeGroup>
+
+<Tip>
+Superscript and subscript automatically adjust font size to maintain readability.
+</Tip>
+
+## Font Family and Size
+
+### Setting Font Family
+
+Change the font family for selected text:
+
+```typescript
+// Set font family
+editor.command.executeSetRange(0, 11)
+editor.command.executeFont('Arial')
+
+// Available fonts depend on your system
+// Common options: 'Arial', 'Times New Roman', 'Courier New', etc.
+```
+
+### Setting Font Size
+
+<Tabs>
+  <Tab title="Specific Size">
+    ```typescript
+    // Set specific font size
+    editor.command.executeSetRange(0, 11)
+    editor.command.executeSize(16)
+    ```
+  </Tab>
+  <Tab title="Increase Size">
+    ```typescript
+    // Increase font size by one step
+    editor.command.executeSetRange(0, 11)
+    editor.command.executeSizeAdd()
+    ```
+  </Tab>
+  <Tab title="Decrease Size">
+    ```typescript
+    // Decrease font size by one step
+    editor.command.executeSetRange(0, 11)
+    editor.command.executeSizeMinus()
+    ```
+  </Tab>
+</Tabs>
+
+## Text Colors
+
+### Font Color
+
+Apply color to text:
+
+```typescript
+// Set text color
+editor.command.executeSetRange(0, 11)
+editor.command.executeColor('#FF0000')
+
+// Using color names
+editor.command.executeColor('red')
+
+// Using RGB
+editor.command.executeColor('rgb(255, 0, 0)')
+```
+
+### Highlight Color
+
+Add background highlight to text:
+
+```typescript
+// Set highlight color
+editor.command.executeSetRange(0, 11)
+editor.command.executeHighlight('#FFFF00')
+
+// Using color names
+editor.command.executeHighlight('yellow')
+
+// Remove highlight
+editor.command.executeHighlight('')
+```
+
+<Note>
+Both color and highlight support standard CSS color formats: hex, rgb, rgba, and named colors.
+</Note>
+
+## Inserting Formatted Text
+
+You can insert text with formatting already applied:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    value: 'Bold and Red',
+    bold: true,
+    color: '#FF0000'
+  },
+  {
+    value: ' Normal ',
+  },
+  {
+    value: 'Italic and Blue',
+    italic: true,
+    color: '#0000FF',
+    size: 18
+  }
+])
+```
+
+## Format Painter
+
+Copy formatting from one text selection to another:
+
+<Steps>
+  <Step title="Select Source Text">
+    Select the text with the formatting you want to copy.
+  </Step>
+  <Step title="Activate Painter">
+    ```typescript
+    editor.command.executePainter()
+    ```
+  </Step>
+  <Step title="Apply to Target">
+    Select the target text to apply the formatting.
+  </Step>
+</Steps>
+
+Alternatively, apply formatting programmatically:
+
+```typescript
+// Apply specific style object
+const style = {
+  bold: true,
+  italic: true,
+  color: '#FF0000',
+  size: 16
+}
+editor.command.executeApplyPainterStyle(style)
+```
+
+## Clear Formatting
+
+Remove all formatting from selected text:
+
+```typescript
+// Select text
+editor.command.executeSetRange(0, 11)
+
+// Clear all formatting
+editor.command.executeFormat()
+```
+
+<Warning>
+Clearing format removes all styling (bold, italic, color, etc.) and reverts to default formatting.
+</Warning>
+
+## Complete Example
+
+Here's a comprehensive example combining multiple formatting features:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const container = document.querySelector('.editor')
+const editor = new Editor(container, {
+  main: [
+    {
+      value: 'Canvas Editor',
+      bold: true,
+      size: 24,
+      color: '#333333'
+    },
+    {
+      value: '\n\nA powerful rich text editor with '  
+    },
+    {
+      value: 'extensive formatting',
+      bold: true,
+      italic: true,
+      underline: true,
+      color: '#0066CC'
+    },
+    {
+      value: ' capabilities.'
+    }
+  ]
+})
+
+// Apply formatting to existing text
+function formatText() {
+  // Make first line bold and large
+  editor.command.executeSetRange(0, 13)
+  editor.command.executeBold()
+  editor.command.executeSize(24)
+  
+  // Highlight important text
+  const data = editor.command.getValue().data.main
+  // Find and highlight specific text
+  editor.command.executeSetRange(15, 10)
+  editor.command.executeHighlight('#FFFF00')
+}
+```
+
+## Best Practices
+
+<Accordion title="Performance Tips">
+  - Batch formatting operations when possible
+  - Use `executeInsertElementList` with pre-formatted elements rather than formatting after insertion
+  - Avoid excessive color changes that might impact readability
+</Accordion>
+
+<Accordion title="Accessibility">
+  - Ensure sufficient contrast between text color and background
+  - Don't rely solely on color to convey information
+  - Use semantic formatting (bold for emphasis) rather than just visual styling
+</Accordion>
+
+<Accordion title="Consistency">
+  - Define a style guide for your application
+  - Use format painter to maintain consistent styling
+  - Consider creating reusable style presets
+</Accordion>

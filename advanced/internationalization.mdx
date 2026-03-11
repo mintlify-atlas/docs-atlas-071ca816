@@ -1,0 +1,559 @@
+---
+title: 'Internationalization (i18n)'
+description: 'Configure multi-language support and translations'
+icon: 'globe'
+---
+
+Canvas Editor includes built-in internationalization (i18n) support for context menus, date pickers, and other UI elements.
+
+## Built-in Languages
+
+Canvas Editor ships with two languages out of the box:
+
+- **English** (`en`) - Default language
+- **Chinese Simplified** (`zhCN`) - 简体中文
+
+## Setting the Language
+
+Configure the editor language during initialization:
+
+```typescript
+import Editor from 'canvas-editor'
+
+const editor = new Editor(container, data, {
+  i18n: {
+    locale: 'en' // or 'zhCN'
+  }
+})
+```
+
+## Changing Language at Runtime
+
+You can change the language dynamically:
+
+```typescript
+const editor = new Editor(container, data, { i18n: { locale: 'en' } })
+
+// Later, change to Chinese
+const i18n = editor.getI18n() // Note: Internal API
+i18n.setLocale('zhCN')
+```
+
+<Warning>
+  Changing the locale at runtime requires a re-render of UI elements. This is an internal API and may change in future versions.
+</Warning>
+
+## Translation Structure
+
+The translation object follows this structure:
+
+```typescript
+interface ILang {
+  contextmenu: IContextmenuLang
+  datePicker: IDatePickerLang
+}
+
+interface IContextmenuLang {
+  global: {
+    cut: string
+    copy: string
+    paste: string
+    selectAll: string
+    print: string
+  }
+  control: {
+    delete: string
+  }
+  hyperlink: {
+    delete: string
+    cancel: string
+    edit: string
+  }
+  image: {
+    change: string
+    saveAs: string
+    textWrap: string
+    textWrapType: {
+      embed: string
+      upDown: string
+      surround: string
+      floatTop: string
+      floatBottom: string
+    }
+  }
+  table: {
+    insertRowCol: string
+    insertTopRow: string
+    insertBottomRow: string
+    insertLeftCol: string
+    insertRightCol: string
+    deleteRowCol: string
+    deleteRow: string
+    deleteCol: string
+    deleteTable: string
+    mergeCell: string
+    mergeCancelCell: string
+    // ... more table options
+  }
+}
+
+interface IDatePickerLang {
+  now: string
+  confirm: string
+  return: string
+  timeSelect: string
+  weeks: {
+    sun: string
+    mon: string
+    tue: string
+    wed: string
+    thu: string
+    fri: string
+    sat: string
+  }
+  year: string
+  month: string
+  hour: string
+  minute: string
+  second: string
+}
+```
+
+<Info>
+  See `/src/editor/interface/i18n/I18n.ts:4` for the complete interface definition.
+</Info>
+
+## Adding Custom Translations
+
+<Steps>
+  <Step title="Register a new language">
+    Use `editor.register.langMap()` to register or extend translations:
+
+    ```typescript
+    editor.register.langMap('es', {
+      contextmenu: {
+        global: {
+          cut: 'Cortar',
+          copy: 'Copiar',
+          paste: 'Pegar',
+          selectAll: 'Seleccionar todo',
+          print: 'Imprimir'
+        },
+        image: {
+          change: 'Cambiar imagen',
+          saveAs: 'Guardar como imagen',
+          textWrap: 'Ajuste de texto',
+          textWrapType: {
+            embed: 'Incrustado',
+            upDown: 'Arriba y abajo',
+            surround: 'Envolvente',
+            floatTop: 'Flotar encima',
+            floatBottom: 'Flotar debajo'
+          }
+        },
+        // ... other translations
+      },
+      datePicker: {
+        now: 'Ahora',
+        confirm: 'Confirmar',
+        weeks: {
+          sun: 'Dom',
+          mon: 'Lun',
+          tue: 'Mar',
+          wed: 'Mié',
+          thu: 'Jue',
+          fri: 'Vie',
+          sat: 'Sáb'
+        },
+        // ... other date picker translations
+      }
+    })
+    ```
+  </Step>
+
+  <Step title="Use the new language">
+    Set the locale to your custom language:
+
+    ```typescript
+    const editor = new Editor(container, data, {
+      i18n: {
+        locale: 'es'
+      }
+    })
+    ```
+  </Step>
+</Steps>
+
+## Partial Translations
+
+You can provide partial translations to override specific strings:
+
+```typescript
+import { DeepPartial } from 'canvas-editor'
+
+// Override only specific translations
+editor.register.langMap('en', {
+  contextmenu: {
+    global: {
+      copy: 'Duplicate' // Override just this one string
+    }
+  }
+})
+```
+
+Missing translations will fall back to the default language (Chinese).
+
+## Built-in Translations
+
+<Tabs>
+  <Tab title="English">
+    ```json
+    {
+      "contextmenu": {
+        "global": {
+          "cut": "Cut",
+          "copy": "Copy",
+          "paste": "Paste",
+          "selectAll": "Select all",
+          "print": "Print"
+        },
+        "image": {
+          "change": "Change image",
+          "saveAs": "Save as image",
+          "textWrap": "Text wrap"
+        },
+        "table": {
+          "insertRowCol": "Insert row col",
+          "insertTopRow": "Insert top 1 row",
+          "insertBottomRow": "Insert bottom 1 row",
+          "deleteTable": "Delete table",
+          "mergeCell": "Merge cell"
+        }
+      },
+      "datePicker": {
+        "now": "Now",
+        "confirm": "Confirm",
+        "weeks": {
+          "sun": "Sun",
+          "mon": "Mon",
+          "tue": "Tue",
+          "wed": "Wed",
+          "thu": "Thu",
+          "fri": "Fri",
+          "sat": "Sat"
+        }
+      }
+    }
+    ```
+
+    Source: `/src/editor/core/i18n/lang/en.json:1`
+  </Tab>
+
+  <Tab title="Chinese (简体中文)">
+    ```json
+    {
+      "contextmenu": {
+        "global": {
+          "cut": "剪切",
+          "copy": "复制",
+          "paste": "粘贴",
+          "selectAll": "全选",
+          "print": "打印"
+        },
+        "image": {
+          "change": "更改图片",
+          "saveAs": "另存为图片",
+          "textWrap": "文字环绕"
+        },
+        "table": {
+          "insertRowCol": "插入行列",
+          "insertTopRow": "上方插入1行",
+          "insertBottomRow": "下方插入1行",
+          "deleteTable": "删除整个表格",
+          "mergeCell": "合并单元格"
+        }
+      },
+      "datePicker": {
+        "now": "此刻",
+        "confirm": "确定",
+        "weeks": {
+          "sun": "日",
+          "mon": "一",
+          "tue": "二",
+          "wed": "三",
+          "thu": "四",
+          "fri": "五",
+          "sat": "六"
+        }
+      }
+    }
+    ```
+
+    Source: `/src/editor/core/i18n/lang/zh-CN.json:1`
+  </Tab>
+</Tabs>
+
+## Using Translations in Context Menus
+
+When registering custom context menus, use `i18nPath` instead of `name`:
+
+```typescript
+// First, register your custom translations
+editor.register.langMap('en', {
+  contextmenu: {
+    custom: {
+      exportPdf: 'Export to PDF',
+      exportWord: 'Export to Word'
+    }
+  }
+})
+
+editor.register.langMap('es', {
+  contextmenu: {
+    custom: {
+      exportPdf: 'Exportar a PDF',
+      exportWord: 'Exportar a Word'
+    }
+  }
+})
+
+// Then use i18nPath in your menu
+editor.register.contextMenuList([
+  {
+    key: 'export',
+    i18nPath: 'contextmenu.custom.exportPdf', // Translates automatically
+    when: () => true,
+    callback: (command) => {
+      // Export to PDF logic
+    }
+  }
+])
+```
+
+## Translation Path Format
+
+The `i18nPath` follows dot notation:
+
+```typescript
+'contextmenu.global.copy'        // contextmenu → global → copy
+'contextmenu.image.textWrap'     // contextmenu → image → textWrap
+'datePicker.weeks.mon'           // datePicker → weeks → mon
+```
+
+The system automatically resolves these paths using the current locale.
+
+## Accessing Translations Programmatically
+
+You can access translations using the `t()` method:
+
+```typescript
+const i18n = editor.getI18n() // Internal API
+
+const copyText = i18n.t('contextmenu.global.copy')
+console.log(copyText) // "Copy" (en) or "复制" (zhCN)
+
+const mondayText = i18n.t('datePicker.weeks.mon')
+console.log(mondayText) // "Mon" (en) or "一" (zhCN)
+```
+
+## Complete Language Example
+
+Here's a complete example adding French support:
+
+```typescript
+import Editor from 'canvas-editor'
+
+const editor = new Editor(container, data, {
+  i18n: { locale: 'fr' }
+})
+
+editor.register.langMap('fr', {
+  contextmenu: {
+    global: {
+      cut: 'Couper',
+      copy: 'Copier',
+      paste: 'Coller',
+      selectAll: 'Tout sélectionner',
+      print: 'Imprimer'
+    },
+    control: {
+      delete: 'Supprimer le contrôle'
+    },
+    hyperlink: {
+      delete: 'Supprimer le lien',
+      cancel: 'Annuler le lien',
+      edit: 'Modifier le lien'
+    },
+    image: {
+      change: "Changer l'image",
+      saveAs: 'Enregistrer comme image',
+      textWrap: 'Habillage du texte',
+      textWrapType: {
+        embed: 'Intégré',
+        upDown: 'Haut et bas',
+        surround: 'Autour',
+        floatTop: 'Flottant au-dessus',
+        floatBottom: 'Flottant en-dessous'
+      }
+    },
+    table: {
+      insertRowCol: 'Insérer ligne/colonne',
+      insertTopRow: 'Insérer 1 ligne au-dessus',
+      insertBottomRow: 'Insérer 1 ligne en-dessous',
+      insertLeftCol: 'Insérer 1 colonne à gauche',
+      insertRightCol: 'Insérer 1 colonne à droite',
+      deleteRowCol: 'Supprimer ligne/colonne',
+      deleteRow: 'Supprimer 1 ligne',
+      deleteCol: 'Supprimer 1 colonne',
+      deleteTable: 'Supprimer le tableau',
+      mergeCell: 'Fusionner les cellules',
+      mergeCancelCell: 'Annuler la fusion'
+    }
+  },
+  datePicker: {
+    now: 'Maintenant',
+    confirm: 'Confirmer',
+    return: 'Retour',
+    timeSelect: 'Sélection de l\'heure',
+    weeks: {
+      sun: 'Dim',
+      mon: 'Lun',
+      tue: 'Mar',
+      wed: 'Mer',
+      thu: 'Jeu',
+      fri: 'Ven',
+      sat: 'Sam'
+    },
+    year: ' ',
+    month: ' ',
+    hour: 'Heure',
+    minute: 'Minute',
+    second: 'Seconde'
+  }
+})
+```
+
+## Language Switcher Component
+
+Here's an example of implementing a language switcher:
+
+```typescript
+function LanguageSwitcher({ editor }: { editor: Editor }) {
+  const [locale, setLocale] = useState('en')
+
+  const switchLanguage = (newLocale: string) => {
+    const i18n = editor.getI18n()
+    i18n.setLocale(newLocale)
+    setLocale(newLocale)
+    
+    // Force re-render of editor UI
+    editor.command.executeRerender()
+  }
+
+  return (
+    <select value={locale} onChange={(e) => switchLanguage(e.target.value)}>
+      <option value="en">English</option>
+      <option value="zhCN">中文</option>
+      <option value="es">Español</option>
+      <option value="fr">Français</option>
+    </select>
+  )
+}
+```
+
+## Fallback Behavior
+
+The i18n system has smart fallback behavior:
+
+1. First, it tries to find the translation in the requested locale
+2. If not found, it falls back to the default locale (Chinese)
+3. If still not found, it returns an empty string
+
+```typescript
+// Example with missing translation
+editor.register.langMap('de', {
+  contextmenu: {
+    global: {
+      copy: 'Kopieren'
+      // Other translations missing
+    }
+  }
+})
+
+const i18n = editor.getI18n()
+i18n.setLocale('de')
+
+// This exists in 'de'
+console.log(i18n.t('contextmenu.global.copy')) // "Kopieren"
+
+// This doesn't exist in 'de', falls back to default
+console.log(i18n.t('contextmenu.global.paste')) // "粘贴" (Chinese default)
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Complete translations" icon="check-double">
+    Provide complete translation objects to avoid unexpected fallbacks to Chinese.
+  </Card>
+  
+  <Card title="Use ISO codes" icon="flag">
+    Use standard locale codes like `en`, `es`, `fr`, `de`, etc. for consistency.
+  </Card>
+  
+  <Card title="Test all UI elements" icon="vial">
+    Test context menus, date pickers, and other UI components in each language.
+  </Card>
+  
+  <Card title="Consider RTL languages" icon="align-right">
+    For right-to-left languages, you may need additional CSS customization.
+  </Card>
+</CardGroup>
+
+## TypeScript Support
+
+For type safety, use the provided interfaces:
+
+```typescript
+import { ILang, DeepPartial } from 'canvas-editor'
+
+const germanTranslations: DeepPartial<ILang> = {
+  contextmenu: {
+    global: {
+      copy: 'Kopieren',
+      paste: 'Einfügen'
+    }
+  }
+}
+
+editor.register.langMap('de', germanTranslations)
+```
+
+## Contributing Translations
+
+If you've created a translation for Canvas Editor, consider contributing it back to the project:
+
+1. Add your translation file to `/src/editor/core/i18n/lang/`
+2. Import it in `/src/editor/core/i18n/I18n.ts`
+3. Submit a pull request
+
+<Info>
+  Community-contributed translations help make Canvas Editor accessible to users worldwide!
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Context Menus" icon="bars" href="/advanced/context-menus">
+    Use translations in custom context menus
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/guides/configuration">
+    Learn more about editor configuration
+  </Card>
+  <Card title="Plugin System" icon="plug" href="/advanced/plugins">
+    Create localized plugins
+  </Card>
+  <Card title="Theme Customization" icon="palette" href="/guides/styling">
+    Customize the editor appearance
+  </Card>
+</CardGroup>

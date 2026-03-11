@@ -1,0 +1,471 @@
+---
+title: Table Types
+description: Types and interfaces for table structures
+---
+
+Table types define the structure and configuration of tables in Canvas Editor.
+
+## ITable
+
+Complete table interface combining attributes, rules, and element properties.
+
+```typescript src/editor/interface/Element.ts
+type ITable = ITableAttr & ITableRule & ITableElement
+```
+
+## ITableAttr
+
+Table structure and styling attributes.
+
+```typescript src/editor/interface/Element.ts
+interface ITableAttr {
+  colgroup?: IColgroup[]
+  trList?: ITr[]
+  borderType?: TableBorder
+  borderColor?: string
+  borderWidth?: number
+  borderExternalWidth?: number
+  translateX?: number
+}
+```
+
+<ParamField path="colgroup" type="IColgroup[]">
+  Column definitions with widths
+</ParamField>
+
+<ParamField path="trList" type="ITr[]">
+  Array of table rows
+</ParamField>
+
+<ParamField path="borderType" type="TableBorder">
+  Border style: ALL, EMPTY, or EXTERNAL
+</ParamField>
+
+<ParamField path="borderColor" type="string">
+  Border color (hex format)
+</ParamField>
+
+<ParamField path="borderWidth" type="number">
+  Internal border width in pixels
+</ParamField>
+
+<ParamField path="borderExternalWidth" type="number">
+  External border width in pixels
+</ParamField>
+
+<ParamField path="translateX" type="number">
+  Horizontal translation offset
+</ParamField>
+
+## IColgroup
+
+Column definition.
+
+```typescript src/editor/interface/table/Colgroup.ts
+interface IColgroup {
+  width: number
+}
+```
+
+<ParamField path="width" type="number" required>
+  Column width in pixels
+</ParamField>
+
+### Example
+
+```typescript
+const columns: IColgroup[] = [
+  { width: 100 },  // First column: 100px
+  { width: 200 },  // Second column: 200px
+  { width: 150 }   // Third column: 150px
+]
+```
+
+## ITr
+
+Table row definition.
+
+```typescript src/editor/interface/table/Tr.ts
+interface ITr {
+  id?: string
+  height: number
+  tdList: ITd[]
+  pagingRepeat?: boolean
+  minHeight?: number
+}
+```
+
+<ParamField path="id" type="string">
+  Unique row identifier
+</ParamField>
+
+<ParamField path="height" type="number" required>
+  Row height in pixels
+</ParamField>
+
+<ParamField path="tdList" type="ITd[]" required>
+  Array of cells in this row
+</ParamField>
+
+<ParamField path="pagingRepeat" type="boolean">
+  Whether row repeats on each page (for headers)
+</ParamField>
+
+<ParamField path="minHeight" type="number">
+  Minimum row height
+</ParamField>
+
+## ITd
+
+Table cell definition.
+
+```typescript src/editor/interface/table/Td.ts
+interface ITd {
+  id?: string
+  colspan?: number
+  rowspan?: number
+  valueList: IElement[]
+  verticalAlign?: VerticalAlign
+  backgroundColor?: string
+  borderTypes?: TdBorder[]
+  slashTypes?: TdSlash[]
+  // ... more properties
+}
+```
+
+<ParamField path="id" type="string">
+  Unique cell identifier
+</ParamField>
+
+<ParamField path="colspan" type="number" default="1">
+  Number of columns to span
+</ParamField>
+
+<ParamField path="rowspan" type="number" default="1">
+  Number of rows to span
+</ParamField>
+
+<ParamField path="valueList" type="IElement[]" required>
+  Cell content elements
+</ParamField>
+
+<ParamField path="verticalAlign" type="VerticalAlign">
+  Vertical alignment: TOP, MIDDLE, or BOTTOM
+</ParamField>
+
+<ParamField path="backgroundColor" type="string">
+  Cell background color (hex format)
+</ParamField>
+
+<ParamField path="borderTypes" type="TdBorder[]">
+  Which borders to show: TOP, RIGHT, BOTTOM, LEFT
+</ParamField>
+
+<ParamField path="slashTypes" type="TdSlash[]">
+  Diagonal slash lines: FORWARD or BACK
+</ParamField>
+
+## Creating Tables
+
+### Simple Table
+
+```typescript
+import { ElementType } from '@hufe921/canvas-editor'
+
+const table: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  colgroup: [
+    { width: 150 },
+    { width: 150 },
+    { width: 150 }
+  ],
+  trList: [
+    {
+      height: 40,
+      tdList: [
+        { valueList: [{ value: 'Header 1' }] },
+        { valueList: [{ value: 'Header 2' }] },
+        { valueList: [{ value: 'Header 3' }] }
+      ]
+    },
+    {
+      height: 40,
+      tdList: [
+        { valueList: [{ value: 'Cell 1' }] },
+        { valueList: [{ value: 'Cell 2' }] },
+        { valueList: [{ value: 'Cell 3' }] }
+      ]
+    }
+  ]
+}
+
+editor.command.executeInsertElementList([table])
+```
+
+### Formatted Table
+
+```typescript
+import { TableBorder, VerticalAlign } from '@hufe921/canvas-editor'
+
+const formattedTable: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  borderType: TableBorder.ALL,
+  borderColor: '#000000',
+  borderWidth: 1,
+  colgroup: [
+    { width: 200 },
+    { width: 300 }
+  ],
+  trList: [
+    {
+      height: 50,
+      tdList: [
+        {
+          valueList: [{ value: 'Name', bold: true }],
+          backgroundColor: '#CCCCCC',
+          verticalAlign: VerticalAlign.MIDDLE
+        },
+        {
+          valueList: [{ value: 'Value', bold: true }],
+          backgroundColor: '#CCCCCC',
+          verticalAlign: VerticalAlign.MIDDLE
+        }
+      ]
+    },
+    {
+      height: 40,
+      tdList: [
+        { valueList: [{ value: 'Item 1' }] },
+        { valueList: [{ value: 'Description 1' }] }
+      ]
+    }
+  ]
+}
+```
+
+### Table with Merged Cells
+
+```typescript
+const mergedTable: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  colgroup: [
+    { width: 100 },
+    { width: 100 },
+    { width: 100 }
+  ],
+  trList: [
+    {
+      height: 40,
+      tdList: [
+        {
+          colspan: 3,  // Spans all 3 columns
+          valueList: [{ value: 'Title', bold: true }],
+          verticalAlign: VerticalAlign.MIDDLE
+        }
+      ]
+    },
+    {
+      height: 60,
+      tdList: [
+        {
+          rowspan: 2,  // Spans 2 rows
+          valueList: [{ value: 'Side' }]
+        },
+        { valueList: [{ value: 'Top Right' }] },
+        { valueList: [{ value: 'Top Far Right' }] }
+      ]
+    },
+    {
+      height: 60,
+      tdList: [
+        { valueList: [{ value: 'Bottom Right' }] },
+        { valueList: [{ value: 'Bottom Far Right' }] }
+      ]
+    }
+  ]
+}
+```
+
+### Table with Diagonal Slash
+
+```typescript
+import { TdSlash } from '@hufe921/canvas-editor'
+
+const slashTable: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  colgroup: [
+    { width: 150 },
+    { width: 150 }
+  ],
+  trList: [
+    {
+      height: 60,
+      tdList: [
+        {
+          valueList: [
+            { value: 'Name' },
+            { value: '\n' },
+            { value: 'Date' }
+          ],
+          slashTypes: [TdSlash.FORWARD]  // Add / diagonal
+        },
+        { valueList: [{ value: 'Value' }] }
+      ]
+    }
+  ]
+}
+```
+
+## Table Operations
+
+### Using Command API
+
+```typescript
+// Insert new table
+editor.command.executeInsertTable({ row: 3, col: 3 })
+
+// Add rows
+editor.command.executeInsertTableTopRow()
+editor.command.executeInsertTableBottomRow()
+
+// Add columns
+editor.command.executeInsertTableLeftCol()
+editor.command.executeInsertTableRightCol()
+
+// Delete
+editor.command.executeDeleteTableRow()
+editor.command.executeDeleteTableCol()
+editor.command.executeDeleteTable()
+
+// Merge/split cells
+editor.command.executeMergeTableCell()
+editor.command.executeCancelMergeTableCell()
+editor.command.executeSplitVerticalTableCell()
+editor.command.executeSplitHorizontalTableCell()
+```
+
+### Styling Tables
+
+```typescript
+import { TableBorder, VerticalAlign, TdBorder } from '@hufe921/canvas-editor'
+
+// Set border style
+editor.command.executeTableBorderType(TableBorder.ALL)
+editor.command.executeTableBorderColor('#0000FF')
+
+// Set cell alignment
+editor.command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+
+// Set cell background
+editor.command.executeTableTdBackgroundColor('#F0F0F0')
+
+// Custom cell borders
+editor.command.executeTableTdBorderType([
+  TdBorder.TOP,
+  TdBorder.BOTTOM
+])
+```
+
+## ITableRule
+
+Table behavior rules.
+
+```typescript src/editor/interface/Element.ts
+interface ITableRule {
+  tableToolDisabled?: boolean
+}
+```
+
+<ParamField path="tableToolDisabled" type="boolean">
+  Disable table editing tools
+</ParamField>
+
+### Example
+
+```typescript
+const readonlyTable: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  tableToolDisabled: true,  // Disable table toolbar
+  colgroup: [{ width: 200 }],
+  trList: [{
+    height: 40,
+    tdList: [{
+      valueList: [{ value: 'Read-only cell' }]
+    }]
+  }]
+}
+```
+
+## Complete Example
+
+```typescript
+import Editor, {
+  ElementType,
+  TableBorder,
+  VerticalAlign,
+  TdBorder,
+  IElement,
+  ITr,
+  ITd
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Create a styled data table
+const createDataTable = (
+  headers: string[],
+  rows: string[][]
+): IElement => {
+  const colgroup = headers.map(() => ({ 
+    width: 150 
+  }))
+
+  const headerRow: ITr = {
+    height: 50,
+    tdList: headers.map(header => ({
+      valueList: [{ 
+        value: header, 
+        bold: true,
+        color: '#FFFFFF'
+      }],
+      backgroundColor: '#4A90E2',
+      verticalAlign: VerticalAlign.MIDDLE
+    }))
+  }
+
+  const dataRows: ITr[] = rows.map((row, idx) => ({
+    height: 40,
+    tdList: row.map(cell => ({
+      valueList: [{ value: cell }],
+      backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#F5F5F5'
+    }))
+  }))
+
+  return {
+    type: ElementType.TABLE,
+    value: '',
+    borderType: TableBorder.ALL,
+    borderColor: '#CCCCCC',
+    borderWidth: 1,
+    colgroup,
+    trList: [headerRow, ...dataRows]
+  }
+}
+
+// Use it
+const table = createDataTable(
+  ['Name', 'Email', 'Status'],
+  [
+    ['John Doe', 'john@example.com', 'Active'],
+    ['Jane Smith', 'jane@example.com', 'Active'],
+    ['Bob Johnson', 'bob@example.com', 'Inactive']
+  ]
+)
+
+editor.command.executeInsertElementList([table])
+```

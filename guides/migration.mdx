@@ -1,0 +1,631 @@
+---
+title: 'Migration Guide'
+description: 'Upgrade guide for migrating between Canvas Editor versions'
+---
+
+This guide helps you migrate your Canvas Editor implementation to the latest version. It covers breaking changes, new features, and upgrade steps based on the project's changelog.
+
+## Current Version
+
+<Info>
+  Latest stable version: **0.9.128** (February 28, 2026)
+  
+  View the complete changelog at [GitHub](https://github.com/Hufe921/canvas-editor/blob/main/CHANGELOG.md)
+</Info>
+
+## Quick Migration
+
+For most users, upgrading is straightforward:
+
+```bash
+npm install @hufe921/canvas-editor@latest
+```
+
+Then review the breaking changes sections below for your current version.
+
+## Version 0.9.128 (Latest)
+
+**Release Date:** February 28, 2026
+
+### New Features
+
+<CardGroup cols={2}>
+  <Card title="Checkbox Mark Color" icon="check">
+    New `checkMarkColor` option for checkbox styling (#1367)
+    
+    ```typescript
+    const options = {
+      checkbox: {
+        checkMarkColor: '#FFFFFF'
+      }
+    }
+    ```
+  </Card>
+  
+  <Card title="Paste Image Override" icon="image">
+    Support for custom paste image handling (#1365)
+    
+    ```typescript
+    editor.override.paste = (data) => {
+      // Custom paste logic
+      return customData
+    }
+    ```
+  </Card>
+  
+  <Card title="Home/End Keys" icon="keyboard">
+    Implemented shortcuts for Home and End keys (#1361)
+  </Card>
+  
+  <Card title="Paragraph Index" icon="list-ol">
+    Added paragraph index to `getRangeContext` API (#1360)
+  </Card>
+</CardGroup>
+
+### Bug Fixes
+
+- Fixed global CSS affecting pasted text color (#1359)
+
+## Version 0.9.127
+
+**Release Date:** February 18, 2026
+
+### Bug Fixes
+
+- Fixed format elements error in `executeComputeElementListHeight` API (#1356)
+- Fixed cursor movement to visible range boundary
+
+## Version 0.9.126
+
+**Release Date:** February 12, 2026
+
+### New Features
+
+<Steps>
+  <Step title="Element Height Calculation">
+    New APIs for computing element heights (#1213):
+    
+    ```typescript
+    editor.command.executeComputeElementListHeight(elements)
+    editor.command.executeGetRemainingPageHeight()
+    ```
+  </Step>
+  
+  <Step title="List Style Inheritance">
+    Configure list number style inheritance (#727):
+    
+    ```typescript
+    const options = {
+      list: {
+        inheritStyle: true
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+### Bug Fixes
+
+- Adjusted image rowFlex when converting HTML to elements (#1354)
+- Fixed cursor positioning when clicking control postfix (#1353)
+- Restored titleId when splitting/merging titles (#921, #1337)
+
+## Version 0.9.125
+
+**Release Date:** February 7, 2026
+
+### Major Features
+
+<CardGroup cols={2}>
+  <Card title="Image Caption" icon="image">
+    Full support for image captions (#1326)
+    
+    ```typescript
+    {
+      type: ElementType.IMAGE,
+      value: 'base64...',
+      imgCaption: {
+        value: 'Figure 1',
+        color: '#666',
+        size: 12
+      }
+    }
+    ```
+  </Card>
+  
+  <Card title="Image Cropping" icon="crop">
+    New `executeSetImageCrop` API (#1327)
+    
+    ```typescript
+    editor.command.executeSetImageCrop({
+      x: 10,
+      y: 10,
+      width: 200,
+      height: 150
+    })
+    ```
+  </Card>
+  
+  <Card title="Label Element" icon="tag">
+    New label element and events (#859)
+    
+    ```typescript
+    {
+      value: 'Label',
+      labelId: 'label-1',
+      label: {
+        backgroundColor: '#FF0000'
+      }
+    }
+    ```
+  </Card>
+  
+  <Card title="Hide Cursor API" icon="eye-slash">
+    Added `executeHideCursor` API (#1352)
+    
+    ```typescript
+    editor.command.executeHideCursor()
+    ```
+  </Card>
+</CardGroup>
+
+## Version 0.9.124
+
+**Release Date:** January 31, 2026
+
+### New Features
+
+- Calculator support for number controls (#925)
+- Line spacing scales proportionally with font size (#1344)
+
+### Bug Fixes
+
+- Fixed checkbox not selectable on first click in form mode (#1347)
+- Fixed copy style before title line break (#1339)
+- Fixed cursor focus in table when resizing last row (#1349)
+- Fixed layout shift with descended characters (#1342)
+
+## Version 0.9.123
+
+**Release Date:** January 16, 2026
+
+### New Features
+
+<Accordion title="Search Enhancements">
+  - Search within selected content (#1336)
+  - Ensure selected option scrolls into view (#1340)
+  
+  ```typescript
+  editor.command.executeSearch('query', {
+    inSelection: true
+  })
+  ```
+</Accordion>
+
+### Bug Fixes
+
+- Prevented cursor jump during search with selection (#1335)
+- Fixed search highlight position for radio controls (#1346)
+- Fixed tab element boundingBoxAscent value (#1341)
+
+## Version 0.9.122
+
+**Release Date:** December 30, 2025
+
+### Major Features
+
+<CardGroup cols={2}>
+  <Card title="White Space Markers" icon="eye">
+    Draw whitespace markers (#1329)
+    
+    ```typescript
+    const options = {
+      whiteSpace: {
+        visible: true,
+        color: '#E0E0E0'
+      }
+    }
+    ```
+  </Card>
+  
+  <Card title="Iframe Permissions" icon="shield">
+    Configure iframe allow permissions (#1260)
+    
+    ```typescript
+    {
+      type: ElementType.BLOCK,
+      block: {
+        iframeBlock: {
+          allow: 'camera; microphone'
+        }
+      }
+    }
+    ```
+  </Card>
+</CardGroup>
+
+### Performance
+
+- Reduced graffiti points for better drawing performance
+- Optimized graffiti drawing algorithm
+
+## Version 0.9.121
+
+**Release Date:** December 19, 2025
+
+### Major Features: Graffiti Mode
+
+New graffiti/drawing mode (#992):
+
+```typescript
+import { EditorMode } from '@hufe921/canvas-editor'
+
+const options = {
+  mode: EditorMode.GRAFFITI,
+  graffiti: {
+    lineWidth: 2,
+    strokeStyle: '#000000'
+  }
+}
+```
+
+### Bug Fixes
+
+- Fixed eventbus clearing when destroying editor
+- Fixed compute position boundary errors
+- Fixed graffiti mode boundary errors
+- Restricted allowed characters in number control (#1319)
+
+## Version 0.9.120
+
+**Release Date:** November 28, 2025
+
+### New Features
+
+<Steps>
+  <Step title="Regex Search">
+    Search with regular expressions (#1308)
+    
+    ```typescript
+    editor.command.executeSearch(/\d{3}-\d{4}/, {
+      isRegex: true
+    })
+    ```
+  </Step>
+  
+  <Step title="Case-Insensitive Search">
+    Ignore case option (#1316)
+    
+    ```typescript
+    editor.command.executeSearch('query', {
+      ignoreCase: true
+    })
+    ```
+  </Step>
+  
+  <Step title="Background in Print Mode">
+    Disable background in print mode (#1314)
+    
+    ```typescript
+    const options = {
+      modeRule: {
+        [EditorMode.PRINT]: {
+          backgroundDisabled: true
+        }
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Breaking Changes by Version
+
+<Warning>
+  Review these breaking changes if upgrading from older versions.
+</Warning>
+
+### 0.9.118 → 0.9.120
+
+<Accordion title="Clipboard API Changes">
+  Clipboard operations are now async (#1276)
+  
+  **Before:**
+  ```typescript
+  editor.command.executeCopy()
+  ```
+  
+  **After:**
+  ```typescript
+  await editor.command.executeCopy()
+  ```
+</Accordion>
+
+### 0.9.110 → 0.9.115
+
+<Accordion title="Mode Rule Option">
+  New `modeRule` configuration structure (#1132)
+  
+  **Migration:**
+  ```typescript
+  // Old approach: individual flags
+  const options = {
+    imagePreviewerDisabled: true
+  }
+  
+  // New approach: mode-specific rules
+  const options = {
+    modeRule: {
+      [EditorMode.PRINT]: {
+        imagePreviewerDisabled: true,
+        backgroundDisabled: false
+      },
+      [EditorMode.READONLY]: {
+        imagePreviewerDisabled: false
+      }
+    }
+  }
+  ```
+</Accordion>
+
+### 0.9.100 → 0.9.105
+
+<Accordion title="Control Properties API">
+  Batch control property updates (#1037)
+  
+  **Before:**
+  ```typescript
+  // Update individual properties
+  editor.command.executeSetControlValue({ ... })
+  editor.command.executeSetControlExtension({ ... })
+  ```
+  
+  **After:**
+  ```typescript
+  // Batch update
+  editor.command.executeSetControlProperties({
+    conceptId: 'field-1',
+    properties: {
+      placeholder: 'New placeholder',
+      minWidth: 200,
+      disabled: false
+    }
+  })
+  ```
+</Accordion>
+
+### 0.9.95 → 0.9.97
+
+<Accordion title="Area Element Introduction">
+  New area element feature (#216)
+  
+  Areas allow creating editable regions within documents:
+  
+  ```typescript
+  {
+    value: '\n',
+    type: ElementType.AREA,
+    areaId: 'area-1',
+    area: {
+      mode: AreaMode.EDIT,
+      backgroundColor: '#F5F5F5'
+    },
+    valueList: [
+      { value: 'Area content' }
+    ]
+  }
+  ```
+</Accordion>
+
+## Migration Checklist
+
+<Steps>
+  <Step title="Update Package">
+    ```bash
+    npm install @hufe921/canvas-editor@latest
+    ```
+  </Step>
+  
+  <Step title="Update Imports">
+    Check if any new enums or types are needed:
+    
+    ```typescript
+    import Editor, {
+      EditorMode,
+      ElementType,
+      ControlType,
+      // Add new imports as needed
+      WatermarkType,
+      AreaMode
+    } from '@hufe921/canvas-editor'
+    ```
+  </Step>
+  
+  <Step title="Update Configuration">
+    Review and update your editor options:
+    
+    ```typescript
+    const options = {
+      // Add new options
+      modeRule: { ... },
+      graffiti: { ... },
+      whiteSpace: { ... }
+    }
+    ```
+  </Step>
+  
+  <Step title="Update API Calls">
+    Replace deprecated methods:
+    
+    ```typescript
+    // Check for async operations
+    await editor.command.executeCopy()
+    
+    // Use new batch APIs
+    editor.command.executeSetControlProperties({ ... })
+    ```
+  </Step>
+  
+  <Step title="Test Thoroughly">
+    - Test all editor modes (edit, readonly, form, print)
+    - Verify data loading and saving
+    - Check custom integrations
+    - Test on different browsers
+  </Step>
+</Steps>
+
+## Common Issues and Solutions
+
+### Issue: AsyncClipboard Errors
+
+<Accordion title="Solution">
+  **Problem:** Clipboard operations fail in older browsers
+  
+  **Solution:** Update to version 0.9.118+ which made clipboard operations async:
+  
+  ```typescript
+  try {
+    await editor.command.executeCopy()
+  } catch (error) {
+    console.error('Clipboard not available:', error)
+    // Fallback logic
+  }
+  ```
+</Accordion>
+
+### Issue: Control Value Not Updating
+
+<Accordion title="Solution">
+  **Problem:** Control values don't update after setting
+  
+  **Solution:** Use the `isSubmitHistory` option:
+  
+  ```typescript
+  editor.command.executeSetControlValue({
+    conceptId: 'field-1',
+    value: 'New value',
+    isSubmitHistory: true
+  })
+  ```
+</Accordion>
+
+### Issue: Style Inheritance in Lists
+
+<Accordion title="Solution">
+  **Problem:** List numbers don't inherit text style
+  
+  **Solution:** Enable style inheritance (v0.9.126+):
+  
+  ```typescript
+  const options = {
+    list: {
+      inheritStyle: true
+    }
+  }
+  ```
+</Accordion>
+
+## Version Compatibility
+
+<Note>
+  Canvas Editor maintains backward compatibility for document data. Documents created with older versions can be loaded in newer versions, but some features may not be available until the data is re-saved.
+</Note>
+
+### Data Migration
+
+When loading old documents:
+
+```typescript
+function migrateDocument(oldData: IEditorData): IEditorData {
+  // The editor automatically handles most migrations
+  // But you may want to add new features:
+  
+  const newData = { ...oldData }
+  
+  // Example: Add image captions to existing images
+  newData.main = newData.main.map(element => {
+    if (element.type === ElementType.IMAGE && !element.imgCaption) {
+      return {
+        ...element,
+        imgCaption: {
+          value: 'Untitled',
+          color: '#666666'
+        }
+      }
+    }
+    return element
+  })
+  
+  return newData
+}
+```
+
+## Future-Proofing
+
+<CardGroup cols={2}>
+  <Card title="Store Version" icon="tag">
+    Always save the editor version with documents:
+    
+    ```typescript
+    const result = editor.command.getResult()
+    saveDocument({
+      version: result.version,
+      data: result.data
+    })
+    ```
+  </Card>
+  
+  <Card title="Feature Detection" icon="radar">
+    Check for feature availability:
+    
+    ```typescript
+    if (editor.command.executeHideCursor) {
+      editor.command.executeHideCursor()
+    }
+    ```
+  </Card>
+  
+  <Card title="Gradual Migration" icon="layer-group">
+    Migrate features incrementally rather than all at once.
+  </Card>
+  
+  <Card title="Test Environments" icon="flask">
+    Always test migrations in a staging environment first.
+  </Card>
+</CardGroup>
+
+## Getting Help
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/Hufe921/canvas-editor/issues">
+    Report bugs or request features
+  </Card>
+  
+  <Card title="Changelog" icon="scroll" href="https://github.com/Hufe921/canvas-editor/blob/main/CHANGELOG.md">
+    View complete version history
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    Browse the complete documentation
+  </Card>
+  
+  <Card title="Examples" icon="code" href="https://github.com/Hufe921/canvas-editor">
+    See migration examples in action
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Review configuration options
+  </Card>
+  <Card title="Data Structure" icon="database" href="/guides/data-structure">
+    Understand data format changes
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/editor">
+    Explore new API methods
+  </Card>
+  <Card title="Examples" icon="flask" href="/quickstart">
+    See new features in action
+  </Card>
+</CardGroup>

@@ -1,0 +1,538 @@
+---
+title: ElementType Enum
+description: Enum defining all element types in Canvas Editor
+---
+
+The `ElementType` enum defines all possible types of content elements in the document.
+
+## Definition
+
+```typescript src/editor/dataset/enum/Element.ts
+enum ElementType {
+  TEXT = 'text',
+  IMAGE = 'image',
+  TABLE = 'table',
+  HYPERLINK = 'hyperlink',
+  SUPERSCRIPT = 'superscript',
+  SUBSCRIPT = 'subscript',
+  SEPARATOR = 'separator',
+  PAGE_BREAK = 'pageBreak',
+  CONTROL = 'control',
+  AREA = 'area',
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio',
+  LATEX = 'latex',
+  TAB = 'tab',
+  DATE = 'date',
+  BLOCK = 'block',
+  TITLE = 'title',
+  LIST = 'list',
+  LABEL = 'label'
+}
+```
+
+## Element Types
+
+### TEXT
+
+```typescript
+ElementType.TEXT = 'text'
+```
+
+Plain text or formatted text element (default type).
+
+**Example:**
+```typescript
+const textElement: IElement = {
+  type: ElementType.TEXT,  // Optional - this is default
+  value: 'Hello World',
+  bold: true,
+  size: 18
+}
+```
+
+### IMAGE
+
+```typescript
+ElementType.IMAGE = 'image'
+```
+
+Image element with base64 data or URL.
+
+**Example:**
+```typescript
+import { ElementType, ImageDisplay } from '@hufe921/canvas-editor'
+
+const imageElement: IElement = {
+  type: ElementType.IMAGE,
+  value: 'data:image/png;base64,...',
+  width: 300,
+  height: 200,
+  imgDisplay: ImageDisplay.INLINE
+}
+```
+
+### TABLE
+
+```typescript
+ElementType.TABLE = 'table'
+```
+
+Table with rows and columns.
+
+**Example:**
+```typescript
+const tableElement: IElement = {
+  type: ElementType.TABLE,
+  value: '',
+  colgroup: [{ width: 100 }, { width: 200 }],
+  trList: [
+    {
+      height: 40,
+      tdList: [
+        { valueList: [{ value: 'Cell 1' }] },
+        { valueList: [{ value: 'Cell 2' }] }
+      ]
+    }
+  ]
+}
+```
+
+### HYPERLINK
+
+```typescript
+ElementType.HYPERLINK = 'hyperlink'
+```
+
+Clickable hyperlink.
+
+**Example:**
+```typescript
+const linkElement: IElement = {
+  type: ElementType.HYPERLINK,
+  value: '',
+  url: 'https://example.com',
+  valueList: [
+    { value: 'Click here' }
+  ]
+}
+```
+
+### SUPERSCRIPT
+
+```typescript
+ElementType.SUPERSCRIPT = 'superscript'
+```
+
+Superscript text (e.g., x²).
+
+**Example:**
+```typescript
+const element: IElement = {
+  type: ElementType.SUPERSCRIPT,
+  value: '2'
+}
+// Renders as superscript
+```
+
+### SUBSCRIPT
+
+```typescript
+ElementType.SUBSCRIPT = 'subscript'
+```
+
+Subscript text (e.g., H₂O).
+
+**Example:**
+```typescript
+const element: IElement = {
+  type: ElementType.SUBSCRIPT,
+  value: '2'
+}
+// Renders as subscript
+```
+
+### SEPARATOR
+
+```typescript
+ElementType.SEPARATOR = 'separator'
+```
+
+Horizontal separator line.
+
+**Example:**
+```typescript
+const separator: IElement = {
+  type: ElementType.SEPARATOR,
+  value: '',
+  dashArray: [5, 5],  // Dashed line
+  lineWidth: 1
+}
+```
+
+### PAGE_BREAK
+
+```typescript
+ElementType.PAGE_BREAK = 'pageBreak'
+```
+
+Forced page break.
+
+**Example:**
+```typescript
+const pageBreak: IElement = {
+  type: ElementType.PAGE_BREAK,
+  value: ''
+}
+```
+
+### CONTROL
+
+```typescript
+ElementType.CONTROL = 'control'
+```
+
+Form control (text input, select, etc.).
+
+**Example:**
+```typescript
+import { ControlType } from '@hufe921/canvas-editor'
+
+const controlElement: IElement = {
+  type: ElementType.CONTROL,
+  value: '',
+  control: {
+    type: ControlType.TEXT,
+    value: null,
+    conceptId: 'firstName',
+    placeholder: 'Enter name'
+  }
+}
+```
+
+### CHECKBOX
+
+```typescript
+ElementType.CHECKBOX = 'checkbox'
+```
+
+Standalone checkbox element.
+
+**Example:**
+```typescript
+const checkbox: IElement = {
+  type: ElementType.CHECKBOX,
+  value: '',
+  checkbox: {
+    value: true  // checked
+  }
+}
+```
+
+### RADIO
+
+```typescript
+ElementType.RADIO = 'radio'
+```
+
+Standalone radio button.
+
+**Example:**
+```typescript
+const radio: IElement = {
+  type: ElementType.RADIO,
+  value: '',
+  radio: {
+    value: false  // not selected
+  }
+}
+```
+
+### LATEX
+
+```typescript
+ElementType.LATEX = 'latex'
+```
+
+LaTeX mathematical formula.
+
+**Example:**
+```typescript
+const latex: IElement = {
+  type: ElementType.LATEX,
+  value: 'E = mc^2',
+  laTexSVG: '<svg>...</svg>'  // Rendered SVG
+}
+```
+
+### TAB
+
+```typescript
+ElementType.TAB = 'tab'
+```
+
+Tab character.
+
+**Example:**
+```typescript
+const tab: IElement = {
+  type: ElementType.TAB,
+  value: '\t'
+}
+```
+
+### DATE
+
+```typescript
+ElementType.DATE = 'date'
+```
+
+Date element with formatting.
+
+**Example:**
+```typescript
+const date: IElement = {
+  type: ElementType.DATE,
+  value: '2024-01-15',
+  dateFormat: 'YYYY-MM-DD'
+}
+```
+
+### BLOCK
+
+```typescript
+ElementType.BLOCK = 'block'
+```
+
+Block-level element (like a code block).
+
+**Example:**
+```typescript
+const block: IElement = {
+  type: ElementType.BLOCK,
+  value: 'function() {}',
+  block: {
+    type: BlockType.CODE
+  }
+}
+```
+
+### TITLE
+
+```typescript
+ElementType.TITLE = 'title'
+```
+
+Heading/title element.
+
+**Example:**
+```typescript
+import { TitleLevel } from '@hufe921/canvas-editor'
+
+const title: IElement = {
+  type: ElementType.TITLE,
+  value: 'Chapter 1',
+  level: TitleLevel.FIRST
+}
+```
+
+### LIST
+
+```typescript
+ElementType.LIST = 'list'
+```
+
+List item.
+
+**Example:**
+```typescript
+import { ListType, ListStyle } from '@hufe921/canvas-editor'
+
+const listItem: IElement = {
+  type: ElementType.LIST,
+  value: 'First item',
+  listType: ListType.UL,
+  listStyle: ListStyle.DISC
+}
+```
+
+### LABEL
+
+```typescript
+ElementType.LABEL = 'label'
+```
+
+Labeled/tagged text.
+
+**Example:**
+```typescript
+const label: IElement = {
+  type: ElementType.LABEL,
+  value: 'Important',
+  label: {
+    color: '#FFFFFF',
+    backgroundColor: '#FF0000',
+    borderRadius: 4
+  }
+}
+```
+
+### AREA
+
+```typescript
+ElementType.AREA = 'area'
+```
+
+Area element for grouping content.
+
+**Example:**
+```typescript
+const area: IElement = {
+  type: ElementType.AREA,
+  value: '',
+  areaId: 'header-area',
+  valueList: [
+    { value: 'Content in area' }
+  ]
+}
+```
+
+## Usage Patterns
+
+### Type Checking
+
+```typescript
+import { ElementType } from '@hufe921/canvas-editor'
+
+function processElement(element: IElement) {
+  switch (element.type) {
+    case ElementType.TEXT:
+      console.log('Text:', element.value)
+      break
+    
+    case ElementType.IMAGE:
+      console.log('Image:', element.width, element.height)
+      break
+    
+    case ElementType.TABLE:
+      console.log('Table with', element.trList?.length, 'rows')
+      break
+    
+    case ElementType.CONTROL:
+      console.log('Control:', element.control?.type)
+      break
+  }
+}
+```
+
+### Filtering by Type
+
+```typescript
+const data = editor.command.getValue()
+
+// Find all images
+const images = data.data.main.filter(
+  el => el.type === ElementType.IMAGE
+)
+
+// Find all tables
+const tables = data.data.main.filter(
+  el => el.type === ElementType.TABLE
+)
+
+// Find all controls
+const controls = data.data.main.filter(
+  el => el.type === ElementType.CONTROL
+)
+```
+
+### Creating Elements by Type
+
+```typescript
+function createElement(type: ElementType, value: string): IElement {
+  const baseElement: IElement = {
+    type,
+    value
+  }
+  
+  // Add type-specific properties
+  switch (type) {
+    case ElementType.IMAGE:
+      return { ...baseElement, width: 200, height: 150 }
+    
+    case ElementType.SEPARATOR:
+      return { ...baseElement, dashArray: [5, 5] }
+    
+    case ElementType.PAGE_BREAK:
+      return { ...baseElement, value: '' }
+    
+    default:
+      return baseElement
+  }
+}
+```
+
+## Complete Example
+
+```typescript
+import Editor, {
+  ElementType,
+  ImageDisplay,
+  ControlType,
+  ListType,
+  ListStyle,
+  TitleLevel
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Insert various element types
+const elements: IElement[] = [
+  {
+    type: ElementType.TITLE,
+    value: 'Document Title',
+    level: TitleLevel.FIRST
+  },
+  {
+    type: ElementType.TEXT,
+    value: 'Introduction paragraph.'
+  },
+  {
+    type: ElementType.SEPARATOR,
+    value: '',
+    dashArray: [5, 5]
+  },
+  {
+    type: ElementType.IMAGE,
+    value: 'data:image/png;base64,...',
+    width: 300,
+    height: 200,
+    imgDisplay: ImageDisplay.BLOCK
+  },
+  {
+    type: ElementType.LIST,
+    value: 'List item 1',
+    listType: ListType.UL,
+    listStyle: ListStyle.DISC
+  },
+  {
+    type: ElementType.PAGE_BREAK,
+    value: ''
+  }
+]
+
+editor.command.executeInsertElementList(elements)
+
+// Query by type
+const result = editor.command.getValue()
+
+const elementsByType = {
+  images: result.data.main.filter(e => e.type === ElementType.IMAGE),
+  tables: result.data.main.filter(e => e.type === ElementType.TABLE),
+  controls: result.data.main.filter(e => e.type === ElementType.CONTROL)
+}
+
+console.log(`Found ${elementsByType.images.length} images`)
+console.log(`Found ${elementsByType.tables.length} tables`)
+console.log(`Found ${elementsByType.controls.length} controls`)
+```

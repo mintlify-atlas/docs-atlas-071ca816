@@ -1,0 +1,309 @@
+---
+title: 'Plugin System'
+description: 'Create custom plugins to extend Canvas Editor functionality'
+icon: 'plug'
+---
+
+Canvas Editor provides a flexible plugin system that allows you to extend the editor's functionality without modifying the core codebase.
+
+## Plugin Architecture
+
+Plugins are functions that receive the editor instance and optional configuration, allowing them to:
+- Add new commands to the editor
+- Modify existing behavior
+- Register event listeners
+- Access the full editor API
+
+### Plugin Function Type
+
+```typescript
+type PluginFunction<Options> = (editor: Editor, options?: Options) => void
+```
+
+## Using Plugins
+
+Plugins are registered using the `editor.use()` method:
+
+```typescript
+import Editor from 'canvas-editor'
+import { myPlugin } from './plugins/myPlugin'
+
+const editor = new Editor(container, data, options)
+
+// Use plugin without options
+editor.use(myPlugin)
+
+// Use plugin with options
+editor.use(myPlugin, { 
+  setting1: 'value',
+  setting2: true 
+})
+```
+
+## Creating a Plugin
+
+<Steps>
+  <Step title="Define the Plugin Function">
+    Create a function that accepts the editor instance and optional configuration:
+
+    ```typescript
+    import Editor from 'canvas-editor'
+
+    export interface MyPluginOptions {
+      enabled?: boolean
+      prefix?: string
+    }
+
+    export function myPlugin(editor: Editor, options?: MyPluginOptions) {
+      const { enabled = true, prefix = '[Plugin]' } = options || {}
+      
+      if (!enabled) return
+      
+      // Plugin implementation here
+    }
+    ```
+  </Step>
+
+  <Step title="Access Editor APIs">
+    Use the editor instance to access commands, listeners, and other APIs:
+
+    ```typescript
+    export function myPlugin(editor: Editor, options?: MyPluginOptions) {
+      // Access command API
+      const command = editor.command
+      
+      // Access event listeners
+      editor.listener.rangeStyleChange = (payload) => {
+        console.log('Style changed:', payload)
+      }
+      
+      // Access event bus
+      editor.eventBus.on('rangeStyleChange', (payload) => {
+        console.log('Range style changed:', payload)
+      })
+    }
+    ```
+  </Step>
+
+  <Step title="Extend Command API (Optional)">
+    Add custom commands by extending the Command class:
+
+    ```typescript
+    import { Command } from 'canvas-editor'
+
+    type CommandWithCustom = Command & {
+      executeCustomAction(value: string): void
+    }
+
+    export function myPlugin(editor: Editor) {
+      const command = editor.command as CommandWithCustom
+      
+      command.executeCustomAction = (value: string) => {
+        // Custom command implementation
+        const elementList = [{ value, type: ElementType.TEXT }]
+        command.executeInsertElementList(elementList)
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Real-World Plugin Examples
+
+<Tabs>
+  <Tab title="Markdown Plugin">
+    This plugin converts Markdown syntax to editor elements:
+
+    ```typescript
+    import Editor, {
+      Command,
+      ElementType,
+      IElement,
+      ListType,
+      TitleLevel
+    } from 'canvas-editor'
+
+    export type CommandWithMarkdown = Command & {
+      executeInsertMarkdown(markdown: string): void
+    }
+
+    function convertMarkdownToElement(markdown: string): IElement[] {
+      const elementList: IElement[] = []
+      const lines = markdown.trim().split('\n')
+      
+      for (let l = 0; l < lines.length; l++) {
+        const line = lines[l]
+        
+        if (line.startsWith('#')) {
+          const level = line.indexOf(' ')
+          elementList.push({
+            type: ElementType.TITLE,
+            level: level as TitleLevel,
+            value: '',
+            valueList: [{ value: line.slice(level + 1) }]
+          })
+        } else if (line.startsWith('- ')) {
+          elementList.push({
+            type: ElementType.LIST,
+            listType: ListType.UL,
+            value: '',
+            valueList: [{ value: line.slice(2) }]
+          })
+        } else if (/^\*\*(.*?)\*\*$/.test(line)) {
+          const match = line.match(/^\*\*(.*?)\*\*$/)
+          elementList.push({
+            type: ElementType.TEXT,
+            value: match![1],
+            bold: true
+          })
+        } else {
+          elementList.push({
+            type: ElementType.TEXT,
+            value: line
+          })
+        }
+      }
+      
+      return elementList
+    }
+
+    export function markdownPlugin(editor: Editor) {
+      const command = editor.command as CommandWithMarkdown
+      
+      command.executeInsertMarkdown = (markdown: string) => {
+        const elementList = convertMarkdownToElement(markdown)
+        command.executeInsertElementList(elementList)
+      }
+    }
+    ```
+
+    **Usage:**
+    ```typescript
+    editor.use(markdownPlugin)
+    
+    // Now use the custom command
+    editor.command.executeInsertMarkdown('# Hello\n\n**Bold text**')
+    ```
+  </Tab>
+
+  <Tab title="Copyright Plugin">
+    This plugin adds copyright information when copying content:
+
+    ```typescript
+    import Editor from 'canvas-editor'
+
+    export interface ICopyWithCopyrightOption {
+      copyrightText: string
+    }
+
+    export function copyWithCopyrightPlugin(
+      editor: Editor,
+      options?: ICopyWithCopyrightOption
+    ) {
+      const originalCopy = editor.command.executeCopy
+
+      editor.command.executeCopy = async () => {
+        const { copyrightText } = options || {}
+        
+        if (copyrightText) {
+          const rangeText = editor.command.getRangeText()
+          if (!rangeText) return
+          
+          const text = `${rangeText}${copyrightText}`
+          const plainText = new Blob([text], { type: 'text/plain' })
+          
+          const item = new ClipboardItem({
+            [plainText.type]: plainText
+          })
+          
+          await window.navigator.clipboard.write([item])
+        } else {
+          await originalCopy()
+        }
+      }
+    }
+    ```
+
+    **Usage:**
+    ```typescript
+    editor.use(copyWithCopyrightPlugin, {
+      copyrightText: '\n\n© 2024 My Company. All rights reserved.'
+    })
+    ```
+  </Tab>
+</Tabs>
+
+## Plugin Best Practices
+
+<AccordionGroup>
+  <Accordion title="Keep plugins focused">
+    Each plugin should have a single, well-defined purpose. This makes them easier to maintain and reuse.
+  </Accordion>
+
+  <Accordion title="Provide TypeScript types">
+    Always define TypeScript interfaces for plugin options and extended commands to improve developer experience.
+  </Accordion>
+
+  <Accordion title="Clean up resources">
+    If your plugin registers event listeners or creates DOM elements, provide a cleanup mechanism:
+
+    ```typescript
+    export function myPlugin(editor: Editor) {
+      const handler = () => { /* ... */ }
+      
+      editor.eventBus.on('someEvent', handler)
+      
+      // Store reference for cleanup
+      const originalDestroy = editor.destroy
+      editor.destroy = () => {
+        editor.eventBus.off('someEvent', handler)
+        originalDestroy()
+      }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Handle edge cases">
+    Consider readonly mode, empty selections, and other edge cases in your plugin logic.
+  </Accordion>
+</AccordionGroup>
+
+<Warning>
+  When extending the Command API, be careful not to break existing functionality. Always preserve the original behavior if possible.
+</Warning>
+
+## Plugin API Reference
+
+### Editor Instance Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `command` | `Command` | Execute editor commands |
+| `listener` | `Listener` | Register event listeners |
+| `eventBus` | `EventBus` | Event bus for pub/sub |
+| `register` | `Register` | Register shortcuts, menus, i18n |
+| `override` | `Override` | Override internal behavior |
+| `version` | `string` | Editor version |
+| `use` | `UsePlugin` | Register plugins |
+| `destroy` | `() => void` | Cleanup and destroy editor |
+
+<Info>
+  See the [Commands API](/api/commands) reference for available command methods.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Custom Shortcuts" icon="keyboard" href="/advanced/custom-shortcuts">
+    Register custom keyboard shortcuts
+  </Card>
+  <Card title="Context Menus" icon="bars" href="/advanced/context-menus">
+    Add custom context menu items
+  </Card>
+  <Card title="Override System" icon="gear" href="/advanced/override-system">
+    Override internal editor behavior
+  </Card>
+  <Card title="Event System" icon="bolt" href="/concepts/event-system">
+    Listen to editor events
+  </Card>
+</CardGroup>

@@ -1,97 +1,123 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Canvas Editor"
+description: "A powerful rich text editor library built with TypeScript that renders content using HTML5 Canvas and SVG"
 ---
 
-## Setting up
+## Build Rich Text Experiences
 
-Get your documentation site up and running in minutes.
+Canvas Editor is a production-ready, TypeScript-based rich text editor that provides complete control over document rendering using Canvas and SVG. Perfect for applications requiring precise layout control, print capabilities, and advanced formatting features.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
+<CardGroup cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
   >
-    Edit your docs locally and preview them in real time.
+    Get up and running with Canvas Editor in under 5 minutes
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Installation"
+    icon="download"
+    href="/installation"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Install via npm, yarn, or pnpm and integrate into your project
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
+    title="API Reference"
     icon="code"
-    href="/essentials/code"
+    href="/api/editor"
   >
-    Add sample code to demonstrate how to use your product.
+    Explore the complete API documentation and type definitions
   </Card>
   <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
+    title="View Demo"
+    icon="arrow-up-right-from-square"
+    href="https://hufe.club/canvas-editor"
   >
-    Display images and other media.
+    See Canvas Editor in action with interactive examples
+  </Card>
+</CardGroup>
+
+## Key Features
+
+<CardGroup cols={3}>
+  <Card title="Canvas Rendering" icon="brush">
+    High-performance rendering engine using HTML5 Canvas and SVG
+  </Card>
+  <Card title="Rich Formatting" icon="bold">
+    Complete text formatting with bold, italic, underline, colors, and more
+  </Card>
+  <Card title="Table Support" icon="table">
+    Advanced table operations including cell merging, splitting, and styling
+  </Card>
+  <Card title="Image Handling" icon="image">
+    Insert, crop, resize images with caption support
+  </Card>
+  <Card title="Form Controls" icon="square-check">
+    Interactive controls for forms, checkboxes, radio buttons, and date pickers
+  </Card>
+  <Card title="Print & Export" icon="print">
+    Generate PDFs and print documents with pixel-perfect accuracy
+  </Card>
+</CardGroup>
+
+## Why Canvas Editor?
+
+<Accordion title="Canvas-based Rendering">
+  Unlike traditional DOM-based editors, Canvas Editor renders content directly to Canvas, providing consistent rendering across browsers and precise control over layout and positioning.
+</Accordion>
+
+<Accordion title="TypeScript First">
+  Built with TypeScript from the ground up, Canvas Editor provides comprehensive type definitions and excellent IDE support for a better developer experience.
+</Accordion>
+
+<Accordion title="Extensible Architecture">
+  Extend functionality with plugins, customize behavior with the override system, and integrate with your application using the event bus and listener APIs.
+</Accordion>
+
+<Accordion title="Production Ready">
+  Powers real-world applications with features like undo/redo, search/replace, internationalization, watermarks, and multiple editor modes.
+</Accordion>
+
+## Get Started
+
+<Steps>
+  <Step title="Install the package">
+    Add Canvas Editor to your project using your preferred package manager
+    ```bash
+    npm install @hufe921/canvas-editor
+    ```
+  </Step>
+  <Step title="Create an editor instance">
+    Initialize the editor with your container element and content
+    ```typescript
+    import Editor from '@hufe921/canvas-editor'
+    
+    const editor = new Editor(document.querySelector('.editor'), {
+      main: [{ value: 'Hello World' }]
+    })
+    ```
+  </Step>
+  <Step title="Explore the API">
+    Use commands to manipulate content and listeners to react to changes
+  </Step>
+</Steps>
+
+## Community & Support
+
+<CardGroup cols={2}>
+  <Card
+    title="GitHub Repository"
+    icon="github"
+    href="https://github.com/Hufe921/canvas-editor"
+  >
+    Star the project, report issues, and contribute to development
   </Card>
   <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
+    title="Discussions"
+    icon="comments"
+    href="https://github.com/Hufe921/canvas-editor/discussions"
   >
-    Write once and reuse across your docs.
+    Ask questions and join the community discussion
   </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+</CardGroup>

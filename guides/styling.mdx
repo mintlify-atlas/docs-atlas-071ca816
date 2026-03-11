@@ -1,0 +1,835 @@
+---
+title: 'Styling'
+description: 'Comprehensive guide to styling Canvas Editor with custom CSS and theming'
+---
+
+Canvas Editor renders content using HTML5 Canvas, but it still provides extensive styling capabilities through configuration options and programmatic APIs. This guide covers all aspects of customizing the editor's appearance.
+
+## Understanding Canvas Rendering
+
+<Note>
+  Unlike traditional HTML editors, Canvas Editor renders content directly to a `<canvas>` element. This means you cannot apply CSS styles directly to content. Instead, styling is controlled through:
+  
+  1. Configuration options passed during initialization
+  2. Element-level style properties in the document data
+  3. Runtime style commands via the API
+</Note>
+
+## Default Text Styling
+
+Set default text appearance that applies to all new content:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const options = {
+  // Font settings
+  defaultFont: 'Microsoft YaHei',
+  defaultSize: 16,
+  defaultColor: '#1a1a1a',
+  
+  // Size constraints
+  minSize: 8,
+  maxSize: 72
+}
+
+const editor = new Editor(container, data, options)
+```
+
+### Font Configuration
+
+<ParamField path="defaultFont" type="string" default="'Yahei'">
+  Default font family. Use system-available fonts or web fonts.
+</ParamField>
+
+<Tip>
+  **Web Font Support**: Load web fonts before initializing the editor to ensure proper rendering:
+  
+  ```html
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  ```
+  
+  ```typescript
+  const options = {
+    defaultFont: 'Roboto'
+  }
+  ```
+</Tip>
+
+## Element-Level Styling
+
+Each element in the document data can have individual style properties. Based on `src/editor/interface/Element.ts:27`:
+
+```typescript
+interface IElementStyle {
+  font?: string
+  size?: number
+  width?: number
+  height?: number
+  bold?: boolean
+  color?: string
+  highlight?: string
+  italic?: boolean
+  underline?: boolean
+  strikeout?: boolean
+  rowFlex?: RowFlex
+  rowMargin?: number
+  letterSpacing?: number
+  textDecoration?: ITextDecoration
+}
+```
+
+### Applying Inline Styles
+
+<Tabs>
+  <Tab title="In Document Data">
+    ```typescript
+    const data = {
+      main: [
+        {
+          value: 'Bold Red Text',
+          bold: true,
+          color: '#FF0000',
+          size: 18
+        },
+        {
+          value: 'Italic Blue Text',
+          italic: true,
+          color: '#0000FF',
+          font: 'Arial'
+        },
+        {
+          value: 'Highlighted Text',
+          highlight: '#FFFF00'
+        }
+      ]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Via API Commands">
+    ```typescript
+    // Select text first, then apply styles
+    editor.command.executeBold()
+    editor.command.executeItalic()
+    editor.command.executeColor('#FF0000')
+    editor.command.executeFontSize(18)
+    editor.command.executeFontFamily('Arial')
+    editor.command.executeHighlight('#FFFF00')
+    ```
+  </Tab>
+</Tabs>
+
+## Text Decorations
+
+### Underline Styling
+
+<ParamField path="underlineColor" type="string">
+  Default underline color. Can be overridden per element.
+</ParamField>
+
+```typescript
+const options = {
+  underlineColor: '#4285F4'
+}
+
+// In document data
+const element = {
+  value: 'Underlined text',
+  underline: true,
+  textDecoration: {
+    style: TextDecorationStyle.DASHED,
+    color: '#FF0000'
+  }
+}
+```
+
+### Strikethrough Styling
+
+<ParamField path="strikeoutColor" type="string">
+  Default strikethrough color.
+</ParamField>
+
+```typescript
+const options = {
+  strikeoutColor: '#FF0000'
+}
+
+// Apply strikethrough
+editor.command.executeStrikeout()
+```
+
+### Hyperlink Styling
+
+<ParamField path="defaultHyperlinkColor" type="string" default="'#0000FF'">
+  Default color for hyperlinks.
+</ParamField>
+
+```typescript
+const options = {
+  defaultHyperlinkColor: '#1a73e8'
+}
+```
+
+## Selection and Highlighting
+
+### Selection Appearance
+
+<ParamField path="rangeColor" type="string" default="'#AECBFA'">
+  Background color for selected text.
+</ParamField>
+
+<ParamField path="rangeAlpha" type="number" default="0.6">
+  Opacity of selection background (0-1).
+</ParamField>
+
+<ParamField path="rangeMinWidth" type="number" default="5">
+  Minimum width for selection indicator.
+</ParamField>
+
+```typescript
+const options = {
+  rangeColor: '#B4D5FE',
+  rangeAlpha: 0.5,
+  rangeMinWidth: 3
+}
+```
+
+### Highlight Styling
+
+<ParamField path="highlightAlpha" type="number" default="0.6">
+  Opacity for highlight overlays.
+</ParamField>
+
+<ParamField path="highlightMarginHeight" type="number" default="2">
+  Vertical margin for highlight areas in pixels.
+</ParamField>
+
+```typescript
+const options = {
+  highlightAlpha: 0.4,
+  highlightMarginHeight: 3
+}
+```
+
+## Search Match Styling
+
+Customize the appearance of search results:
+
+```typescript
+const options = {
+  // Regular search matches
+  searchMatchColor: '#FFEB3B',
+  
+  // Currently active/navigated match
+  searchNavigateMatchColor: '#FF9800',
+  
+  // Opacity for all matches
+  searchMatchAlpha: 0.6
+}
+```
+
+## Background Customization
+
+Configure page backgrounds using the `background` option (from `src/editor/interface/Background.ts:3`):
+
+```typescript
+import { BackgroundRepeat, BackgroundSize } from '@hufe921/canvas-editor'
+
+const options = {
+  background: {
+    color: '#FFFFFF',
+    image: 'https://example.com/background.png',
+    size: BackgroundSize.COVER,
+    repeat: BackgroundRepeat.NO_REPEAT,
+    applyPageNumbers: [1, 2, 3] // Apply only to specific pages
+  }
+}
+```
+
+<ParamField path="background.color" type="string">
+  Background color for pages.
+</ParamField>
+
+<ParamField path="background.image" type="string">
+  Background image URL.
+</ParamField>
+
+<ParamField path="background.size" type="BackgroundSize">
+  Image sizing: `COVER`, `CONTAIN`, or `REPEAT`.
+</ParamField>
+
+<ParamField path="background.repeat" type="BackgroundRepeat">
+  Image repeat behavior: `REPEAT`, `NO_REPEAT`, `REPEAT_X`, or `REPEAT_Y`.
+</ParamField>
+
+## Watermark Styling
+
+Add branded watermarks with full styling control (from `src/editor/interface/Watermark.ts:4`):
+
+```typescript
+import { WatermarkType, NumberType } from '@hufe921/canvas-editor'
+
+const options = {
+  watermark: {
+    data: 'CONFIDENTIAL',
+    type: WatermarkType.TEXT,
+    
+    // Typography
+    font: 'Arial',
+    size: 48,
+    color: '#999999',
+    opacity: 0.15,
+    
+    // Layout
+    repeat: true,
+    gap: [200, 150], // [horizontal, vertical] spacing
+    
+    // For page numbers in watermark
+    numberType: NumberType.ARABIC,
+    width: 300,
+    height: 100
+  }
+}
+```
+
+<Tabs>
+  <Tab title="Text Watermark">
+    ```typescript
+    const options = {
+      watermark: {
+        data: 'DRAFT',
+        type: WatermarkType.TEXT,
+        size: 72,
+        color: '#E0E0E0',
+        opacity: 0.2,
+        repeat: true
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Image Watermark">
+    ```typescript
+    const options = {
+      watermark: {
+        data: 'https://example.com/logo.png',
+        type: WatermarkType.IMAGE,
+        width: 200,
+        height: 200,
+        opacity: 0.1,
+        repeat: true,
+        gap: [300, 300]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Control Styling
+
+Form controls have extensive styling options (from `src/editor/interface/Control.ts:110`):
+
+```typescript
+const options = {
+  control: {
+    // Placeholder
+    placeholderColor: '#CCCCCC',
+    
+    // Brackets
+    bracketColor: '#666666',
+    prefix: '[',
+    postfix: ']',
+    
+    // Border
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+    
+    // Background states
+    activeBackgroundColor: '#E3F2FD',
+    disabledBackgroundColor: '#F5F5F5',
+    existValueBackgroundColor: '#FFFFFF',
+    noValueBackgroundColor: '#FFF9C4'
+  }
+}
+```
+
+### Checkbox Styling
+
+Customize checkbox appearance:
+
+```typescript
+const options = {
+  checkbox: {
+    width: 16,
+    height: 16,
+    gap: 8,
+    lineWidth: 1,
+    fillStyle: '#4285F4',
+    fontStyle: '#FFFFFF',
+    checkMarkColor: '#FFFFFF'
+  }
+}
+```
+
+### Radio Button Styling
+
+```typescript
+const options = {
+  radio: {
+    width: 16,
+    height: 16,
+    gap: 8,
+    lineWidth: 1,
+    fillStyle: '#4285F4',
+    fontStyle: '#FFFFFF'
+  }
+}
+```
+
+## Table Styling
+
+Style tables with border and cell customization (from `src/editor/interface/table/Table.ts:3`):
+
+```typescript
+import { TableBorder } from '@hufe921/canvas-editor'
+
+const options = {
+  table: {
+    tdPadding: [8, 12, 8, 12], // [top, right, bottom, left]
+    defaultTrMinHeight: 50,
+    defaultColMinWidth: 100,
+    defaultBorderColor: '#DDDDDD',
+    overflow: false
+  }
+}
+
+// In document data
+const tableElement = {
+  type: ElementType.TABLE,
+  borderType: TableBorder.ALL,
+  borderColor: '#333333',
+  borderWidth: 1,
+  borderExternalWidth: 2,
+  trList: [
+    // ... table rows
+  ]
+}
+```
+
+## Page Elements
+
+### Page Numbers
+
+Style page numbers (from `src/editor/interface/PageNumber.ts:4`):
+
+```typescript
+import { RowFlex, NumberType } from '@hufe921/canvas-editor'
+
+const options = {
+  pageNumber: {
+    // Typography
+    font: 'Arial',
+    size: 11,
+    color: '#666666',
+    
+    // Layout
+    bottom: 50,
+    rowFlex: RowFlex.CENTER,
+    
+    // Format
+    format: 'Page {pageNo}',
+    numberType: NumberType.ARABIC,
+    
+    // Range
+    startPageNo: 1,
+    fromPageNo: 1,
+    maxPageNo: null
+  }
+}
+```
+
+### Page Borders
+
+```typescript
+const options = {
+  pageBorder: {
+    color: '#CCCCCC',
+    lineWidth: 1,
+    padding: [20, 20, 20, 20]
+  }
+}
+```
+
+## Interactive Element Styling
+
+### Resizer Handles
+
+<ParamField path="resizerColor" type="string" default="'#4285F4'">
+  Color of image/element resizer handles.
+</ParamField>
+
+<ParamField path="resizerSize" type="number" default="5">
+  Size of resizer handles in pixels.
+</ParamField>
+
+```typescript
+const options = {
+  resizerColor: '#1a73e8',
+  resizerSize: 6
+}
+```
+
+### Margin Indicators
+
+<ParamField path="marginIndicatorSize" type="number" default="35">
+  Size of margin drag indicators.
+</ParamField>
+
+<ParamField path="marginIndicatorColor" type="string" default="'#BABABA'">
+  Color of margin indicators.
+</ParamField>
+
+```typescript
+const options = {
+  marginIndicatorSize: 40,
+  marginIndicatorColor: '#999999'
+}
+```
+
+## Header and Footer Styling
+
+Customize header and footer appearance:
+
+```typescript
+const options = {
+  header: {
+    top: 60,
+    inactiveAlpha: 0.5,
+    disabled: false,
+    editable: true
+  },
+  footer: {
+    bottom: 60,
+    inactiveAlpha: 0.5,
+    disabled: false,
+    editable: true
+  }
+}
+
+// Add styled content to header/footer
+const data = {
+  header: [
+    {
+      value: 'Company Name',
+      font: 'Arial',
+      size: 14,
+      color: '#666666',
+      bold: true
+    }
+  ],
+  main: [
+    // main content
+  ],
+  footer: [
+    {
+      value: 'Confidential',
+      font: 'Arial',
+      size: 10,
+      color: '#999999',
+      italic: true
+    }
+  ]
+}
+```
+
+## Placeholder Styling
+
+```typescript
+const options = {
+  placeholder: {
+    data: 'Start typing...',
+    color: '#CCCCCC',
+    opacity: 0.6,
+    size: 16,
+    font: 'Arial'
+  }
+}
+```
+
+## Label and Badge Styling
+
+### Labels
+
+```typescript
+const labelElement = {
+  value: 'Important',
+  type: ElementType.TEXT,
+  labelId: 'label-1',
+  label: {
+    color: '#FFFFFF',
+    backgroundColor: '#FF5722',
+    borderRadius: 3,
+    padding: [2, 6, 2, 6]
+  }
+}
+```
+
+### Badges
+
+```typescript
+const options = {
+  badge: {
+    size: 12,
+    color: '#FFFFFF',
+    backgroundColor: '#F44336',
+    borderRadius: 8,
+    padding: [2, 8, 2, 8]
+  }
+}
+```
+
+## Separator Styling
+
+Customize horizontal separators:
+
+```typescript
+const options = {
+  separator: {
+    lineWidth: 1,
+    lineColor: '#E0E0E0'
+  }
+}
+
+// In document data
+const separatorElement = {
+  value: '\n',
+  type: ElementType.SEPARATOR,
+  dashArray: [5, 3], // Dashed line pattern
+  lineWidth: 2,
+  color: '#CCCCCC'
+}
+```
+
+## Line Number Styling
+
+```typescript
+import { LineNumberType } from '@hufe921/canvas-editor'
+
+const options = {
+  lineNumber: {
+    type: LineNumberType.CONTINUOUS,
+    color: '#999999',
+    size: 10,
+    font: 'Arial',
+    left: 20,
+    disabled: false
+  }
+}
+```
+
+## White Space Visualization
+
+Show whitespace characters for better editing:
+
+```typescript
+const options = {
+  whiteSpace: {
+    visible: true,
+    color: '#E0E0E0',
+    opacity: 0.5
+  }
+}
+```
+
+## Zone-Specific Styling
+
+Apply different styles to different zones (header, main, footer):
+
+```typescript
+const options = {
+  zone: {
+    header: {
+      backgroundColor: '#F5F5F5'
+    },
+    main: {
+      backgroundColor: '#FFFFFF'
+    },
+    footer: {
+      backgroundColor: '#F5F5F5'
+    }
+  }
+}
+```
+
+## Runtime Style Updates
+
+Update styles dynamically during runtime:
+
+```typescript
+// Update selected text style
+editor.command.executeBold()
+editor.command.executeColor('#FF0000')
+editor.command.executeFontSize(20)
+editor.command.executeHighlight('#FFFF00')
+
+// Update element by ID
+editor.command.executeUpdateElementById({
+  id: 'element-123',
+  properties: {
+    color: '#0000FF',
+    bold: true,
+    size: 18
+  }
+})
+
+// Set watermark dynamically
+editor.command.executeAddWatermark({
+  data: 'CONFIDENTIAL',
+  color: '#FF0000',
+  opacity: 0.2
+})
+```
+
+## Theme Examples
+
+<Tabs>
+  <Tab title="Professional Theme">
+    ```typescript
+    const professionalTheme = {
+      defaultFont: 'Times New Roman',
+      defaultSize: 12,
+      defaultColor: '#000000',
+      
+      rangeColor: '#B4D5FE',
+      rangeAlpha: 0.4,
+      
+      defaultHyperlinkColor: '#0563C1',
+      
+      pageNumber: {
+        font: 'Times New Roman',
+        size: 10,
+        color: '#000000',
+        bottom: 50,
+        rowFlex: RowFlex.CENTER
+      },
+      
+      table: {
+        defaultBorderColor: '#000000',
+        tdPadding: [5, 10, 5, 10]
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Modern Theme">
+    ```typescript
+    const modernTheme = {
+      defaultFont: 'Roboto',
+      defaultSize: 14,
+      defaultColor: '#2C3E50',
+      
+      rangeColor: '#3498DB',
+      rangeAlpha: 0.3,
+      
+      defaultHyperlinkColor: '#3498DB',
+      underlineColor: '#3498DB',
+      
+      background: {
+        color: '#FFFFFF'
+      },
+      
+      control: {
+        borderColor: '#BDC3C7',
+        activeBackgroundColor: '#ECF0F1',
+        placeholderColor: '#95A5A6'
+      },
+      
+      table: {
+        defaultBorderColor: '#BDC3C7',
+        tdPadding: [12, 16, 12, 16]
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Dark Theme">
+    ```typescript
+    const darkTheme = {
+      defaultFont: 'Consolas',
+      defaultSize: 14,
+      defaultColor: '#E0E0E0',
+      
+      rangeColor: '#4A90E2',
+      rangeAlpha: 0.4,
+      
+      defaultHyperlinkColor: '#64B5F6',
+      
+      background: {
+        color: '#1E1E1E'
+      },
+      
+      control: {
+        borderColor: '#404040',
+        activeBackgroundColor: '#2D2D2D',
+        placeholderColor: '#666666',
+        bracketColor: '#808080'
+      },
+      
+      pageNumber: {
+        color: '#808080',
+        size: 10
+      },
+      
+      table: {
+        defaultBorderColor: '#404040'
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Performance" icon="gauge-high">
+    - Use simple colors (hex codes) for better performance
+    - Avoid excessive transparency (alpha values)
+    - Limit the use of complex background images
+  </Card>
+  
+  <Card title="Accessibility" icon="universal-access">
+    - Maintain sufficient color contrast (WCAG AA: 4.5:1)
+    - Use readable font sizes (minimum 12px)
+    - Ensure selection colors are visible
+  </Card>
+  
+  <Card title="Consistency" icon="equals">
+    - Define a theme object for reusability
+    - Use CSS variables pattern in your config
+    - Document your theme choices
+  </Card>
+  
+  <Card title="Testing" icon="vial">
+    - Test on different screen densities
+    - Verify print output appearance
+    - Check all editor modes (edit, readonly, print)
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/guides/configuration">
+    Explore all configuration options
+  </Card>
+  <Card title="Data Structure" icon="database" href="/guides/data-structure">
+    Learn about document data format
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/editor">
+    Browse styling API methods
+  </Card>
+  <Card title="Examples" icon="flask" href="/quickstart">
+    See styled editor examples
+  </Card>
+</CardGroup>

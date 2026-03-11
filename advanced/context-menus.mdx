@@ -1,0 +1,567 @@
+---
+title: 'Custom Context Menus'
+description: 'Add custom context menu items using Register.contextMenuList'
+icon: 'bars'
+---
+
+Canvas Editor provides a flexible context menu system that allows you to add custom menu items that appear on right-click.
+
+## Basic Usage
+
+Register context menus using `editor.register.contextMenuList()`:
+
+```typescript
+import Editor, { Command, IContextMenuContext } from 'canvas-editor'
+
+const editor = new Editor(container, data, options)
+
+editor.register.contextMenuList([
+  {
+    key: 'myCustomMenu',
+    name: 'My Custom Action',
+    when: (context) => {
+      // Show only when text is selected
+      return context.editorHasSelection
+    },
+    callback: (command, context) => {
+      // Execute action
+      const text = command.getRangeText()
+      console.log('Selected text:', text)
+    }
+  }
+])
+```
+
+## Context Menu Configuration
+
+### IRegisterContextMenu Interface
+
+```typescript
+interface IRegisterContextMenu {
+  key?: string                                          // Unique identifier
+  i18nPath?: string                                     // Translation key
+  isDivider?: boolean                                   // Menu divider
+  icon?: string                                         // Icon class name
+  name?: string                                         // Display name
+  shortCut?: string                                     // Shortcut hint text
+  disable?: boolean                                     // Disable menu item
+  when?: (payload: IContextMenuContext) => boolean      // Show condition
+  callback?: (command: Command, context: IContextMenuContext) => void
+  childMenus?: IRegisterContextMenu[]                   // Submenu items
+}
+```
+
+## Context Information
+
+The `when` and `callback` functions receive context about the current editor state:
+
+```typescript
+interface IContextMenuContext {
+  startElement: IElement | null      // Element at selection start
+  endElement: IElement | null        // Element at selection end
+  isReadonly: boolean                // Editor readonly state
+  editorHasSelection: boolean        // Has selected text
+  editorTextFocus: boolean           // Editor has focus
+  isInTable: boolean                 // Cursor in table
+  isCrossRowCol: boolean             // Selection spans rows/cols
+  zone: EditorZone                   // Current zone (main/header/footer)
+  trIndex: number | null             // Table row index
+  tdIndex: number | null             // Table cell index
+  tableElement: IElement | null      // Table element
+  options: DeepRequired<IEditorOption> // Editor options
+}
+```
+
+## Built-in Context Menus
+
+Canvas Editor includes several built-in context menus:
+
+<AccordionGroup>
+  <Accordion title="Global Menus">
+    Available in most contexts:
+
+    ```typescript
+    // Cut - Ctrl/Cmd+X
+    {
+      key: 'cut',
+      i18nPath: 'contextmenu.global.cut',
+      shortCut: 'Cmd + X',
+      when: (payload) => !payload.isReadonly,
+      callback: (command) => command.executeCut()
+    }
+
+    // Copy - Ctrl/Cmd+C
+    {
+      key: 'copy',
+      i18nPath: 'contextmenu.global.copy',
+      when: (payload) => payload.editorHasSelection,
+      callback: (command) => command.executeCopy()
+    }
+
+    // Paste - Ctrl/Cmd+V
+    {
+      key: 'paste',
+      i18nPath: 'contextmenu.global.paste',
+      when: (payload) => !payload.isReadonly && payload.editorTextFocus
+    }
+    ```
+
+    Source: `/src/editor/core/contextmenu/menus/globalMenus.ts:9`
+  </Accordion>
+
+  <Accordion title="Image Menus">
+    Shown when an image is selected:
+
+    ```typescript
+    {
+      key: 'imageChange',
+      i18nPath: 'contextmenu.image.change',
+      icon: 'image-change',
+      when: (payload) => {
+        return !payload.isReadonly && 
+               !payload.editorHasSelection &&
+               payload.startElement?.type === ElementType.IMAGE
+      },
+      callback: (command) => {
+        command.executeReplaceImageElement(newImageSrc)
+      }
+    }
+    ```
+
+    Source: `/src/editor/core/contextmenu/menus/imageMenus.ts:23`
+  </Accordion>
+
+  <Accordion title="Table Menus">
+    Shown when inside a table cell:
+
+    - Insert row/column (top, bottom, left, right)
+    - Delete row/column/table
+    - Merge/unmerge cells
+    - Vertical alignment
+    - Table borders
+
+    Source: `/src/editor/core/contextmenu/menus/tableMenus.ts`
+  </Accordion>
+
+  <Accordion title="Hyperlink Menus">
+    Shown when a hyperlink is selected:
+
+    - Edit hyperlink
+    - Delete hyperlink
+    - Cancel hyperlink
+
+    Source: `/src/editor/core/contextmenu/menus/hyperlinkMenus.ts`
+  </Accordion>
+</AccordionGroup>
+
+## Creating Custom Menus
+
+<Steps>
+  <Step title="Simple Menu Item">
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'uppercase',
+        name: 'Convert to Uppercase',
+        icon: 'text-uppercase',
+        when: (context) => context.editorHasSelection,
+        callback: (command, context) => {
+          const text = command.getRangeText()
+          command.executeInsertElementList([{
+            value: text.toUpperCase()
+          }])
+        }
+      }
+    ])
+    ```
+  </Step>
+
+  <Step title="Conditional Menu">
+    Show menu only in specific contexts:
+
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'tableStats',
+        name: 'Table Statistics',
+        when: (context) => {
+          // Only show when in a table
+          return context.isInTable && !context.isReadonly
+        },
+        callback: (command, context) => {
+          const { tableElement } = context
+          if (tableElement) {
+            const rows = tableElement.trList?.length || 0
+            const cols = tableElement.tdList?.length || 0
+            alert(`Table: ${rows} rows × ${cols} columns`)
+          }
+        }
+      }
+    ])
+    ```
+  </Step>
+
+  <Step title="Menu with Submenu">
+    Create nested menus:
+
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'textTransform',
+        name: 'Text Transform',
+        when: (context) => context.editorHasSelection,
+        childMenus: [
+          {
+            key: 'uppercase',
+            name: 'UPPERCASE',
+            when: () => true,
+            callback: (command) => {
+              const text = command.getRangeText()
+              command.executeInsertElementList([{
+                value: text.toUpperCase()
+              }])
+            }
+          },
+          {
+            key: 'lowercase',
+            name: 'lowercase',
+            when: () => true,
+            callback: (command) => {
+              const text = command.getRangeText()
+              command.executeInsertElementList([{
+                value: text.toLowerCase()
+              }])
+            }
+          },
+          {
+            key: 'titlecase',
+            name: 'Title Case',
+            when: () => true,
+            callback: (command) => {
+              const text = command.getRangeText()
+              const titleCase = text.replace(/\w\S*/g, (txt) => 
+                txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+              )
+              command.executeInsertElementList([{
+                value: titleCase
+              }])
+            }
+          }
+        ]
+      }
+    ])
+    ```
+  </Step>
+</Steps>
+
+## Menu Dividers
+
+Add visual separators between menu groups:
+
+```typescript
+editor.register.contextMenuList([
+  {
+    name: 'Action 1',
+    when: () => true,
+    callback: (command) => { /* ... */ }
+  },
+  {
+    isDivider: true // Creates a horizontal line
+  },
+  {
+    name: 'Action 2',
+    when: () => true,
+    callback: (command) => { /* ... */ }
+  }
+])
+```
+
+<Note>
+  Dividers at the beginning or end of a menu, or adjacent dividers, are automatically hidden.
+</Note>
+
+## Using Icons
+
+Add icons to menu items using CSS classes:
+
+```typescript
+editor.register.contextMenuList([
+  {
+    name: 'Print',
+    icon: 'print', // Adds class: canvas-editor-contextmenu-print
+    when: () => true,
+    callback: (command) => command.executePrint()
+  }
+])
+```
+
+Define icon styles in your CSS:
+
+```css
+.canvas-editor-contextmenu-print::before {
+  content: '🖨️';
+  margin-right: 8px;
+}
+```
+
+## Internationalization
+
+Use `i18nPath` instead of `name` for translated menu items:
+
+```typescript
+// Register translations first
+editor.register.langMap('en', {
+  contextmenu: {
+    custom: {
+      myAction: 'My Action'
+    }
+  }
+})
+
+editor.register.langMap('es', {
+  contextmenu: {
+    custom: {
+      myAction: 'Mi Acción'
+    }
+  }
+})
+
+// Use i18nPath in menu
+editor.register.contextMenuList([
+  {
+    key: 'myAction',
+    i18nPath: 'contextmenu.custom.myAction', // Uses current locale
+    when: () => true,
+    callback: (command) => { /* ... */ }
+  }
+])
+```
+
+<Info>
+  See [Internationalization](/advanced/internationalization) for more details on i18n configuration.
+</Info>
+
+## Showing Keyboard Shortcuts
+
+Display keyboard shortcuts as hints:
+
+```typescript
+import { isApple } from 'canvas-editor'
+
+editor.register.contextMenuList([
+  {
+    name: 'Save',
+    shortCut: `${isApple ? '⌘' : 'Ctrl'} + S`,
+    when: () => true,
+    callback: (command) => {
+      // Save logic
+    }
+  }
+])
+```
+
+## Disabling Built-in Menus
+
+Disable built-in context menus using editor options:
+
+```typescript
+import { INTERNAL_CONTEXT_MENU_KEY } from 'canvas-editor'
+
+const editor = new Editor(container, data, {
+  contextMenuDisableKeys: [
+    INTERNAL_CONTEXT_MENU_KEY.GLOBAL.CUT,
+    INTERNAL_CONTEXT_MENU_KEY.GLOBAL.COPY,
+    INTERNAL_CONTEXT_MENU_KEY.IMAGE.CHANGE
+  ]
+})
+```
+
+Available keys:
+
+<CodeGroup>
+```typescript Global
+INTERNAL_CONTEXT_MENU_KEY.GLOBAL.CUT
+INTERNAL_CONTEXT_MENU_KEY.GLOBAL.COPY
+INTERNAL_CONTEXT_MENU_KEY.GLOBAL.PASTE
+INTERNAL_CONTEXT_MENU_KEY.GLOBAL.SELECT_ALL
+INTERNAL_CONTEXT_MENU_KEY.GLOBAL.PRINT
+```
+
+```typescript Image
+INTERNAL_CONTEXT_MENU_KEY.IMAGE.CHANGE
+INTERNAL_CONTEXT_MENU_KEY.IMAGE.SAVE_AS
+INTERNAL_CONTEXT_MENU_KEY.IMAGE.TEXT_WRAP
+```
+
+```typescript Table
+INTERNAL_CONTEXT_MENU_KEY.TABLE.INSERT_ROW_COL
+INTERNAL_CONTEXT_MENU_KEY.TABLE.DELETE_ROW_COL
+INTERNAL_CONTEXT_MENU_KEY.TABLE.MERGE_CELL
+```
+
+```typescript Hyperlink
+INTERNAL_CONTEXT_MENU_KEY.HYPERLINK.EDIT
+INTERNAL_CONTEXT_MENU_KEY.HYPERLINK.DELETE
+INTERNAL_CONTEXT_MENU_KEY.HYPERLINK.CANCEL
+```
+</CodeGroup>
+
+## Advanced Examples
+
+<Tabs>
+  <Tab title="Word Count">
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'wordCount',
+        name: 'Word Count',
+        icon: 'calculator',
+        when: (context) => context.editorHasSelection,
+        callback: (command) => {
+          const text = command.getRangeText()
+          const words = text.trim().split(/\s+/).length
+          const chars = text.length
+          alert(`Words: ${words}\nCharacters: ${chars}`)
+        }
+      }
+    ])
+    ```
+  </Tab>
+
+  <Tab title="Insert Template">
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'insertTemplate',
+        name: 'Insert Template',
+        when: (context) => !context.isReadonly,
+        childMenus: [
+          {
+            name: 'Meeting Notes',
+            when: () => true,
+            callback: (command) => {
+              const template = [
+                { value: 'Meeting Notes', type: ElementType.TITLE, level: TitleLevel.FIRST },
+                { value: 'Date: ' + new Date().toLocaleDateString() },
+                { value: '\n' },
+                { value: 'Attendees:', bold: true },
+                { value: '\n' },
+                { value: 'Agenda:', bold: true },
+                { value: '\n' }
+              ]
+              command.executeInsertElementList(template)
+            }
+          },
+          {
+            name: 'Code Block',
+            when: () => true,
+            callback: (command) => {
+              command.executeInsertElementList([
+                { value: '```', code: true },
+                { value: '\n' },
+                { value: '```', code: true }
+              ])
+            }
+          }
+        ]
+      }
+    ])
+    ```
+  </Tab>
+
+  <Tab title="Element Inspector">
+    ```typescript
+    editor.register.contextMenuList([
+      {
+        key: 'inspectElement',
+        name: 'Inspect Element',
+        when: (context) => {
+          // Show in development mode
+          return process.env.NODE_ENV === 'development'
+        },
+        callback: (command, context) => {
+          const { startElement } = context
+          console.group('Element Inspector')
+          console.log('Type:', startElement?.type)
+          console.log('Value:', startElement?.value)
+          console.log('Full element:', startElement)
+          console.groupEnd()
+        }
+      }
+    ])
+    ```
+  </Tab>
+</Tabs>
+
+## Programmatic Menu Display
+
+Get the list of registered menus:
+
+```typescript
+const menus = editor.register.getContextMenuList()
+console.log('Registered context menus:', menus)
+```
+
+<Warning>
+  Context menus are automatically filtered based on the `when` condition. Disabled menus and menus that don't meet their condition won't appear.
+</Warning>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use descriptive keys" icon="key">
+    Always provide unique, descriptive keys for your menu items to avoid conflicts.
+  </Card>
+  
+  <Card title="Implement proper conditions" icon="filter">
+    Use the `when` function to show menus only in relevant contexts.
+  </Card>
+  
+  <Card title="Respect readonly mode" icon="lock">
+    Check `context.isReadonly` before showing edit actions.
+  </Card>
+  
+  <Card title="Provide keyboard shortcuts" icon="keyboard">
+    Include `shortCut` hints for actions that have keyboard shortcuts.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Menu not appearing">
+    - Check if the `when` condition returns `true`
+    - Verify the menu key isn't in `contextMenuDisableKeys`
+    - Ensure `disable` is not set to `true`
+    - Check if editor is in readonly mode for edit actions
+  </Accordion>
+
+  <Accordion title="Submenu not working">
+    - Verify `childMenus` array is properly defined
+    - Each child menu must have its own `when` condition
+    - Check that parent menu doesn't have a `callback`
+  </Accordion>
+
+  <Accordion title="Icon not displaying">
+    - Ensure CSS class is properly defined
+    - Check that icon class name doesn't conflict with built-in icons
+    - Verify CSS is loaded after editor styles
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Custom Shortcuts" icon="keyboard" href="/advanced/custom-shortcuts">
+    Register keyboard shortcuts
+  </Card>
+  <Card title="Internationalization" icon="globe" href="/advanced/internationalization">
+    Add multi-language support
+  </Card>
+  <Card title="Commands API" icon="terminal" href="/api/commands/text-operations">
+    Explore available commands
+  </Card>
+  <Card title="Plugin System" icon="plug" href="/advanced/plugins">
+    Create custom plugins
+  </Card>
+</CardGroup>

@@ -1,0 +1,276 @@
+---
+title: Image Operations
+description: Commands for inserting and manipulating images
+---
+
+Image operation commands allow you to insert and modify images in the document.
+
+## executeImage
+
+Inserts an image at the current cursor position.
+
+```typescript
+editor.command.executeImage(payload: IDrawImagePayload): void
+```
+
+### Parameters
+
+<ParamField path="payload" type="IDrawImagePayload" required>
+  Image data:
+  ```typescript
+  {
+    value: string           // Base64 data URL or image URL
+    width?: number         // Image width in pixels
+    height?: number        // Image height in pixels
+    imgDisplay?: ImageDisplay  // Display mode
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+import { ImageDisplay } from '@hufe921/canvas-editor'
+
+// Insert inline image
+editor.command.executeImage({
+  value: 'data:image/png;base64,iVBORw0KG...',
+  width: 200,
+  height: 150,
+  imgDisplay: ImageDisplay.INLINE
+})
+
+// Insert from URL
+editor.command.executeImage({
+  value: 'https://example.com/image.png',
+  width: 300,
+  height: 200
+})
+```
+
+### Notes
+
+- Disabled in readonly mode
+- Image must be a valid data URL or accessible URL
+- If width/height not specified, uses natural image dimensions
+
+## executeReplaceImageElement
+
+Replaces an existing image with a new one.
+
+```typescript
+editor.command.executeReplaceImageElement(payload: string): void
+```
+
+### Parameters
+
+<ParamField path="payload" type="string" required>
+  New image data URL or URL
+</ParamField>
+
+### Example
+
+```typescript
+// Select an image, then replace it
+editor.command.executeReplaceImageElement(
+  'data:image/png;base64,NEW_IMAGE_DATA...'
+)
+```
+
+### Notes
+
+- Cursor must be on an image element
+- Preserves image dimensions and display settings
+
+## executeSaveAsImageElement
+
+Downloads the current image element.
+
+```typescript
+editor.command.executeSaveAsImageElement(): void
+```
+
+### Example
+
+```typescript
+// Select an image, then save it
+editor.command.executeSaveAsImageElement()
+```
+
+### Notes
+
+- Triggers browser download
+- Cursor must be on an image element
+
+## executeChangeImageDisplay
+
+Changes how an image is displayed in the document.
+
+```typescript
+editor.command.executeChangeImageDisplay(display: ImageDisplay): void
+```
+
+### Parameters
+
+<ParamField path="display" type="ImageDisplay" required>
+  Display mode:
+  - `ImageDisplay.INLINE` - Inline with text
+  - `ImageDisplay.BLOCK` - Block-level (own line)
+  - `ImageDisplay.FLOAT_TOP` - Float to top
+  - `ImageDisplay.FLOAT_BOTTOM` - Float to bottom
+</ParamField>
+
+### Example
+
+```typescript
+import { ImageDisplay } from '@hufe921/canvas-editor'
+
+// Make image block-level
+editor.command.executeChangeImageDisplay(ImageDisplay.BLOCK)
+
+// Float image to top
+editor.command.executeChangeImageDisplay(ImageDisplay.FLOAT_TOP)
+```
+
+## executeSetImageCrop
+
+Sets crop coordinates for an image.
+
+```typescript
+editor.command.executeSetImageCrop(crop: IImageCrop): void
+```
+
+### Parameters
+
+<ParamField path="crop" type="IImageCrop" required>
+  Crop coordinates:
+  ```typescript
+  {
+    x: number       // Left offset (0-1 normalized)
+    y: number       // Top offset (0-1 normalized)
+    width: number   // Crop width (0-1 normalized)
+    height: number  // Crop height (0-1 normalized)
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Crop to center 50% of image
+editor.command.executeSetImageCrop({
+  x: 0.25,
+  y: 0.25,
+  width: 0.5,
+  height: 0.5
+})
+
+// Crop left half
+editor.command.executeSetImageCrop({
+  x: 0,
+  y: 0,
+  width: 0.5,
+  height: 1
+})
+```
+
+### Notes
+
+- Values are normalized (0-1) relative to original image size
+- Cursor must be on an image element
+
+## executeSetImageCaption
+
+Sets or updates the caption for an image.
+
+```typescript
+editor.command.executeSetImageCaption(caption: IImageCaption | null): void
+```
+
+### Parameters
+
+<ParamField path="caption" type="IImageCaption | null" required>
+  Caption configuration:
+  ```typescript
+  {
+    value: string     // Caption text
+    color?: string    // Text color
+    font?: string     // Font family
+    size?: number     // Font size
+    top?: number      // Vertical offset
+  }
+  ```
+  Or `null` to remove caption
+</ParamField>
+
+### Example
+
+```typescript
+// Add caption
+editor.command.executeSetImageCaption({
+  value: 'Figure 1: Sample Image',
+  color: '#666666',
+  size: 12,
+  top: 5
+})
+
+// Remove caption
+editor.command.executeSetImageCaption(null)
+```
+
+## Complete Example
+
+```typescript
+import Editor, { ImageDisplay } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Insert image with caption
+const imageData = 'data:image/png;base64,iVBORw0KG...'
+
+editor.command.executeImage({
+  value: imageData,
+  width: 400,
+  height: 300,
+  imgDisplay: ImageDisplay.BLOCK
+})
+
+// Add caption to the inserted image
+editor.command.executeSetImageCaption({
+  value: 'Figure 1: Architecture Diagram',
+  color: '#333333',
+  size: 14,
+  top: 8
+})
+
+// Later, crop the image
+editor.command.executeSetImageCrop({
+  x: 0.1,
+  y: 0.1,
+  width: 0.8,
+  height: 0.8
+})
+
+// Change display mode
+editor.command.executeChangeImageDisplay(ImageDisplay.FLOAT_TOP)
+```
+
+## Working with Image Events
+
+```typescript
+// Listen for image size changes
+editor.eventBus.on('imageSizeChange', ({ element }) => {
+  console.log('Image resized:', element.width, element.height)
+})
+
+// Listen for image clicks
+editor.eventBus.on('imageMousedown', ({ evt, element }) => {
+  console.log('Image clicked:', element)
+})
+
+// Listen for image double-clicks
+editor.eventBus.on('imageDblclick', ({ evt, element }) => {
+  console.log('Image double-clicked:', element)
+  // Could open image editor here
+})
+```

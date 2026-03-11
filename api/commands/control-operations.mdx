@@ -1,0 +1,477 @@
+---
+title: Control Operations
+description: Commands for working with form controls
+---
+
+Control operation commands allow you to create and manipulate form controls (text inputs, checkboxes, dropdowns, etc.).
+
+## executeInsertControl
+
+Inserts a form control at the current cursor position.
+
+```typescript
+editor.command.executeInsertControl(control: IControl): void
+```
+
+### Parameters
+
+<ParamField path="control" type="IControl" required>
+  Control configuration. See [Control Types](/api/types/control) for details.
+</ParamField>
+
+### Example
+
+```typescript
+import { ControlType } from '@hufe921/canvas-editor'
+
+// Insert text control
+editor.command.executeInsertControl({
+  type: ControlType.TEXT,
+  value: null,
+  placeholder: 'Enter your name',
+  minWidth: 200
+})
+
+// Insert select control
+editor.command.executeInsertControl({
+  type: ControlType.SELECT,
+  value: null,
+  code: null,
+  valueSets: [
+    { value: 'Option 1', code: '1' },
+    { value: 'Option 2', code: '2' },
+    { value: 'Option 3', code: '3' }
+  ]
+})
+
+// Insert date control
+editor.command.executeInsertControl({
+  type: ControlType.DATE,
+  value: null,
+  dateFormat: 'YYYY-MM-DD'
+})
+```
+
+## executeSetControlValue
+
+Sets the value of one or more controls.
+
+```typescript
+editor.command.executeSetControlValue(options: ISetControlValueOption[]): void
+```
+
+### Parameters
+
+<ParamField path="options" type="ISetControlValueOption[]" required>
+  Array of control value updates:
+  ```typescript
+  {
+    id?: string                    // Control ID
+    groupId?: string               // Control group ID
+    conceptId?: string             // Concept ID
+    areaId?: string               // Area ID
+    value: string | IElement[] | null  // New value
+    isSubmitHistory?: boolean     // Add to undo history
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Set single control value
+editor.command.executeSetControlValue([{
+  conceptId: 'name-field',
+  value: 'John Doe'
+}])
+
+// Set multiple controls
+editor.command.executeSetControlValue([
+  { conceptId: 'firstName', value: 'John' },
+  { conceptId: 'lastName', value: 'Doe' },
+  { conceptId: 'age', value: '30' }
+])
+
+// Set with rich text
+editor.command.executeSetControlValue([{
+  conceptId: 'description',
+  value: [
+    { value: 'Bold text', bold: true },
+    { value: ' and normal text' }
+  ]
+}])
+```
+
+## executeSetControlValueList
+
+Alias for `executeSetControlValue`.
+
+```typescript
+editor.command.executeSetControlValueList(options: ISetControlValueOption[]): void
+```
+
+## executeSetControlExtension
+
+Sets custom extension data for controls.
+
+```typescript
+editor.command.executeSetControlExtension(options: ISetControlExtensionOption[]): void
+```
+
+### Parameters
+
+<ParamField path="options" type="ISetControlExtensionOption[]" required>
+  Array of extension updates:
+  ```typescript
+  {
+    id?: string
+    groupId?: string
+    conceptId?: string
+    areaId?: string
+    extension: unknown  // Custom data
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeSetControlExtension([{
+  conceptId: 'user-field',
+  extension: {
+    userId: '12345',
+    verified: true,
+    metadata: { department: 'Engineering' }
+  }
+}])
+```
+
+## executeSetControlExtensionList
+
+Alias for `executeSetControlExtension`.
+
+```typescript
+editor.command.executeSetControlExtensionList(options: ISetControlExtensionOption[]): void
+```
+
+## executeSetControlProperties
+
+Updates control properties.
+
+```typescript
+editor.command.executeSetControlProperties(options: ISetControlProperties[]): void
+```
+
+### Parameters
+
+<ParamField path="options" type="ISetControlProperties[]" required>
+  Array of property updates:
+  ```typescript
+  {
+    id?: string
+    groupId?: string
+    conceptId?: string
+    areaId?: string
+    properties: Partial<Omit<IControl, 'value'>>
+    isSubmitHistory?: boolean
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Make control readonly
+editor.command.executeSetControlProperties([{
+  conceptId: 'readonly-field',
+  properties: {
+    disabled: true
+  }
+}])
+
+// Update placeholder and styling
+editor.command.executeSetControlProperties([{
+  conceptId: 'name-field',
+  properties: {
+    placeholder: 'Full Name',
+    minWidth: 300,
+    underline: true
+  }
+}])
+```
+
+## executeSetControlPropertiesList
+
+Alias for `executeSetControlProperties`.
+
+```typescript
+editor.command.executeSetControlPropertiesList(options: ISetControlProperties[]): void
+```
+
+## executeSetControlHighlight
+
+Highlights specific keywords in control values.
+
+```typescript
+editor.command.executeSetControlHighlight(options: ISetControlHighlightOption[]): void
+```
+
+### Parameters
+
+<ParamField path="options" type="ISetControlHighlightOption[]" required>
+  Array of highlight rules:
+  ```typescript
+  {
+    id?: string
+    conceptId?: string
+    ruleList: {
+      keyword: string
+      alpha?: number
+      backgroundColor?: string
+    }[]
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Highlight keywords in control
+editor.command.executeSetControlHighlight([{
+  conceptId: 'content-field',
+  ruleList: [
+    { 
+      keyword: 'important', 
+      backgroundColor: '#FFFF00',
+      alpha: 0.6 
+    },
+    { 
+      keyword: 'urgent', 
+      backgroundColor: '#FF0000',
+      alpha: 0.4 
+    }
+  ]
+}])
+```
+
+## executeRemoveControl
+
+Removes a control from the document.
+
+```typescript
+editor.command.executeRemoveControl(options: IRemoveControlOption): void
+```
+
+### Parameters
+
+<ParamField path="options" type="IRemoveControlOption" required>
+  ```typescript
+  {
+    id?: string         // Control ID
+    conceptId?: string  // Concept ID
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeRemoveControl({ 
+  conceptId: 'obsolete-field' 
+})
+```
+
+## executeLocationControl
+
+Navigates to a specific control.
+
+```typescript
+editor.command.executeLocationControl(
+  conceptId: string,
+  options?: ILocationControlOption
+): void
+```
+
+### Parameters
+
+<ParamField path="conceptId" type="string" required>
+  Concept ID of the control to locate
+</ParamField>
+
+<ParamField path="options" type="ILocationControlOption">
+  ```typescript
+  {
+    position: LocationPosition  // START or END
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+import { LocationPosition } from '@hufe921/canvas-editor'
+
+// Jump to control
+editor.command.executeLocationControl('email-field')
+
+// Jump to end of control
+editor.command.executeLocationControl('email-field', {
+  position: LocationPosition.END
+})
+```
+
+## executeJumpControl
+
+Jumps to the next or previous control.
+
+```typescript
+editor.command.executeJumpControl(direction: MoveDirection): void
+```
+
+### Parameters
+
+<ParamField path="direction" type="MoveDirection" required>
+  - `MoveDirection.FORWARD` - Next control
+  - `MoveDirection.BACKWARD` - Previous control
+</ParamField>
+
+### Example
+
+```typescript
+// Jump to next control (like Tab key)
+editor.command.executeJumpControl(MoveDirection.FORWARD)
+
+// Jump to previous control (like Shift+Tab)
+editor.command.executeJumpControl(MoveDirection.BACKWARD)
+```
+
+## Get Control Data
+
+### getControlValue
+
+Retrieves control values.
+
+```typescript
+editor.command.getControlValue(options?: IGetControlValueOption): IGetControlValueResult
+```
+
+### Parameters
+
+<ParamField path="options" type="IGetControlValueOption">
+  Filter options:
+  ```typescript
+  {
+    id?: string
+    groupId?: string
+    conceptId?: string
+    areaId?: string
+  }
+  ```
+</ParamField>
+
+### Returns
+
+```typescript
+{
+  type: ControlType
+  value: string | null        // Plain text value
+  innerText: string | null    // Inner text
+  zone: EditorZone           // Location (header/main/footer)
+  elementList?: IElement[]   // Rich element data
+  // ... other control properties
+}[]
+```
+
+### Example
+
+```typescript
+// Get all controls
+const allControls = editor.command.getControlValue()
+
+// Get specific control
+const control = editor.command.getControlValue({ 
+  conceptId: 'name-field' 
+})
+
+if (control.length > 0) {
+  console.log('Value:', control[0].value)
+}
+
+// Get controls by group
+const groupControls = editor.command.getControlValue({ 
+  groupId: 'personal-info' 
+})
+```
+
+### getControlList
+
+Retrieves all control instances.
+
+```typescript
+editor.command.getControlList(): IControl[]
+```
+
+### Example
+
+```typescript
+const controls = editor.command.getControlList()
+controls.forEach(control => {
+  console.log(`${control.type}: ${control.value}`)
+})
+```
+
+## Complete Example
+
+```typescript
+import Editor, { 
+  ControlType,
+  LocationPosition 
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Create a form with multiple controls
+editor.command.executeInsertControl({
+  type: ControlType.TEXT,
+  conceptId: 'firstName',
+  placeholder: 'First Name',
+  minWidth: 200
+})
+
+editor.command.executeInsertControl({
+  type: ControlType.TEXT,
+  conceptId: 'lastName',
+  placeholder: 'Last Name',
+  minWidth: 200
+})
+
+editor.command.executeInsertControl({
+  type: ControlType.SELECT,
+  conceptId: 'country',
+  valueSets: [
+    { value: 'USA', code: 'us' },
+    { value: 'Canada', code: 'ca' },
+    { value: 'UK', code: 'uk' }
+  ]
+})
+
+// Fill form programmatically
+editor.command.executeSetControlValue([
+  { conceptId: 'firstName', value: 'John' },
+  { conceptId: 'lastName', value: 'Doe' }
+])
+
+// Navigate to specific field
+editor.command.executeLocationControl('country', {
+  position: LocationPosition.START
+})
+
+// Get all form values
+const formData = editor.command.getControlValue()
+const formValues = formData.reduce((acc, control) => {
+  acc[control.conceptId] = control.value
+  return acc
+}, {})
+
+console.log('Form data:', formValues)
+```

@@ -1,0 +1,359 @@
+---
+title: 'Tables'
+description: 'Create and manipulate tables with support for merging, splitting, and styling cells'
+icon: 'table'
+---
+
+Canvas Editor provides comprehensive table functionality including creation, modification, cell operations, and styling. Tables are rendered on the canvas with full editing capabilities.
+
+## Creating Tables
+
+### Insert a New Table
+
+Insert a table at the current cursor position:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, {
+  main: [{ value: '' }]
+})
+
+// Insert a 3x4 table (3 rows, 4 columns)
+editor.command.executeInsertTable(3, 4)
+```
+
+<CodeGroup>
+```typescript Simple Table
+// Insert a 2x2 table
+editor.command.executeInsertTable(2, 2)
+```
+
+```typescript Large Table
+// Insert an 8x8 table
+editor.command.executeInsertTable(8, 8)
+```
+</CodeGroup>
+
+<Tip>
+Tables automatically adjust their width to fit the page margins. Column widths distribute evenly by default.
+</Tip>
+
+## Row Operations
+
+<CardGroup cols={2}>
+  <Card title="Insert Top Row" icon="arrow-up">
+    Add a new row above the current cell
+  </Card>
+  <Card title="Insert Bottom Row" icon="arrow-down">
+    Add a new row below the current cell
+  </Card>
+  <Card title="Delete Row" icon="trash">
+    Remove the current row from the table
+  </Card>
+  <Card title="Select All" icon="table-cells">
+    Select all cells in the table
+  </Card>
+</CardGroup>
+
+### Row Manipulation
+
+```typescript
+// Position cursor inside a table cell first
+
+// Insert row above current cell
+editor.command.executeInsertTableTopRow()
+
+// Insert row below current cell
+editor.command.executeInsertTableBottomRow()
+
+// Delete current row
+editor.command.executeDeleteTableRow()
+```
+
+## Column Operations
+
+Manage table columns with precision:
+
+```typescript
+// Insert column to the left of current cell
+editor.command.executeInsertTableLeftCol()
+
+// Insert column to the right of current cell
+editor.command.executeInsertTableRightCol()
+
+// Delete current column
+editor.command.executeDeleteTableCol()
+```
+
+<Note>
+All row and column operations require the cursor to be positioned inside a table cell.
+</Note>
+
+## Cell Operations
+
+### Merging Cells
+
+Merge multiple cells into one:
+
+<Steps>
+  <Step title="Select Cells">
+    Select the range of cells you want to merge by clicking and dragging.
+  </Step>
+  <Step title="Execute Merge">
+    ```typescript
+    editor.command.executeMergeTableCell()
+    ```
+  </Step>
+</Steps>
+
+### Unmerging Cells
+
+Reverse a cell merge operation:
+
+```typescript
+// Position cursor in merged cell
+editor.command.executeCancelMergeTableCell()
+```
+
+### Splitting Cells
+
+<Tabs>
+  <Tab title="Vertical Split">
+    Split a cell vertically (create columns):
+    ```typescript
+    editor.command.executeSplitVerticalTableCell()
+    ```
+  </Tab>
+  <Tab title="Horizontal Split">
+    Split a cell horizontally (create rows):
+    ```typescript
+    editor.command.executeSplitHorizontalTableCell()
+    ```
+  </Tab>
+</Tabs>
+
+## Table Styling
+
+### Border Styles
+
+Customize table borders:
+
+```typescript
+import { TableBorder } from '@hufe921/canvas-editor'
+
+// Set border type for entire table
+editor.command.executeTableBorderType(TableBorder.ALL) // All borders
+editor.command.executeTableBorderType(TableBorder.EMPTY) // No borders
+editor.command.executeTableBorderType(TableBorder.EXTERNAL) // Only outer border
+editor.command.executeTableBorderType(TableBorder.INTERNAL) // Only inner borders
+```
+
+Available border types:
+- `TableBorder.ALL` - Show all borders
+- `TableBorder.EMPTY` - Hide all borders
+- `TableBorder.EXTERNAL` - Only external borders
+- `TableBorder.INTERNAL` - Only internal borders
+
+### Border Colors
+
+```typescript
+// Set border color for entire table
+editor.command.executeTableBorderColor('#000000')
+
+// Set border for individual cell
+editor.command.executeTableTdBorderType(/* border configuration */)
+```
+
+### Cell Background Colors
+
+Apply background colors to individual cells:
+
+```typescript
+// Set background color for current cell
+editor.command.executeTableTdBackgroundColor('#F0F0F0')
+
+// Remove background color
+editor.command.executeTableTdBackgroundColor('')
+```
+
+<CodeGroup>
+```typescript Light Gray
+editor.command.executeTableTdBackgroundColor('#F5F5F5')
+```
+
+```typescript Light Blue
+editor.command.executeTableTdBackgroundColor('#E3F2FD')
+```
+
+```typescript Light Green
+editor.command.executeTableTdBackgroundColor('#E8F5E9')
+```
+</CodeGroup>
+
+## Vertical Alignment
+
+Align cell content vertically:
+
+```typescript
+import { VerticalAlign } from '@hufe921/canvas-editor'
+
+// Align to top
+editor.command.executeTableTdVerticalAlign(VerticalAlign.TOP)
+
+// Align to middle
+editor.command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+
+// Align to bottom
+editor.command.executeTableTdVerticalAlign(VerticalAlign.BOTTOM)
+```
+
+## Cell Diagonal Lines
+
+Add diagonal slash lines to cells:
+
+```typescript
+import { TdSlash } from '@hufe921/canvas-editor'
+
+// Add forward slash (\)
+editor.command.executeTableTdSlashType(TdSlash.FORWARD)
+
+// Add backward slash (/)
+editor.command.executeTableTdSlashType(TdSlash.BACK)
+
+// Remove slash
+editor.command.executeTableTdSlashType(TdSlash.NONE)
+```
+
+## Selecting Table Content
+
+```typescript
+// Select all cells in the table
+editor.command.executeTableSelectAll()
+```
+
+## Deleting Tables
+
+Remove an entire table:
+
+```typescript
+// Position cursor inside table
+editor.command.executeDeleteTable()
+```
+
+<Warning>
+Deleting a table is permanent and cannot be undone except through the undo command.
+</Warning>
+
+## Complete Example
+
+Create a styled table programmatically:
+
+```typescript
+import Editor, { TableBorder, VerticalAlign } from '@hufe921/canvas-editor'
+
+const container = document.querySelector('.editor')
+const editor = new Editor(container, {
+  main: [{ value: '' }]
+})
+
+// Create a table
+editor.command.executeInsertTable(4, 3)
+
+// Style the table
+function styleTable() {
+  // Set border style
+  editor.command.executeTableBorderType(TableBorder.ALL)
+  editor.command.executeTableBorderColor('#CCCCCC')
+  
+  // Style header row (assuming cursor is in first row)
+  editor.command.executeTableSelectAll()
+  editor.command.executeTableTdBackgroundColor('#4A90E2')
+  editor.command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+  
+  // Insert content
+  editor.command.executeInsertElementList([
+    { value: 'Header 1', bold: true, color: '#FFFFFF' }
+  ])
+}
+
+styleTable()
+```
+
+## Programmatic Table Creation
+
+Create tables with predefined content and structure:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'table',
+    value: '',
+    colgroup: [
+      { width: 200 },
+      { width: 200 },
+      { width: 200 }
+    ],
+    trList: [
+      {
+        height: 40,
+        tdList: [
+          {
+            colspan: 1,
+            rowspan: 1,
+            value: [
+              { value: 'Cell 1-1', bold: true }
+            ]
+          },
+          {
+            colspan: 1,
+            rowspan: 1,
+            value: [
+              { value: 'Cell 1-2' }
+            ]
+          },
+          {
+            colspan: 1,
+            rowspan: 1,
+            value: [
+              { value: 'Cell 1-3' }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+])
+```
+
+## Best Practices
+
+<Accordion title="Table Design">
+  - Use headers with distinct styling for better readability
+  - Apply consistent cell padding and spacing
+  - Use background colors sparingly to highlight important data
+  - Keep tables simple - complex nested structures reduce readability
+</Accordion>
+
+<Accordion title="Performance">
+  - Limit table size for better rendering performance
+  - Avoid excessive cell merging which complicates the structure
+  - Use table pagination for large datasets (see roadmap)
+</Accordion>
+
+<Accordion title="Accessibility">
+  - Ensure sufficient contrast between cell backgrounds and text
+  - Use semantic headers for screen readers
+  - Maintain logical reading order in merged cells
+</Accordion>
+
+## Related Commands
+
+<CardGroup cols={2}>
+  <Card title="Text Formatting" icon="text" href="/features/text-formatting">
+    Format text within table cells
+  </Card>
+  <Card title="Print & Export" icon="print" href="/features/print-export">
+    Export tables to PDF or images
+  </Card>
+</CardGroup>

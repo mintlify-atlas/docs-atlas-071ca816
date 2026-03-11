@@ -1,0 +1,193 @@
+---
+title: Editor Class
+description: Main Editor class for creating and managing Canvas Editor instances
+---
+
+The `Editor` class is the primary entry point for Canvas Editor. It manages the document, rendering, and provides access to the command API.
+
+## Constructor
+
+```typescript
+new Editor(
+  container: HTMLDivElement,
+  data: IEditorData | IElement[],
+  options?: IEditorOption
+)
+```
+
+### Parameters
+
+<ParamField path="container" type="HTMLDivElement" required>
+  The HTML div element that will host the editor
+</ParamField>
+
+<ParamField path="data" type="IEditorData | IElement[]" required>
+  Initial document data. Can be either:
+  - An `IEditorData` object with `header`, `main`, and `footer` sections
+  - An array of `IElement` objects for the main content only
+</ParamField>
+
+<ParamField path="options" type="IEditorOption">
+  Editor configuration options. See [Constructor Options](/api/constructor-options) for details
+</ParamField>
+
+## Properties
+
+### command
+
+```typescript
+command: Command
+```
+
+Access to all editor commands for manipulating content, formatting, and document operations.
+
+See [Commands](/api/commands/text-operations) for available methods.
+
+### listener
+
+```typescript
+listener: Listener
+```
+
+Callback-based event system for responding to editor changes.
+
+See [Listener](/api/listener) for available listeners.
+
+### eventBus
+
+```typescript
+eventBus: EventBus<EventBusMap>
+```
+
+Event bus for subscribing to editor events.
+
+See [EventBus](/api/eventbus) for available events.
+
+### version
+
+```typescript
+version: string
+```
+
+The current version of the Canvas Editor library.
+
+### register
+
+```typescript
+register: Register
+```
+
+API for registering custom context menus, shortcuts, and internationalization.
+
+### override
+
+```typescript
+override: Override
+```
+
+API for overriding internal editor behaviors.
+
+### use
+
+```typescript
+use: UsePlugin
+```
+
+Method for loading editor plugins.
+
+### destroy
+
+```typescript
+destroy: () => void
+```
+
+Cleans up the editor instance and removes all event listeners.
+
+## Basic Usage
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const container = document.querySelector('#editor')
+
+const data = {
+  main: [
+    { value: 'Hello ' },
+    { value: 'World', bold: true }
+  ]
+}
+
+const editor = new Editor(container, data, {
+  defaultFont: 'Arial',
+  defaultSize: 16
+})
+```
+
+## With Full Document Structure
+
+```typescript
+const data = {
+  header: [
+    { value: 'Document Header', size: 20 }
+  ],
+  main: [
+    { value: 'Main content goes here' }
+  ],
+  footer: [
+    { value: 'Page ', size: 12 },
+    { value: '1', size: 12 }
+  ]
+}
+
+const editor = new Editor(container, data)
+```
+
+## Accessing Commands
+
+```typescript
+// Format text as bold
+editor.command.executeBold()
+
+// Set font size
+editor.command.executeSize(18)
+
+// Insert a table
+editor.command.executeInsertTable({ row: 3, col: 3 })
+
+// Get document value
+const value = editor.command.getValue()
+```
+
+## Listening to Events
+
+```typescript
+// Using listener callbacks
+editor.listener.rangeStyleChange = (payload) => {
+  console.log('Selection style:', payload)
+}
+
+// Using eventBus
+editor.eventBus.on('contentChange', () => {
+  console.log('Content changed')
+})
+```
+
+## Cleanup
+
+```typescript
+// Destroy editor when done
+editor.destroy()
+```
+
+## TypeScript Support
+
+Canvas Editor is fully typed. Import types as needed:
+
+```typescript
+import Editor, { 
+  IEditorData, 
+  IEditorOption, 
+  IElement,
+  ElementType 
+} from '@hufe921/canvas-editor'
+```

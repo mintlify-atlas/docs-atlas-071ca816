@@ -1,0 +1,359 @@
+---
+title: 'Images'
+description: 'Insert, manipulate, and style images with cropping, resizing, and caption support'
+icon: 'image'
+---
+
+Canvas Editor provides comprehensive image handling capabilities including insertion, cropping, resizing, display modes, and captions. All image operations are performed directly on the canvas.
+
+## Inserting Images
+
+### Basic Image Insertion
+
+Insert an image at the current cursor position:
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, {
+  main: [{ value: '' }]
+})
+
+// Insert image from URL or base64
+editor.command.executeImage({
+  value: 'data:image/png;base64,iVBORw0KG...', // Base64 string
+  width: 400,
+  height: 300
+})
+```
+
+<Tip>
+Images can be inserted from base64 data URLs, which is the recommended format for Canvas Editor.
+</Tip>
+
+### Image Element Structure
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'image',
+    value: 'data:image/png;base64,...',
+    width: 400,
+    height: 300
+  }
+])
+```
+
+## Display Modes
+
+Canvas Editor supports different image display modes:
+
+<CardGroup cols={2}>
+  <Card title="Inline" icon="align-left">
+    Image flows with text like an inline element
+  </Card>
+  <Card title="Block" icon="square">
+    Image appears on its own line as a block element
+  </Card>
+  <Card title="Float" icon="object-group">
+    Image floats at a specific position, allowing text wrap
+  </Card>
+</CardGroup>
+
+### Setting Display Mode
+
+```typescript
+import { ImageDisplay } from '@hufe921/canvas-editor'
+
+// Change to inline display
+editor.command.executeChangeImageDisplay(ImageDisplay.INLINE)
+
+// Change to block display
+editor.command.executeChangeImageDisplay(ImageDisplay.BLOCK)
+
+// Change to float display
+editor.command.executeChangeImageDisplay(ImageDisplay.FLOAT)
+```
+
+<CodeGroup>
+```typescript Inline Image
+// Image flows with text
+editor.command.executeChangeImageDisplay(ImageDisplay.INLINE)
+```
+
+```typescript Block Image
+// Image on its own line
+editor.command.executeChangeImageDisplay(ImageDisplay.BLOCK)
+```
+</CodeGroup>
+
+## Image Cropping
+
+Crop images to focus on specific areas:
+
+```typescript
+// Define crop area
+const cropConfig = {
+  x: 50,      // Left offset in pixels
+  y: 50,      // Top offset in pixels
+  width: 300, // Crop width
+  height: 200 // Crop height
+}
+
+editor.command.executeSetImageCrop(cropConfig)
+```
+
+<Steps>
+  <Step title="Position Cursor">
+    Click on the image you want to crop.
+  </Step>
+  <Step title="Set Crop Area">
+    Define the crop rectangle coordinates and dimensions.
+  </Step>
+  <Step title="Apply Crop">
+    Execute the crop command with your configuration.
+  </Step>
+</Steps>
+
+## Image Captions
+
+Add descriptive captions to images:
+
+```typescript
+// Set image caption
+editor.command.executeSetImageCaption({
+  value: 'Figure 1: Canvas Editor Architecture',
+  color: '#666666',
+  font: 'Arial',
+  size: 12,
+  top: 10  // Spacing above caption
+})
+```
+
+### Caption Styling
+
+<Tabs>
+  <Tab title="Basic Caption">
+    ```typescript
+    editor.command.executeSetImageCaption({
+      value: 'Image caption text'
+    })
+    ```
+  </Tab>
+  <Tab title="Styled Caption">
+    ```typescript
+    editor.command.executeSetImageCaption({
+      value: 'Styled caption',
+      color: '#333333',
+      font: 'Georgia',
+      size: 14,
+      top: 15
+    })
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+Captions are positioned below the image and automatically inherit the image's alignment.
+</Note>
+
+## Replacing Images
+
+Replace an existing image element:
+
+```typescript
+// Position cursor on the image to replace
+editor.command.executeReplaceImageElement({
+  value: 'data:image/png;base64,NEW_IMAGE_DATA',
+  width: 500,
+  height: 400
+})
+```
+
+## Saving Images
+
+Export images from the document:
+
+```typescript
+// Save current image element as file
+editor.command.executeSaveAsImageElement()
+```
+
+### Getting All Images
+
+Retrieve all images from the document:
+
+```typescript
+const imageList = await editor.command.getImage()
+
+// imageList contains base64 data for all images
+imageList.forEach((imageData, index) => {
+  console.log(`Image ${index}:`, imageData)
+})
+```
+
+<CodeGroup>
+```typescript Get All Images
+const images = await editor.command.getImage()
+console.log(`Found ${images.length} images`)
+```
+
+```typescript Save Image Data
+const images = await editor.command.getImage()
+const firstImage = images[0]
+// Save to server or download
+```
+</CodeGroup>
+
+## Image Positioning
+
+For floating images, set custom positions:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'image',
+    value: 'data:image/png;base64,...',
+    width: 300,
+    height: 200,
+    imgDisplay: ImageDisplay.FLOAT,
+    imgFloatPosition: {
+      x: 100,  // X coordinate
+      y: 50,   // Y coordinate
+      pageNo: 0 // Page number (0-indexed)
+    }
+  }
+])
+```
+
+## Complete Example
+
+Create a document with styled images:
+
+```typescript
+import Editor, { ImageDisplay } from '@hufe921/canvas-editor'
+
+const container = document.querySelector('.editor')
+const editor = new Editor(container, {
+  main: [
+    { value: 'Document with Images\n\n', size: 20, bold: true },
+    {
+      type: 'image',
+      value: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...',
+      width: 600,
+      height: 400,
+      imgDisplay: ImageDisplay.BLOCK,
+      imgCaption: {
+        value: 'Figure 1: Main Diagram',
+        color: '#555555',
+        size: 12,
+        top: 10
+      }
+    },
+    { value: '\n\nSome text after the image.' }
+  ]
+})
+
+// Add crop to the image
+function cropImage() {
+  // Select the image element
+  editor.command.executeSetRange(2, 1)
+  
+  // Apply crop
+  editor.command.executeSetImageCrop({
+    x: 0,
+    y: 0,
+    width: 400,
+    height: 300
+  })
+}
+```
+
+## File Upload Integration
+
+Integrate with file input for image uploads:
+
+```typescript
+const fileInput = document.createElement('input')
+fileInput.type = 'file'
+fileInput.accept = 'image/*'
+
+fileInput.addEventListener('change', (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      editor.command.executeImage({
+        value: e.target.result, // Base64 data URL
+        width: 400,
+        height: 300
+      })
+    }
+    reader.readAsDataURL(file)
+  }
+})
+
+// Trigger file selection
+fileInput.click()
+```
+
+## Image Rules
+
+Control image behavior with rules:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'image',
+    value: 'data:image/png;base64,...',
+    width: 400,
+    height: 300,
+    imgToolDisabled: true,      // Disable image manipulation tools
+    imgPreviewDisabled: true    // Disable image preview
+  }
+])
+```
+
+<Warning>
+Setting `imgToolDisabled: true` prevents users from resizing, cropping, or replacing the image.
+</Warning>
+
+## Best Practices
+
+<Accordion title="Image Optimization">
+  - Compress images before insertion to reduce document size
+  - Use appropriate image dimensions - avoid oversized images
+  - Consider using progressive JPEGs for better loading experience
+  - Base64 encoding increases file size by ~33%, so use judiciously
+</Accordion>
+
+<Accordion title="Performance">
+  - Limit the number of high-resolution images in a single document
+  - Use lazy loading for documents with many images
+  - Cache image data when possible
+  - Consider image dimensions relative to the canvas size
+</Accordion>
+
+<Accordion title="Accessibility">
+  - Always provide descriptive captions for images
+  - Use meaningful image descriptions
+  - Ensure images are not the sole means of conveying information
+</Accordion>
+
+<Accordion title="User Experience">
+  - Provide visual feedback during image upload
+  - Show loading states for large images
+  - Allow users to preview images before insertion
+  - Implement drag-and-drop for easier image insertion
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Print & Export" icon="print" href="/features/print-export">
+    Export documents with images to PDF
+  </Card>
+  <Card title="Text Formatting" icon="text" href="/features/text-formatting">
+    Style text around images
+  </Card>
+</CardGroup>

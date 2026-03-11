@@ -1,0 +1,250 @@
+---
+title: Text Operations
+description: Commands for basic text operations like cut, copy, paste, and select
+---
+
+Text operation commands provide basic clipboard and selection functionality.
+
+## executeCut
+
+Cuts the selected content to the clipboard.
+
+```typescript
+editor.command.executeCut(): Promise<void>
+```
+
+### Example
+
+```typescript
+await editor.command.executeCut()
+```
+
+### Notes
+
+- Disabled in readonly mode
+- Disabled when editor is disabled
+- Removes selected content and copies to clipboard
+
+## executeCopy
+
+Copies the selected content to the clipboard.
+
+```typescript
+editor.command.executeCopy(options?: ICopyOption): Promise<void>
+```
+
+### Parameters
+
+<ParamField path="options" type="ICopyOption">
+  Optional copy configuration
+</ParamField>
+
+### Example
+
+```typescript
+await editor.command.executeCopy()
+```
+
+### Notes
+
+- Works in all editor modes including readonly
+- Copies to system clipboard
+
+## executePaste
+
+Pastes content from the clipboard at the current cursor position.
+
+```typescript
+editor.command.executePaste(options?: IPasteOption): void
+```
+
+### Parameters
+
+<ParamField path="options" type="IPasteOption">
+  Optional paste configuration
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executePaste()
+```
+
+### Notes
+
+- Disabled in readonly mode
+- Disabled when editor is disabled
+- Supports text, HTML, and image data from clipboard
+
+## executeSelectAll
+
+Selects all content in the current context.
+
+```typescript
+editor.command.executeSelectAll(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSelectAll()
+```
+
+### Notes
+
+- If cursor is inside a table cell, selects all content in that cell
+- Otherwise, selects all document content
+
+## executeBackspace
+
+Deletes the selected content or the character before the cursor.
+
+```typescript
+editor.command.executeBackspace(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeBackspace()
+```
+
+### Notes
+
+- Disabled in readonly mode
+- Disabled when editor is disabled
+- Cannot delete the first character if it's the document zero-width character
+- If text is selected, deletes the selection
+- If no selection, deletes one character before cursor
+
+## setRange
+
+Sets the current selection range.
+
+```typescript
+editor.command.executeSetRange(
+  startIndex: number,
+  endIndex: number,
+  tableId?: string,
+  startTdIndex?: number,
+  endTdIndex?: number,
+  startTrIndex?: number,
+  endTrIndex?: number
+): void
+```
+
+### Parameters
+
+<ParamField path="startIndex" type="number" required>
+  Start position index in the element list
+</ParamField>
+
+<ParamField path="endIndex" type="number" required>
+  End position index in the element list
+</ParamField>
+
+<ParamField path="tableId" type="string">
+  Table ID if selection is within a table
+</ParamField>
+
+<ParamField path="startTdIndex" type="number">
+  Starting table cell index
+</ParamField>
+
+<ParamField path="endTdIndex" type="number">
+  Ending table cell index
+</ParamField>
+
+<ParamField path="startTrIndex" type="number">
+  Starting table row index
+</ParamField>
+
+<ParamField path="endTrIndex" type="number">
+  Ending table row index
+</ParamField>
+
+### Example
+
+```typescript
+// Select characters 10-20
+editor.command.executeSetRange(10, 20)
+
+// Select in a table
+editor.command.executeSetRange(
+  0, 5,
+  'table-id-123',
+  0, 2,  // td indices
+  0, 0   // tr indices
+)
+```
+
+## replaceRange
+
+Replaces the current range with a new range.
+
+```typescript
+editor.command.executeReplaceRange(range: IRange): void
+```
+
+### Parameters
+
+<ParamField path="range" type="IRange" required>
+  Range object containing startIndex, endIndex, and optional table coordinates
+</ParamField>
+
+### Example
+
+```typescript
+const range = {
+  startIndex: 10,
+  endIndex: 20
+}
+editor.command.executeReplaceRange(range)
+```
+
+## setPositionContext
+
+Sets the position context (e.g., entering a table cell).
+
+```typescript
+editor.command.executeSetPositionContext(range: IRange): void
+```
+
+### Parameters
+
+<ParamField path="range" type="IRange" required>
+  Range with table information to set context
+</ParamField>
+
+### Example
+
+```typescript
+const range = {
+  startIndex: 0,
+  endIndex: 0,
+  tableId: 'table-123',
+  startTrIndex: 0,
+  startTdIndex: 0
+}
+editor.command.executeSetPositionContext(range)
+```
+
+## Complete Example
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Select all and copy
+editor.command.executeSelectAll()
+await editor.command.executeCopy()
+
+// Set cursor position and paste
+editor.command.executeSetRange(50, 50)
+editor.command.executePaste()
+
+// Delete selection
+editor.command.executeSetRange(10, 20)
+editor.command.executeBackspace()
+```

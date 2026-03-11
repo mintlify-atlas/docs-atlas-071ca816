@@ -1,0 +1,444 @@
+---
+title: Utility Functions
+description: Exported utility functions for working with Canvas Editor
+---
+
+Canvas Editor exports several utility functions for common operations.
+
+## Text Operations
+
+### splitText
+
+Splits a string into an array of individual character elements.
+
+```typescript
+splitText(text: string): IElement[]
+```
+
+### Parameters
+
+<ParamField path="text" type="string" required>
+  Text string to split into characters
+</ParamField>
+
+### Returns
+
+`IElement[]` - Array of single-character elements
+
+### Example
+
+```typescript
+import { splitText } from '@hufe921/canvas-editor'
+
+const elements = splitText('Hello')
+// Returns:
+// [
+//   { value: 'H' },
+//   { value: 'e' },
+//   { value: 'l' },
+//   { value: 'l' },
+//   { value: 'o' }
+// ]
+
+// Use with formatting
+const formattedElements = splitText('Bold').map(el => ({
+  ...el,
+  bold: true,
+  size: 20
+}))
+
+editor.command.executeInsertElementList(formattedElements)
+```
+
+### Use Cases
+
+- Inserting text with per-character formatting
+- Creating animations with individual characters
+- Applying gradual style changes across text
+
+## HTML Conversion
+
+### getElementListByHTML
+
+Converts HTML string to Canvas Editor element array.
+
+```typescript
+getElementListByHTML(
+  html: string,
+  options?: IGetElementListByHTMLOption
+): IElement[]
+```
+
+### Parameters
+
+<ParamField path="html" type="string" required>
+  HTML string to convert
+</ParamField>
+
+<ParamField path="options" type="IGetElementListByHTMLOption">
+  Conversion options (implementation-specific)
+</ParamField>
+
+### Returns
+
+`IElement[]` - Array of editor elements
+
+### Example
+
+```typescript
+import { getElementListByHTML } from '@hufe921/canvas-editor'
+
+// Simple HTML
+const html = '<p>Hello <b>World</b></p>'
+const elements = getElementListByHTML(html)
+
+// Complex HTML with formatting
+const richHtml = `
+  <h1>Title</h1>
+  <p>Paragraph with <strong>bold</strong> and <em>italic</em> text.</p>
+  <ul>
+    <li>List item 1</li>
+    <li>List item 2</li>
+  </ul>
+`
+const richElements = getElementListByHTML(richHtml)
+
+editor.command.executeInsertElementList(richElements)
+```
+
+### Supported HTML Tags
+
+- **Text formatting**: `<b>`, `<strong>`, `<i>`, `<em>`, `<u>`, `<s>`, `<sup>`, `<sub>`
+- **Structure**: `<p>`, `<br>`, `<div>`, `<span>`
+- **Headings**: `<h1>` through `<h6>`
+- **Lists**: `<ul>`, `<ol>`, `<li>`
+- **Links**: `<a href="...">`
+- **Images**: `<img src="...">`
+- **Tables**: `<table>`, `<tr>`, `<td>`, `<th>`
+
+### Use Cases
+
+- Importing content from web pages
+- Pasting rich text from clipboard
+- Converting CMS content to editor format
+- Migrating from HTML-based editors
+
+## Element to HTML
+
+### createDomFromElementList
+
+Converts element array to DOM node.
+
+```typescript
+createDomFromElementList(
+  elementList: IElement[],
+  options?: any
+): HTMLElement
+```
+
+### Parameters
+
+<ParamField path="elementList" type="IElement[]" required>
+  Array of editor elements
+</ParamField>
+
+<ParamField path="options" type="any">
+  Conversion options
+</ParamField>
+
+### Returns
+
+`HTMLElement` - DOM element
+
+### Example
+
+```typescript
+import { createDomFromElementList } from '@hufe921/canvas-editor'
+
+const elements: IElement[] = [
+  { value: 'Hello ' },
+  { value: 'World', bold: true }
+]
+
+const domNode = createDomFromElementList(elements)
+
+// Append to page
+document.body.appendChild(domNode)
+
+// Or get HTML string
+const htmlString = domNode.outerHTML
+```
+
+### Use Cases
+
+- Previewing content outside editor
+- Exporting to HTML
+- Email generation
+- PDF generation (via HTML)
+
+## Text Extraction
+
+### getTextFromElementList
+
+Extracts plain text from element array.
+
+```typescript
+getTextFromElementList(
+  elementList: IElement[],
+  options?: any
+): string
+```
+
+### Parameters
+
+<ParamField path="elementList" type="IElement[]" required>
+  Array of editor elements
+</ParamField>
+
+<ParamField path="options" type="any">
+  Extraction options
+</ParamField>
+
+### Returns
+
+`string` - Plain text content
+
+### Example
+
+```typescript
+import { getTextFromElementList } from '@hufe921/canvas-editor'
+
+const elements: IElement[] = [
+  { value: 'Hello ' },
+  { value: 'World', bold: true },
+  { value: '!', color: '#FF0000' }
+]
+
+const text = getTextFromElementList(elements)
+// Returns: 'Hello World!'
+
+// Use with editor data
+const data = editor.command.getValue()
+const mainText = getTextFromElementList(data.data.main)
+const headerText = getTextFromElementList(data.data.header || [])
+
+console.log('Document text:', mainText)
+console.log('Header text:', headerText)
+```
+
+### Use Cases
+
+- Text-only export
+- Search indexing
+- Word count
+- Content analysis
+- Generating summaries
+
+## Complete Usage Example
+
+```typescript
+import Editor, {
+  splitText,
+  getElementListByHTML,
+  createDomFromElementList,
+  getTextFromElementList,
+  IElement
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// 1. Insert text with character-level control
+function insertAnimatedText(text: string) {
+  const chars = splitText(text)
+  
+  // Add color gradient
+  const colored = chars.map((char, index) => {
+    const hue = (index / chars.length) * 360
+    return {
+      ...char,
+      color: `hsl(${hue}, 70%, 50%)`,
+      size: 20
+    }
+  })
+  
+  editor.command.executeInsertElementList(colored)
+}
+
+// 2. Import HTML content
+function importHTML(html: string) {
+  const elements = getElementListByHTML(html)
+  editor.command.executeInsertElementList(elements)
+}
+
+// Example usage
+const htmlContent = `
+  <h1>Welcome</h1>
+  <p>This is <b>bold</b> and this is <i>italic</i>.</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </ul>
+`
+importHTML(htmlContent)
+
+// 3. Export as HTML
+function exportAsHTML(): string {
+  const data = editor.command.getValue()
+  const domNode = createDomFromElementList(data.data.main)
+  return domNode.innerHTML
+}
+
+// 4. Get plain text
+function getPlainText(): string {
+  const data = editor.command.getValue()
+  return getTextFromElementList(data.data.main)
+}
+
+// 5. Word count
+function getWordCount(): number {
+  const text = getPlainText()
+  return text.split(/\s+/).filter(word => word.length > 0).length
+}
+
+// 6. Search and highlight
+function searchText(query: string) {
+  const text = getPlainText()
+  const index = text.toLowerCase().indexOf(query.toLowerCase())
+  
+  if (index !== -1) {
+    editor.command.executeSearch({
+      value: query,
+      matchCase: false
+    })
+  }
+}
+
+// 7. Content validation
+function validateContent(): boolean {
+  const text = getPlainText()
+  const minLength = 100
+  
+  if (text.length < minLength) {
+    alert(`Content must be at least ${minLength} characters`)
+    return false
+  }
+  
+  return true
+}
+
+// 8. Copy formatted content
+function copyFormatted() {
+  const data = editor.command.getValue()
+  const html = exportAsHTML()
+  
+  // Copy both HTML and plain text
+  const text = getPlainText()
+  
+  navigator.clipboard.write([
+    new ClipboardItem({
+      'text/html': new Blob([html], { type: 'text/html' }),
+      'text/plain': new Blob([text], { type: 'text/plain' })
+    })
+  ])
+}
+
+// 9. Generate preview
+function generatePreview(): HTMLElement {
+  const data = editor.command.getValue()
+  const previewNode = createDomFromElementList(data.data.main)
+  
+  // Style the preview
+  previewNode.style.padding = '20px'
+  previewNode.style.backgroundColor = '#f5f5f5'
+  previewNode.style.borderRadius = '8px'
+  
+  return previewNode
+}
+
+// 10. Import from clipboard
+async function importFromClipboard() {
+  const clipboardData = await navigator.clipboard.read()
+  
+  for (const item of clipboardData) {
+    if (item.types.includes('text/html')) {
+      const blob = await item.getType('text/html')
+      const html = await blob.text()
+      importHTML(html)
+      break
+    } else if (item.types.includes('text/plain')) {
+      const blob = await item.getType('text/plain')
+      const text = await blob.text()
+      const chars = splitText(text)
+      editor.command.executeInsertElementList(chars)
+      break
+    }
+  }
+}
+```
+
+## Type Definitions
+
+### IGetElementListByHTMLOption
+
+```typescript
+interface IGetElementListByHTMLOption {
+  // Implementation-specific options
+  // Refer to source code for details
+}
+```
+
+## Best Practices
+
+### 1. Batch Operations
+
+```typescript
+// Good - Single insert
+const elements = splitText('Hello World')
+editor.command.executeInsertElementList(elements)
+
+// Bad - Multiple inserts
+for (const char of 'Hello World') {
+  editor.command.executeInsertElementList([{ value: char }])
+}
+```
+
+### 2. HTML Sanitization
+
+```typescript
+import DOMPurify from 'dompurify'
+import { getElementListByHTML } from '@hufe921/canvas-editor'
+
+// Sanitize HTML before importing
+function safeImportHTML(untrustedHTML: string) {
+  const cleanHTML = DOMPurify.sanitize(untrustedHTML)
+  const elements = getElementListByHTML(cleanHTML)
+  editor.command.executeInsertElementList(elements)
+}
+```
+
+### 3. Performance
+
+```typescript
+// Good - Extract text once
+const text = getPlainText()
+const wordCount = text.split(/\s+/).length
+const charCount = text.length
+
+// Bad - Extract multiple times
+const wordCount = getPlainText().split(/\s+/).length
+const charCount = getPlainText().length
+```
+
+### 4. Type Safety
+
+```typescript
+import { IElement } from '@hufe921/canvas-editor'
+
+function processElements(elements: IElement[]): string {
+  return getTextFromElementList(elements)
+}
+
+// TypeScript ensures type safety
+const data = editor.command.getValue()
+const text = processElements(data.data.main) // ✓ Type-safe
+```

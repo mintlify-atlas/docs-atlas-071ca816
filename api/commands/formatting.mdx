@@ -1,0 +1,376 @@
+---
+title: Text Formatting
+description: Commands for text formatting like font, size, bold, italic, and colors
+---
+
+Formatting commands control the appearance of text in the editor.
+
+## executeFont
+
+Sets the font family for selected text or at cursor position.
+
+```typescript
+editor.command.executeFont(fontFamily: string, options?: IRichtextOption): void
+```
+
+### Parameters
+
+<ParamField path="fontFamily" type="string" required>
+  Font family name (e.g., 'Arial', 'Times New Roman')
+</ParamField>
+
+<ParamField path="options" type="IRichtextOption">
+  Options:
+  - `isIgnoreDisabledRule?: boolean` - Bypass disabled/readonly checks
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeFont('Arial')
+editor.command.executeFont('Times New Roman', { isIgnoreDisabledRule: false })
+```
+
+## executeSize
+
+Sets the font size for selected text or at cursor position.
+
+```typescript
+editor.command.executeSize(size: number, options?: IRichtextOption): void
+```
+
+### Parameters
+
+<ParamField path="size" type="number" required>
+  Font size in pixels (must be within minSize and maxSize limits)
+</ParamField>
+
+<ParamField path="options" type="IRichtextOption">
+  Additional options
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeSize(18)
+editor.command.executeSize(24)
+```
+
+## executeSizeAdd
+
+Increases font size by 2 pixels.
+
+```typescript
+editor.command.executeSizeAdd(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSizeAdd()
+```
+
+## executeSizeMinus
+
+Decreases font size by 2 pixels.
+
+```typescript
+editor.command.executeSizeMinus(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSizeMinus()
+```
+
+## executeBold
+
+Toggles bold formatting for selected text.
+
+```typescript
+editor.command.executeBold(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+editor.command.executeBold()
+```
+
+### Notes
+
+- Toggles bold on/off based on current state
+- If selection has mixed bold states, applies bold to all
+
+## executeItalic
+
+Toggles italic formatting for selected text.
+
+```typescript
+editor.command.executeItalic(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+editor.command.executeItalic()
+```
+
+## executeUnderline
+
+Toggles underline formatting with optional text decoration.
+
+```typescript
+editor.command.executeUnderline(
+  textDecoration?: ITextDecoration,
+  options?: IRichtextOption
+): void
+```
+
+### Parameters
+
+<ParamField path="textDecoration" type="ITextDecoration">
+  Advanced underline styling:
+  ```typescript
+  {
+    style?: TextDecorationStyle  // solid, dashed, dotted, etc.
+    color?: string              // underline color
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Simple underline
+editor.command.executeUnderline()
+
+// Styled underline
+editor.command.executeUnderline({
+  style: TextDecorationStyle.DASHED,
+  color: '#FF0000'
+})
+```
+
+## executeStrikeout
+
+Toggles strikethrough formatting.
+
+```typescript
+editor.command.executeStrikeout(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+editor.command.executeStrikeout()
+```
+
+## executeSuperscript
+
+Toggles superscript formatting (e.g., x²).
+
+```typescript
+editor.command.executeSuperscript(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+// Select "2" and make it superscript
+editor.command.executeSuperscript()
+```
+
+### Notes
+
+- Automatically removes subscript if applied
+- Can only be applied to text elements
+
+## executeSubscript
+
+Toggles subscript formatting (e.g., H₂O).
+
+```typescript
+editor.command.executeSubscript(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+// Select "2" and make it subscript
+editor.command.executeSubscript()
+```
+
+## executeColor
+
+Sets text color.
+
+```typescript
+editor.command.executeColor(
+  color: string | null,
+  options?: IRichtextOption
+): void
+```
+
+### Parameters
+
+<ParamField path="color" type="string | null" required>
+  Hex color code (e.g., '#FF0000') or null to remove color
+</ParamField>
+
+### Example
+
+```typescript
+// Set red color
+editor.command.executeColor('#FF0000')
+
+// Remove custom color (use default)
+editor.command.executeColor(null)
+```
+
+## executeHighlight
+
+Sets text background highlight color.
+
+```typescript
+editor.command.executeHighlight(
+  color: string | null,
+  options?: IRichtextOption
+): void
+```
+
+### Parameters
+
+<ParamField path="color" type="string | null" required>
+  Hex color code for highlight or null to remove
+</ParamField>
+
+### Example
+
+```typescript
+// Yellow highlight
+editor.command.executeHighlight('#FFFF00')
+
+// Remove highlight
+editor.command.executeHighlight(null)
+```
+
+## executeTitle
+
+Applies or removes heading level formatting.
+
+```typescript
+editor.command.executeTitle(level: TitleLevel | null): void
+```
+
+### Parameters
+
+<ParamField path="level" type="TitleLevel | null" required>
+  Heading level:
+  - `TitleLevel.FIRST` - H1
+  - `TitleLevel.SECOND` - H2
+  - `TitleLevel.THIRD` - H3
+  - `TitleLevel.FOURTH` - H4
+  - `TitleLevel.FIFTH` - H5
+  - `TitleLevel.SIXTH` - H6
+  - `null` - Remove heading
+</ParamField>
+
+### Example
+
+```typescript
+import { TitleLevel } from '@hufe921/canvas-editor'
+
+// Apply H1
+editor.command.executeTitle(TitleLevel.FIRST)
+
+// Apply H2
+editor.command.executeTitle(TitleLevel.SECOND)
+
+// Remove heading
+editor.command.executeTitle(null)
+```
+
+## executeList
+
+Applies list formatting to selected paragraphs.
+
+```typescript
+editor.command.executeList(listType: ListType | null, listStyle?: ListStyle): void
+```
+
+### Parameters
+
+<ParamField path="listType" type="ListType | null" required>
+  List type:
+  - `ListType.UL` - Unordered list (bullets)
+  - `ListType.OL` - Ordered list (numbers)
+  - `null` - Remove list
+</ParamField>
+
+<ParamField path="listStyle" type="ListStyle">
+  List marker style:
+  - For unordered: `DISC`, `CIRCLE`, `SQUARE`
+  - For ordered: `DECIMAL`, `DECIMAL_LEADING_ZERO`, `LOWER_ROMAN`, `UPPER_ROMAN`, `LOWER_ALPHA`, `UPPER_ALPHA`
+</ParamField>
+
+### Example
+
+```typescript
+import { ListType, ListStyle } from '@hufe921/canvas-editor'
+
+// Bullet list
+editor.command.executeList(ListType.UL, ListStyle.DISC)
+
+// Numbered list
+editor.command.executeList(ListType.OL, ListStyle.DECIMAL)
+
+// Remove list
+editor.command.executeList(null)
+```
+
+## executeFormat
+
+Removes all formatting from selected text.
+
+```typescript
+editor.command.executeFormat(options?: IRichtextOption): void
+```
+
+### Example
+
+```typescript
+// Clear all formatting
+editor.command.executeFormat()
+```
+
+### Notes
+
+- Removes font, size, bold, italic, underline, color, highlight, etc.
+- Preserves text content
+
+## Complete Example
+
+```typescript
+import Editor, { TitleLevel, ListType, ListStyle } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Apply heading 1
+editor.command.executeSetRange(0, 10)
+editor.command.executeTitle(TitleLevel.FIRST)
+
+// Format text as bold, red, 20px
+editor.command.executeSetRange(20, 40)
+editor.command.executeBold()
+editor.command.executeColor('#FF0000')
+editor.command.executeSize(20)
+
+// Create bullet list
+editor.command.executeSetRange(50, 100)
+editor.command.executeList(ListType.UL, ListStyle.DISC)
+
+// Clear formatting
+editor.command.executeFormat()
+```

@@ -1,0 +1,248 @@
+---
+title: "Installation"
+description: "Install Canvas Editor and set up your development environment"
+---
+
+## Package Installation
+
+Canvas Editor is distributed as an npm package and can be installed using your preferred package manager.
+
+<CodeGroup>
+
+```bash npm
+npm install @hufe921/canvas-editor
+```
+
+```bash yarn
+yarn add @hufe921/canvas-editor
+```
+
+```bash pnpm
+pnpm add @hufe921/canvas-editor
+```
+
+</CodeGroup>
+
+<Note>
+  Canvas Editor requires **Node.js 16.9.1 or higher**. Make sure your development environment meets this requirement.
+</Note>
+
+## TypeScript Setup
+
+Canvas Editor is built with TypeScript and provides comprehensive type definitions out of the box. No additional `@types` packages are needed.
+
+### Type Definitions
+
+When you install Canvas Editor, TypeScript definitions are automatically available:
+
+```typescript
+import Editor, { 
+  IElement, 
+  IEditorData, 
+  IEditorOption,
+  ElementType,
+  EditorMode 
+} from '@hufe921/canvas-editor'
+
+// Full type safety and autocomplete support
+const data: IEditorData = {
+  main: [
+    { value: 'Hello World' }
+  ]
+}
+
+const options: IEditorOption = {
+  mode: EditorMode.EDIT,
+  defaultFont: 'Arial',
+  defaultSize: 16
+}
+```
+
+### TypeScript Configuration
+
+For optimal compatibility, ensure your `tsconfig.json` includes:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+## Module System
+
+Canvas Editor is distributed as an ES module with UMD fallback.
+
+### ES Module (Recommended)
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(
+  document.querySelector('.editor'),
+  { main: [{ value: 'Hello World' }] }
+)
+```
+
+### UMD (Browser Script Tag)
+
+If you're not using a module bundler, you can include Canvas Editor via a script tag:
+
+```html
+<script src="node_modules/@hufe921/canvas-editor/dist/canvas-editor.umd.js"></script>
+<script>
+  const editor = new Editor(
+    document.querySelector('.editor'),
+    { main: [{ value: 'Hello World' }] }
+  )
+</script>
+```
+
+## Build Tools
+
+Canvas Editor works seamlessly with modern build tools.
+
+<Tabs>
+  <Tab title="Vite">
+    Canvas Editor works out of the box with Vite:
+
+    ```typescript vite.config.ts
+    import { defineConfig } from 'vite'
+    
+    export default defineConfig({
+      // No special configuration needed
+    })
+    ```
+  </Tab>
+  
+  <Tab title="Webpack">
+    For Webpack, ensure you have the necessary loaders:
+
+    ```javascript webpack.config.js
+    module.exports = {
+      module: {
+        rules: [
+          {
+            test: /\.tsx?$/,
+            use: 'ts-loader',
+            exclude: /node_modules/
+          },
+          {
+            test: /\.css$/,
+            use: ['style-loader', 'css-loader']
+          }
+        ]
+      },
+      resolve: {
+        extensions: ['.tsx', '.ts', '.js']
+      }
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Rollup">
+    For Rollup, use the appropriate plugins:
+
+    ```javascript rollup.config.js
+    import typescript from '@rollup/plugin-typescript'
+    import resolve from '@rollup/plugin-node-resolve'
+    
+    export default {
+      plugins: [
+        resolve(),
+        typescript()
+      ]
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Verify Installation
+
+To verify that Canvas Editor is installed correctly, create a simple test:
+
+<Steps>
+  <Step title="Create an HTML container">
+    Add a container element to your HTML:
+    
+    ```html
+    <div class="canvas-editor" style="width: 800px; height: 600px;"></div>
+    ```
+  </Step>
+  
+  <Step title="Initialize the editor">
+    Import and create an editor instance:
+    
+    ```typescript
+    import Editor from '@hufe921/canvas-editor'
+    
+    const container = document.querySelector('.canvas-editor')
+    const editor = new Editor(container, {
+      main: [{ value: 'Installation successful!' }]
+    })
+    ```
+  </Step>
+  
+  <Step title="Check the output">
+    You should see the editor rendered with your text. If you can type and edit, the installation is working correctly.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Module not found error">
+    If you see a module resolution error:
+    
+    1. Verify the package is in your `package.json` dependencies
+    2. Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
+    3. Clear your build tool's cache (e.g., `.cache` for Vite)
+  </Accordion>
+  
+  <Accordion title="TypeScript errors">
+    If TypeScript can't find type definitions:
+    
+    1. Ensure `@hufe921/canvas-editor` is in your `dependencies` (not `devDependencies`)
+    2. Check that your `tsconfig.json` includes `"moduleResolution": "node"`
+    3. Restart your TypeScript server in your IDE
+  </Accordion>
+  
+  <Accordion title="CSS not loading">
+    Canvas Editor includes built-in styles. If styles aren't applying:
+    
+    1. Ensure your bundler is configured to handle CSS imports
+    2. Check that no global CSS is overriding editor styles
+    3. Verify the container element has explicit dimensions
+  </Accordion>
+  
+  <Accordion title="Node version error">
+    If you see Node version errors:
+    
+    1. Check your Node version: `node --version`
+    2. Upgrade to Node 16.9.1 or higher using [nvm](https://github.com/nvm-sh/nvm) or your preferred method
+    3. Clear your package manager's cache after upgrading
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Build your first editor in minutes
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/guides/configuration">
+    Explore editor configuration options
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/editor">
+    Learn about the Editor class API
+  </Card>
+  <Card title="Examples" icon="flask" href="https://hufe.club/canvas-editor">
+    See live examples and demos
+  </Card>
+</CardGroup>

@@ -1,0 +1,387 @@
+---
+title: Listener
+description: Callback-based event system for responding to editor changes
+---
+
+The `Listener` class provides a callback-based event system where you can attach single callback functions to various editor events.
+
+## Overview
+
+Access the listener through the editor instance:
+
+```typescript
+const editor = new Editor(container, data)
+editor.listener.rangeStyleChange = (payload) => {
+  console.log('Selection changed:', payload)
+}
+```
+
+## Available Listeners
+
+### rangeStyleChange
+
+Fired when the selection style changes (format of selected text).
+
+```typescript
+editor.listener.rangeStyleChange: IRangeStyleChange | null
+```
+
+**Payload: `IRangeStyle`**
+
+```typescript
+{
+  type: ElementType | null
+  undo: boolean              // Can undo
+  redo: boolean              // Can redo
+  painter: boolean           // Format painter active
+  font: string
+  size: number
+  bold: boolean
+  italic: boolean
+  underline: boolean
+  strikeout: boolean
+  color: string | null
+  highlight: string | null
+  rowFlex: RowFlex | null   // Alignment
+  rowMargin: number
+  dashArray: number[]
+  level: TitleLevel | null  // Heading level
+  listType: ListType | null
+  listStyle: ListStyle | null
+  groupIds: string[] | null
+  textDecoration: ITextDecoration | null
+  extension?: unknown | null
+}
+```
+
+**Example:**
+
+```typescript
+editor.listener.rangeStyleChange = (style) => {
+  // Update toolbar UI
+  document.querySelector('#bold-btn').classList.toggle('active', style.bold)
+  document.querySelector('#italic-btn').classList.toggle('active', style.italic)
+  document.querySelector('#font-size').value = style.size
+  document.querySelector('#undo-btn').disabled = !style.undo
+  document.querySelector('#redo-btn').disabled = !style.redo
+}
+```
+
+### visiblePageNoListChange
+
+Fired when the list of visible pages changes during scrolling.
+
+```typescript
+editor.listener.visiblePageNoListChange: IVisiblePageNoListChange | null
+```
+
+**Payload: `number[]`** - Array of visible page numbers
+
+**Example:**
+
+```typescript
+editor.listener.visiblePageNoListChange = (pageNumbers) => {
+  console.log('Visible pages:', pageNumbers)
+  // Update page indicator UI
+  document.querySelector('#page-info').textContent = 
+    `Pages ${pageNumbers[0] + 1}-${pageNumbers[pageNumbers.length - 1] + 1}`
+}
+```
+
+### intersectionPageNoChange
+
+Fired when the primary intersecting page changes.
+
+```typescript
+editor.listener.intersectionPageNoChange: IIntersectionPageNoChange | null
+```
+
+**Payload: `number`** - Current page number (0-indexed)
+
+**Example:**
+
+```typescript
+editor.listener.intersectionPageNoChange = (pageNo) => {
+  console.log('Current page:', pageNo + 1)
+  document.querySelector('#current-page').textContent = `Page ${pageNo + 1}`
+}
+```
+
+### pageSizeChange
+
+Fired when the total number of pages changes.
+
+```typescript
+editor.listener.pageSizeChange: IPageSizeChange | null
+```
+
+**Payload: `number`** - Total page count
+
+**Example:**
+
+```typescript
+editor.listener.pageSizeChange = (totalPages) => {
+  console.log('Total pages:', totalPages)
+  document.querySelector('#total-pages').textContent = `of ${totalPages}`
+}
+```
+
+### pageScaleChange
+
+Fired when the zoom level changes.
+
+```typescript
+editor.listener.pageScaleChange: IPageScaleChange | null
+```
+
+**Payload: `number`** - Scale factor (e.g., 1 = 100%, 1.5 = 150%)
+
+**Example:**
+
+```typescript
+editor.listener.pageScaleChange = (scale) => {
+  console.log('Zoom:', Math.round(scale * 100) + '%')
+  document.querySelector('#zoom-level').textContent = `${Math.round(scale * 100)}%`
+}
+```
+
+### saved
+
+Fired when the document is saved (via save shortcut or command).
+
+```typescript
+editor.listener.saved: ISaved | null
+```
+
+**Payload: `IEditorResult`**
+
+```typescript
+{
+  version: string
+  data: IEditorData    // Full document data
+  options: IEditorOption
+}
+```
+
+**Example:**
+
+```typescript
+editor.listener.saved = (result) => {
+  console.log('Document saved')
+  // Send to server
+  fetch('/api/documents', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(result)
+  })
+}
+```
+
+### contentChange
+
+Fired whenever document content changes.
+
+```typescript
+editor.listener.contentChange: IContentChange | null
+```
+
+**Payload: `void`** (no payload)
+
+**Example:**
+
+```typescript
+let isDirty = false
+
+editor.listener.contentChange = () => {
+  isDirty = true
+  console.log('Content changed')
+  
+  // Show unsaved indicator
+  document.querySelector('#save-indicator').textContent = 'Unsaved changes'
+}
+```
+
+### controlChange
+
+Fired when a control's state changes (active/inactive).
+
+```typescript
+editor.listener.controlChange: IControlChange | null
+```
+
+**Payload: `IControlChangeResult`**
+
+```typescript
+{
+  state: ControlState      // ACTIVE or INACTIVE
+  control: IControl        // Control configuration
+  controlId: string        // Control ID
+}
+```
+
+**Example:**
+
+```typescript
+editor.listener.controlChange = ({ state, control, controlId }) => {
+  console.log(`Control ${controlId} is now ${state}`)
+  
+  if (state === 'active') {
+    // Show control editing toolbar
+    showControlToolbar(control)
+  }
+}
+```
+
+### controlContentChange
+
+Fired when a control's content/value changes.
+
+```typescript
+editor.listener.controlContentChange: IControlContentChange | null
+```
+
+**Payload: `IControlContentChangeResult`**
+
+```typescript
+{
+  control: IControl
+  controlId: string
+}
+```
+
+**Example:**
+
+```typescript
+editor.listener.controlContentChange = ({ control, controlId }) => {
+  console.log(`Control ${controlId} value changed:`, control.value)
+  
+  // Validate form field
+  if (control.conceptId === 'email') {
+    validateEmail(control.value)
+  }
+}
+```
+
+### pageModeChange
+
+Fired when page mode changes.
+
+```typescript
+editor.listener.pageModeChange: IPageModeChange | null
+```
+
+**Payload: `PageMode`** - `PAGING` or `CONTINUITY`
+
+**Example:**
+
+```typescript
+editor.listener.pageModeChange = (mode) => {
+  console.log('Page mode:', mode)
+  
+  if (mode === PageMode.CONTINUITY) {
+    // Hide page break indicators
+  }
+}
+```
+
+### zoneChange
+
+Fired when the cursor moves between zones (header/main/footer).
+
+```typescript
+editor.listener.zoneChange: IZoneChange | null
+```
+
+**Payload: `EditorZone`** - `HEADER`, `MAIN`, or `FOOTER`
+
+**Example:**
+
+```typescript
+editor.listener.zoneChange = (zone) => {
+  console.log('Now in zone:', zone)
+  
+  // Show zone indicator
+  document.querySelector('#zone-indicator').textContent = 
+    `Editing ${zone.toLowerCase()}`
+}
+```
+
+## Complete Example
+
+```typescript
+import Editor, { PageMode, ControlState } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Setup all listeners
+editor.listener.rangeStyleChange = (style) => {
+  // Update formatting toolbar
+  updateToolbar(style)
+}
+
+editor.listener.contentChange = () => {
+  // Mark document as dirty
+  markDirty()
+  
+  // Auto-save after delay
+  clearTimeout(autoSaveTimer)
+  autoSaveTimer = setTimeout(() => {
+    saveDocument()
+  }, 2000)
+}
+
+editor.listener.pageSizeChange = (totalPages) => {
+  // Update page count display
+  document.querySelector('#page-count').textContent = totalPages
+}
+
+editor.listener.intersectionPageNoChange = (pageNo) => {
+  // Update current page indicator
+  document.querySelector('#current-page').textContent = pageNo + 1
+}
+
+editor.listener.pageScaleChange = (scale) => {
+  // Update zoom slider
+  document.querySelector('#zoom-slider').value = scale
+  document.querySelector('#zoom-display').textContent = 
+    `${Math.round(scale * 100)}%`
+}
+
+editor.listener.controlChange = ({ state, control }) => {
+  if (state === ControlState.ACTIVE) {
+    console.log('Control activated:', control.conceptId)
+  }
+}
+
+editor.listener.saved = (result) => {
+  // Send to server
+  fetch('/api/save', {
+    method: 'POST',
+    body: JSON.stringify(result)
+  }).then(() => {
+    showNotification('Document saved successfully')
+  })
+}
+```
+
+## Removing Listeners
+
+To remove a listener, set it to `null`:
+
+```typescript
+editor.listener.contentChange = null
+```
+
+## Listener vs EventBus
+
+**Listener** (callback-based):
+- Single callback per event
+- Simple assignment
+- Good for primary event handlers
+
+**EventBus** (pub-sub based):
+- Multiple subscribers per event
+- Requires explicit subscription/unsubscription
+- Good for plugins and multiple components
+
+See [EventBus](/api/eventbus) for the pub-sub alternative.

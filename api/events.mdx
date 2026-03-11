@@ -1,0 +1,351 @@
+---
+title: Events Reference
+description: Complete list of all available editor events
+---
+
+Canvas Editor provides comprehensive event handling through both the [Listener](/api/listener) (callback-based) and [EventBus](/api/eventbus) (pub-sub) systems.
+
+## Event Categories
+
+### Content & Document Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `contentChange` | `void` | Document content changed |
+| `saved` | `IEditorResult` | Document saved (Ctrl+S or command) |
+
+### Selection & Style Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `rangeStyleChange` | `IRangeStyle` | Selection formatting changed |
+| `positionContextChange` | `IPositionContextChangePayload` | Cursor position context changed |
+
+### Page Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `pageSizeChange` | `number` | Total page count changed |
+| `pageScaleChange` | `number` | Zoom level changed |
+| `pageModeChange` | `PageMode` | Page mode changed (paging/continuous) |
+| `visiblePageNoListChange` | `number[]` | Visible pages during scroll |
+| `intersectionPageNoChange` | `number` | Primary visible page changed |
+
+### Control (Form) Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `controlChange` | `IControlChangeResult` | Control state changed (active/inactive) |
+| `controlContentChange` | `IControlContentChangeResult` | Control value/content changed |
+
+### Zone Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `zoneChange` | `EditorZone` | Cursor moved between zones (header/main/footer) |
+
+### Mouse Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `click` | `MouseEvent` | Editor clicked |
+| `mousedown` | `MouseEvent` | Mouse button pressed |
+| `mouseup` | `MouseEvent` | Mouse button released |
+| `mousemove` | `MouseEvent` | Mouse moved over editor |
+| `mouseenter` | `MouseEvent` | Mouse entered editor area |
+| `mouseleave` | `MouseEvent` | Mouse left editor area |
+
+### Input Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `input` | `Event` | Input/text entry occurred |
+
+### Image Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `imageSizeChange` | `{ element: IElement }` | Image resized |
+| `imageMousedown` | `{ evt: MouseEvent, element: IElement }` | Image clicked |
+| `imageDblclick` | `{ evt: MouseEvent, element: IElement }` | Image double-clicked |
+
+### Label Events
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `labelMousedown` | `{ evt: MouseEvent, element: IElement }` | Label clicked |
+
+## Usage Examples
+
+### Using Listener (Callback)
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Single callback per event
+editor.listener.contentChange = () => {
+  console.log('Content changed')
+}
+
+editor.listener.rangeStyleChange = (style) => {
+  console.log('Selection style:', style.bold, style.italic)
+}
+
+// Remove listener
+editor.listener.contentChange = null
+```
+
+### Using EventBus (Pub-Sub)
+
+```typescript
+import Editor from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Multiple subscribers for same event
+const handler1 = () => console.log('Handler 1')
+const handler2 = () => console.log('Handler 2')
+
+editor.eventBus.on('contentChange', handler1)
+editor.eventBus.on('contentChange', handler2)
+
+// Unsubscribe
+editor.eventBus.off('contentChange', handler1)
+```
+
+## Event Payload Types
+
+### IRangeStyle
+
+```typescript src/editor/interface/Listener.ts
+{
+  type: ElementType | null
+  undo: boolean
+  redo: boolean
+  painter: boolean
+  font: string
+  size: number
+  bold: boolean
+  italic: boolean
+  underline: boolean
+  strikeout: boolean
+  color: string | null
+  highlight: string | null
+  rowFlex: RowFlex | null
+  rowMargin: number
+  dashArray: number[]
+  level: TitleLevel | null
+  listType: ListType | null
+  listStyle: ListStyle | null
+  groupIds: string[] | null
+  textDecoration: ITextDecoration | null
+  extension?: unknown | null
+}
+```
+
+### IEditorResult
+
+```typescript src/editor/interface/Editor.ts
+{
+  version: string
+  data: IEditorData
+  options: IEditorOption
+}
+```
+
+### IControlChangeResult
+
+```typescript src/editor/interface/Control.ts
+{
+  state: ControlState      // 'active' | 'inactive'
+  control: IControl
+  controlId: string
+}
+```
+
+### IControlContentChangeResult
+
+```typescript src/editor/interface/Control.ts
+{
+  control: IControl
+  controlId: string
+}
+```
+
+### IPositionContextChangePayload
+
+```typescript src/editor/interface/Listener.ts
+{
+  value: IPositionContext
+  oldValue: IPositionContext
+}
+```
+
+## Common Patterns
+
+### Auto-Save
+
+```typescript
+let saveTimer: NodeJS.Timeout
+
+editor.eventBus.on('contentChange', () => {
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(() => {
+    const data = editor.command.getValue()
+    saveToServer(data)
+  }, 2000)
+})
+```
+
+### Toolbar Updates
+
+```typescript
+editor.listener.rangeStyleChange = (style) => {
+  // Update toolbar buttons
+  document.querySelector('#bold')?.classList.toggle('active', style.bold)
+  document.querySelector('#italic')?.classList.toggle('active', style.italic)
+  document.querySelector('#underline')?.classList.toggle('active', style.underline)
+  
+  // Update undo/redo
+  document.querySelector('#undo').disabled = !style.undo
+  document.querySelector('#redo').disabled = !style.redo
+  
+  // Update font size dropdown
+  document.querySelector('#font-size').value = style.size.toString()
+}
+```
+
+### Page Navigation
+
+```typescript
+editor.eventBus.on('intersectionPageNoChange', (pageNo) => {
+  document.querySelector('#current-page').textContent = `${pageNo + 1}`
+})
+
+editor.eventBus.on('pageSizeChange', (total) => {
+  document.querySelector('#total-pages').textContent = ` / ${total}`
+})
+```
+
+### Form Validation
+
+```typescript
+editor.eventBus.on('controlContentChange', ({ control }) => {
+  switch (control.conceptId) {
+    case 'email':
+      validateEmail(control.value)
+      break
+    case 'phone':
+      validatePhone(control.value)
+      break
+    case 'zipcode':
+      validateZipCode(control.value)
+      break
+  }
+})
+```
+
+### Image Interaction
+
+```typescript
+editor.eventBus.on('imageMousedown', ({ element }) => {
+  // Show image toolbar
+  showImageToolbar(element)
+})
+
+editor.eventBus.on('imageDblclick', ({ element }) => {
+  // Open image editor
+  openImageEditor(element)
+})
+
+editor.eventBus.on('imageSizeChange', ({ element }) => {
+  // Log size changes
+  console.log(`Image resized to ${element.width}x${element.height}`)
+})
+```
+
+### Activity Tracking
+
+```typescript
+let lastActivity = Date.now()
+let idleTimer: NodeJS.Timeout
+
+const resetIdleTimer = () => {
+  lastActivity = Date.now()
+  clearTimeout(idleTimer)
+  
+  idleTimer = setTimeout(() => {
+    console.log('User idle for 5 minutes')
+    showIdleWarning()
+  }, 5 * 60 * 1000)
+}
+
+editor.eventBus.on('input', resetIdleTimer)
+editor.eventBus.on('click', resetIdleTimer)
+editor.eventBus.on('mousedown', resetIdleTimer)
+```
+
+## Event Timing
+
+Events fire in the following order during typical operations:
+
+**Text Input:**
+1. `input`
+2. `contentChange`
+3. `rangeStyleChange` (if style context changes)
+4. `positionContextChange` (if position context changes)
+
+**Page Navigation:**
+1. `visiblePageNoListChange`
+2. `intersectionPageNoChange`
+
+**Zoom:**
+1. `pageScaleChange`
+2. `visiblePageNoListChange` (if visible pages change)
+
+**Control Focus:**
+1. `controlChange` (state: 'active')
+2. `positionContextChange`
+
+## Best Practices
+
+1. **Debounce expensive operations**: For `contentChange`, `mousemove`, etc.
+   ```typescript
+   let timer: NodeJS.Timeout
+   editor.eventBus.on('contentChange', () => {
+     clearTimeout(timer)
+     timer = setTimeout(expensiveOperation, 300)
+   })
+   ```
+
+2. **Clean up event listeners**: Always unsubscribe when component unmounts
+   ```typescript
+   // Store references
+   const handler = () => {}
+   editor.eventBus.on('contentChange', handler)
+   
+   // Clean up
+   editor.eventBus.off('contentChange', handler)
+   // Or destroy editor entirely
+   editor.destroy()
+   ```
+
+3. **Use Listener for primary handlers**: Use EventBus for plugins/modules
+   ```typescript
+   // Primary handler - use Listener
+   editor.listener.contentChange = () => { /* main logic */ }
+   
+   // Additional handlers - use EventBus
+   editor.eventBus.on('contentChange', () => { /* plugin logic */ })
+   ```
+
+4. **Type your event handlers**:
+   ```typescript
+   import { EventBusMap } from '@hufe921/canvas-editor'
+   
+   const handler: EventBusMap['contentChange'] = () => {
+     // Fully typed
+   }
+   ```

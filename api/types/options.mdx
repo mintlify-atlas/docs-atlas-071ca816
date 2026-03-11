@@ -1,0 +1,385 @@
+---
+title: Options Types
+description: IEditorOption and related configuration types
+---
+
+These types define configuration options for the Canvas Editor.
+
+## IEditorOption
+
+Main configuration interface. See [Constructor Options](/api/constructor-options) for detailed parameter documentation.
+
+```typescript src/editor/interface/Editor.ts
+interface IEditorOption {
+  // Mode & Locale
+  mode?: EditorMode
+  locale?: string
+  
+  // Default Styles
+  defaultType?: string
+  defaultColor?: string
+  defaultFont?: string
+  defaultSize?: number
+  minSize?: number
+  maxSize?: number
+  
+  // Layout
+  width?: number
+  height?: number
+  scale?: number
+  pageGap?: number
+  margins?: IMargin
+  pageMode?: PageMode
+  paperDirection?: PaperDirection
+  
+  // Rendering
+  renderMode?: RenderMode
+  wordBreak?: WordBreak
+  
+  // Feature Options
+  table?: ITableOption
+  header?: IHeader
+  footer?: IFooter
+  pageNumber?: IPageNumber
+  watermark?: IWatermark
+  control?: IControlOption
+  checkbox?: ICheckboxOption
+  radio?: IRadioOption
+  cursor?: ICursorOption
+  title?: ITitleOption
+  placeholder?: IPlaceholder
+  // ... and more
+}
+```
+
+## IUpdateOption
+
+Restricted options type for runtime updates. Excludes immutable options.
+
+```typescript src/editor/interface/Editor.ts
+type IUpdateOption = Omit<
+  IEditorOption,
+  | 'mode'
+  | 'width'
+  | 'height'
+  | 'scale'
+  | 'pageGap'
+  | 'pageMode'
+  | 'paperDirection'
+  | 'historyMaxRecordCount'
+  | 'scrollContainerSelector'
+>
+```
+
+### Usage
+
+```typescript
+import { IUpdateOption } from '@hufe921/canvas-editor'
+
+const updates: IUpdateOption = {
+  defaultFont: 'Times New Roman',
+  defaultSize: 14,
+  margins: {
+    top: 80,
+    right: 100,
+    bottom: 80,
+    left: 100
+  }
+}
+
+editor.command.executeUpdateOptions(updates)
+```
+
+### Notes
+
+- Cannot change editor mode at runtime (use `executeMode` command)
+- Cannot change page dimensions (requires re-initialization)
+- Cannot change page mode or paper direction
+
+## ISetValueOption
+
+Options for setting document value.
+
+```typescript src/editor/interface/Editor.ts
+interface ISetValueOption {
+  isSetCursor?: boolean
+}
+```
+
+<ParamField path="isSetCursor" type="boolean" default="true">
+  Whether to position cursor after setting value
+</ParamField>
+
+### Usage
+
+```typescript
+import { IEditorData } from '@hufe921/canvas-editor'
+
+const newData: IEditorData = {
+  main: [{ value: 'New content' }]
+}
+
+// Set value and position cursor
+editor.command.executeSetValue(newData, { isSetCursor: true })
+
+// Set value without moving cursor
+editor.command.executeSetValue(newData, { isSetCursor: false })
+```
+
+## IFocusOption
+
+Options for focusing the editor.
+
+```typescript src/editor/interface/Editor.ts
+interface IFocusOption {
+  rowNo?: number
+  range?: IRange
+  position?: LocationPosition
+  isMoveCursorToVisible?: boolean
+}
+```
+
+<ParamField path="rowNo" type="number">
+  Specific row number to focus
+</ParamField>
+
+<ParamField path="range" type="IRange">
+  Range to select
+</ParamField>
+
+<ParamField path="position" type="LocationPosition">
+  Position to focus (START or END)
+</ParamField>
+
+<ParamField path="isMoveCursorToVisible" type="boolean">
+  Scroll cursor into view
+</ParamField>
+
+### Usage
+
+```typescript
+import { LocationPosition } from '@hufe921/canvas-editor'
+
+// Focus at start of document
+editor.command.executeFocus({ 
+  position: LocationPosition.START 
+})
+
+// Focus at end of document
+editor.command.executeFocus({ 
+  position: LocationPosition.END,
+  isMoveCursorToVisible: true
+})
+
+// Focus specific row
+editor.command.executeFocus({ 
+  rowNo: 10 
+})
+
+// Focus and select range
+editor.command.executeFocus({
+  range: { startIndex: 5, endIndex: 15 },
+  isMoveCursorToVisible: true
+})
+```
+
+## IModeRule
+
+Mode-specific behavior rules.
+
+```typescript src/editor/interface/Editor.ts
+interface IModeRule {
+  [EditorMode.PRINT]?: IPrintModeRule
+  [EditorMode.READONLY]?: IReadonlyModeRule
+  [EditorMode.FORM]?: IFormModeRule
+}
+```
+
+### IPrintModeRule
+
+```typescript
+interface IPrintModeRule {
+  imagePreviewerDisabled?: boolean
+  backgroundDisabled?: boolean
+}
+```
+
+<ParamField path="imagePreviewerDisabled" type="boolean">
+  Disable image preview in print mode
+</ParamField>
+
+<ParamField path="backgroundDisabled" type="boolean">
+  Disable backgrounds in print mode
+</ParamField>
+
+### IReadonlyModeRule
+
+```typescript
+interface IReadonlyModeRule {
+  imagePreviewerDisabled?: boolean
+}
+```
+
+<ParamField path="imagePreviewerDisabled" type="boolean">
+  Disable image preview in readonly mode
+</ParamField>
+
+### IFormModeRule
+
+```typescript
+interface IFormModeRule {
+  controlDeletableDisabled?: boolean
+}
+```
+
+<ParamField path="controlDeletableDisabled" type="boolean">
+  Prevent control deletion in form mode
+</ParamField>
+
+### Usage
+
+```typescript
+const options: IEditorOption = {
+  modeRule: {
+    [EditorMode.PRINT]: {
+      imagePreviewerDisabled: true,
+      backgroundDisabled: true
+    },
+    [EditorMode.READONLY]: {
+      imagePreviewerDisabled: false
+    },
+    [EditorMode.FORM]: {
+      controlDeletableDisabled: true
+    }
+  }
+}
+
+const editor = new Editor(container, data, options)
+```
+
+## Feature-Specific Options
+
+### IControlOption
+
+Styling options for form controls.
+
+```typescript src/editor/interface/Control.ts
+interface IControlOption {
+  placeholderColor?: string
+  bracketColor?: string
+  prefix?: string
+  postfix?: string
+  borderWidth?: number
+  borderColor?: string
+  activeBackgroundColor?: string
+  disabledBackgroundColor?: string
+  existValueBackgroundColor?: string
+  noValueBackgroundColor?: string
+}
+```
+
+### ITableOption
+
+Table-specific configuration.
+
+```typescript src/editor/interface/table/Table.ts
+interface ITableOption {
+  defaultBorderColor?: string
+  defaultBorderWidth?: number
+  minWidth?: number
+  minHeight?: number
+  // ... more options
+}
+```
+
+### IWatermark
+
+Watermark configuration.
+
+```typescript src/editor/interface/Watermark.ts
+interface IWatermark {
+  data: string
+  color?: string
+  opacity?: number
+  size?: number
+  font?: string
+  // ... more options
+}
+```
+
+## Complete Example
+
+```typescript
+import Editor, {
+  EditorMode,
+  PageMode,
+  PaperDirection,
+  IEditorOption,
+  IMargin
+} from '@hufe921/canvas-editor'
+
+const margins: IMargin = {
+  top: 100,
+  right: 120,
+  bottom: 100,
+  left: 120
+}
+
+const options: IEditorOption = {
+  // Basic config
+  mode: EditorMode.EDIT,
+  locale: 'en',
+  
+  // Style defaults
+  defaultFont: 'Arial',
+  defaultSize: 16,
+  defaultColor: '#333333',
+  minSize: 8,
+  maxSize: 72,
+  
+  // Layout
+  width: 794,
+  height: 1123,
+  pageGap: 20,
+  margins,
+  pageMode: PageMode.PAGING,
+  paperDirection: PaperDirection.VERTICAL,
+  
+  // Watermark
+  watermark: {
+    data: 'CONFIDENTIAL',
+    color: '#FF0000',
+    opacity: 0.3,
+    size: 72
+  },
+  
+  // Control styling
+  control: {
+    placeholderColor: '#CCCCCC',
+    borderColor: '#0000FF',
+    activeBackgroundColor: '#E3F2FD'
+  },
+  
+  // Mode rules
+  modeRule: {
+    [EditorMode.PRINT]: {
+      backgroundDisabled: true
+    }
+  }
+}
+
+const editor = new Editor(container, data, options)
+
+// Update options at runtime
+const updates: IUpdateOption = {
+  defaultSize: 18,
+  margins: {
+    top: 80,
+    right: 100,
+    bottom: 80,
+    left: 100
+  }
+}
+
+editor.command.executeUpdateOptions(updates)
+```

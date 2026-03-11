@@ -1,0 +1,470 @@
+---
+title: Document Operations
+description: Commands for document-level operations like print, search, undo/redo, and page settings
+---
+
+Document operation commands control document-wide functionality and settings.
+
+## History Operations
+
+### executeUndo
+
+Undoes the last operation.
+
+```typescript
+editor.command.executeUndo(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeUndo()
+```
+
+### executeRedo
+
+Redoes the last undone operation.
+
+```typescript
+editor.command.executeRedo(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeRedo()
+```
+
+## Print
+
+### executePrint
+
+Opens the browser print dialog.
+
+```typescript
+editor.command.executePrint(): void
+```
+
+### Example
+
+```typescript
+editor.command.executePrint()
+```
+
+### Notes
+
+- Switches editor to print mode temporarily
+- Uses `printPixelRatio` option for quality
+
+## Search and Replace
+
+### executeSearch
+
+Searches for text in the document.
+
+```typescript
+editor.command.executeSearch(options: ISearchOption | null): void
+```
+
+### Parameters
+
+<ParamField path="options" type="ISearchOption | null" required>
+  Search configuration:
+  ```typescript
+  {
+    value: string           // Search text
+    matchCase?: boolean     // Case-sensitive search
+    matchWholeWord?: boolean // Match whole words only
+  }
+  ```
+  Pass `null` to clear search
+</ParamField>
+
+### Example
+
+```typescript
+// Search for text
+editor.command.executeSearch({
+  value: 'canvas',
+  matchCase: false,
+  matchWholeWord: false
+})
+
+// Clear search
+editor.command.executeSearch(null)
+```
+
+### executeSearchNavigatePre
+
+Navigates to the previous search match.
+
+```typescript
+editor.command.executeSearchNavigatePre(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSearchNavigatePre()
+```
+
+### executeSearchNavigateNext
+
+Navigates to the next search match.
+
+```typescript
+editor.command.executeSearchNavigateNext(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeSearchNavigateNext()
+```
+
+### executeReplace
+
+Replaces text in the document.
+
+```typescript
+editor.command.executeReplace(options: IReplaceOption): void
+```
+
+### Parameters
+
+<ParamField path="options" type="IReplaceOption" required>
+  Replace configuration:
+  ```typescript
+  {
+    value: string              // Text to find
+    replaceValue: string       // Replacement text
+    matchCase?: boolean        // Case-sensitive
+    matchWholeWord?: boolean   // Whole words only
+    isReplaceAll?: boolean     // Replace all matches
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+// Replace next occurrence
+editor.command.executeReplace({
+  value: 'old text',
+  replaceValue: 'new text',
+  matchCase: false
+})
+
+// Replace all occurrences
+editor.command.executeReplace({
+  value: 'old text',
+  replaceValue: 'new text',
+  isReplaceAll: true
+})
+```
+
+## Page Mode
+
+### executePageMode
+
+Switches between paged and continuous modes.
+
+```typescript
+editor.command.executePageMode(mode: PageMode): void
+```
+
+### Parameters
+
+<ParamField path="mode" type="PageMode" required>
+  Page mode:
+  - `PageMode.PAGING` - Multi-page with breaks
+  - `PageMode.CONTINUITY` - Continuous scroll
+</ParamField>
+
+### Example
+
+```typescript
+import { PageMode } from '@hufe921/canvas-editor'
+
+// Switch to continuous mode
+editor.command.executePageMode(PageMode.CONTINUITY)
+
+// Switch to paged mode
+editor.command.executePageMode(PageMode.PAGING)
+```
+
+## Page Scale (Zoom)
+
+### executePageScale
+
+Sets the page zoom level.
+
+```typescript
+editor.command.executePageScale(scale: number): void
+```
+
+### Parameters
+
+<ParamField path="scale" type="number" required>
+  Scale factor (e.g., 1 = 100%, 1.5 = 150%, 0.5 = 50%)
+</ParamField>
+
+### Example
+
+```typescript
+// Zoom to 150%
+editor.command.executePageScale(1.5)
+
+// Zoom to 75%
+editor.command.executePageScale(0.75)
+```
+
+### executePageScaleAdd
+
+Zooms in by a fixed increment.
+
+```typescript
+editor.command.executePageScaleAdd(): void
+```
+
+### Example
+
+```typescript
+editor.command.executePageScaleAdd()
+```
+
+### executePageScaleMinus
+
+Zooms out by a fixed decrement.
+
+```typescript
+editor.command.executePageScaleMinus(): void
+```
+
+### Example
+
+```typescript
+editor.command.executePageScaleMinus()
+```
+
+### executePageScaleRecovery
+
+Resets zoom to 100%.
+
+```typescript
+editor.command.executePageScaleRecovery(): void
+```
+
+### Example
+
+```typescript
+editor.command.executePageScaleRecovery()
+```
+
+## Paper Settings
+
+### executePaperSize
+
+Sets the paper size.
+
+```typescript
+editor.command.executePaperSize(width: number, height: number): void
+```
+
+### Parameters
+
+<ParamField path="width" type="number" required>
+  Page width in pixels
+</ParamField>
+
+<ParamField path="height" type="number" required>
+  Page height in pixels
+</ParamField>
+
+### Example
+
+```typescript
+// A4 size (at 96dpi)
+editor.command.executePaperSize(794, 1123)
+
+// Letter size
+editor.command.executePaperSize(816, 1056)
+```
+
+### executePaperDirection
+
+Sets paper orientation.
+
+```typescript
+editor.command.executePaperDirection(direction: PaperDirection): void
+```
+
+### Parameters
+
+<ParamField path="direction" type="PaperDirection" required>
+  - `PaperDirection.VERTICAL` - Portrait
+  - `PaperDirection.HORIZONTAL` - Landscape
+</ParamField>
+
+### Example
+
+```typescript
+import { PaperDirection } from '@hufe921/canvas-editor'
+
+editor.command.executePaperDirection(PaperDirection.HORIZONTAL)
+```
+
+### executeSetPaperMargin
+
+Sets page margins.
+
+```typescript
+editor.command.executeSetPaperMargin(margins: IMargin): void
+```
+
+### Parameters
+
+<ParamField path="margins" type="IMargin" required>
+  Margin configuration:
+  ```typescript
+  {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+editor.command.executeSetPaperMargin({
+  top: 100,
+  right: 120,
+  bottom: 100,
+  left: 120
+})
+```
+
+## Mode Switching
+
+### executeMode
+
+Switches editor mode.
+
+```typescript
+editor.command.executeMode(mode: EditorMode): void
+```
+
+### Parameters
+
+<ParamField path="mode" type="EditorMode" required>
+  Editor mode:
+  - `EditorMode.EDIT` - Full editing
+  - `EditorMode.READONLY` - View only
+  - `EditorMode.FORM` - Form filling
+  - `EditorMode.CLEAN` - Clean view
+  - `EditorMode.PRINT` - Print preview
+  - `EditorMode.DESIGN` - Design mode
+  - `EditorMode.GRAFFITI` - Drawing mode
+</ParamField>
+
+### Example
+
+```typescript
+import { EditorMode } from '@hufe921/canvas-editor'
+
+// Switch to readonly
+editor.command.executeMode(EditorMode.READONLY)
+
+// Switch to form mode
+editor.command.executeMode(EditorMode.FORM)
+```
+
+## Focus & Blur
+
+### executeFocus
+
+Focuses the editor at a specific position.
+
+```typescript
+editor.command.executeFocus(options?: IFocusOption): void
+```
+
+### Parameters
+
+<ParamField path="options" type="IFocusOption">
+  Focus options:
+  ```typescript
+  {
+    rowNo?: number                    // Row number to focus
+    range?: IRange                    // Range to select
+    position?: LocationPosition       // START or END
+    isMoveCursorToVisible?: boolean   // Scroll into view
+  }
+  ```
+</ParamField>
+
+### Example
+
+```typescript
+import { LocationPosition } from '@hufe921/canvas-editor'
+
+// Focus at start
+editor.command.executeFocus({ 
+  position: LocationPosition.START 
+})
+
+// Focus specific range
+editor.command.executeFocus({
+  range: { startIndex: 10, endIndex: 20 },
+  isMoveCursorToVisible: true
+})
+```
+
+### executeBlur
+
+Removes focus from the editor.
+
+```typescript
+editor.command.executeBlur(): void
+```
+
+### Example
+
+```typescript
+editor.command.executeBlur()
+```
+
+## Complete Example
+
+```typescript
+import Editor, { 
+  PageMode, 
+  EditorMode,
+  PaperDirection 
+} from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data)
+
+// Search and replace
+editor.command.executeSearch({ 
+  value: 'TODO', 
+  matchCase: false 
+})
+editor.command.executeSearchNavigateNext()
+editor.command.executeReplace({ 
+  value: 'TODO', 
+  replaceValue: 'DONE',
+  isReplaceAll: true 
+})
+
+// Adjust page settings
+editor.command.executePaperDirection(PaperDirection.HORIZONTAL)
+editor.command.executePageScale(1.25)
+
+// Switch to readonly and print
+editor.command.executeMode(EditorMode.READONLY)
+editor.command.executePrint()
+```

@@ -1,0 +1,613 @@
+---
+title: 'Override System'
+description: 'Override internal editor behavior for clipboard and drag-and-drop operations'
+icon: 'gear'
+---
+
+The Override system allows you to customize core editor behaviors like paste, copy, and drag-and-drop operations without modifying the editor's internal code.
+
+<Warning>
+  The Override system provides low-level control over editor behavior. Use it carefully as incorrect implementations may break core functionality.
+</Warning>
+
+## Available Overrides
+
+Canvas Editor provides four override points:
+
+```typescript
+interface Override {
+  paste?: (evt?: ClipboardEvent) => unknown | IOverrideResult
+  pasteImage?: (file: File | Blob) => unknown | IOverrideResult
+  copy?: () => unknown | IOverrideResult
+  drop?: (evt: DragEvent) => unknown | IOverrideResult
+}
+
+interface IOverrideResult {
+  preventDefault?: boolean
+}
+```
+
+Source: `/src/editor/core/override/Override.ts:1`
+
+## Basic Usage
+
+Access the override system via `editor.override`:
+
+```typescript
+import Editor from 'canvas-editor'
+
+const editor = new Editor(container, data, options)
+
+// Override paste behavior
+editor.override.paste = (evt) => {
+  console.log('Custom paste handler')
+  // Return preventDefault: true to stop default behavior
+  return { preventDefault: true }
+}
+```
+
+## Paste Override
+
+Customize how content is pasted into the editor:
+
+<Tabs>
+  <Tab title="Basic Override">
+    ```typescript
+    editor.override.paste = (evt?: ClipboardEvent) => {
+      if (!evt) return
+
+      const text = evt.clipboardData?.getData('text/plain')
+      
+      if (text) {
+        // Custom paste logic
+        console.log('Pasting text:', text)
+        
+        // Transform the text before inserting
+        const transformedText = text.toUpperCase()
+        editor.command.executeInsertElementList([{
+          value: transformedText
+        }])
+        
+        // Prevent default paste behavior
+        return { preventDefault: true }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Filter Content">
+    ```typescript
+    editor.override.paste = (evt?: ClipboardEvent) => {
+      if (!evt) return
+
+      const html = evt.clipboardData?.getData('text/html')
+      const text = evt.clipboardData?.getData('text/plain')
+
+      // Only allow plain text, strip all formatting
+      if (text) {
+        editor.command.executeInsertElementList([{
+          value: text
+        }])
+        return { preventDefault: true }
+      }
+
+      // Block paste if no plain text available
+      return { preventDefault: true }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Async Processing">
+    ```typescript
+    editor.override.paste = async (evt?: ClipboardEvent) => {
+      if (!evt) return
+
+      const text = evt.clipboardData?.getData('text/plain')
+      
+      if (text) {
+        // Process text asynchronously (e.g., sanitize via API)
+        try {
+          const sanitized = await sanitizeContent(text)
+          editor.command.executeInsertElementList([{
+            value: sanitized
+          }])
+        } catch (error) {
+          console.error('Failed to sanitize content:', error)
+        }
+        
+        return { preventDefault: true }
+      }
+    }
+
+    async function sanitizeContent(text: string): Promise<string> {
+      // API call to sanitize content
+      const response = await fetch('/api/sanitize', {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const data = await response.json()
+      return data.sanitized
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Paste Image Override
+
+Customize how images are handled when pasted:
+
+```typescript
+editor.override.pasteImage = async (file: File | Blob) => {
+  console.log('Image pasted:', file)
+
+  // Upload to custom image server
+  const formData = new FormData()
+  formData.append('image', file)
+
+  try {
+    const response = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData
+    })
+
+    const { url } = await response.json()
+
+    // Insert image with server URL
+    editor.command.executeInsertElementList([{
+      type: ElementType.IMAGE,
+      value: url,
+      width: 300,
+      height: 200
+    }])
+
+    return { preventDefault: true }
+  } catch (error) {
+    console.error('Image upload failed:', error)
+    alert('Failed to upload image')
+    return { preventDefault: true }
+  }
+}
+```
+
+<Info>
+  The `pasteImage` override is called specifically for image files. Use this to upload images to your server instead of embedding them as base64.
+</Info>
+
+## Copy Override
+
+Customize what gets copied to the clipboard:
+
+<Tabs>
+  <Tab title="Add Metadata">
+    ```typescript
+    editor.override.copy = async () => {
+      // Get selected text
+      const rangeText = editor.command.getRangeText()
+      
+      if (!rangeText) return
+
+      // Add source attribution
+      const attribution = '\n\nSource: My Document Editor'
+      const text = rangeText + attribution
+
+      // Write to clipboard
+      const plainText = new Blob([text], { type: 'text/plain' })
+      const item = new ClipboardItem({
+        'text/plain': plainText
+      })
+
+      await navigator.clipboard.write([item])
+
+      // Prevent default copy behavior
+      return { preventDefault: true }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Copy as HTML">
+    ```typescript
+    editor.override.copy = async () => {
+      const selection = editor.command.getRange()
+      const elements = editor.command.getElementList()
+      
+      // Get selected elements
+      const selectedElements = elements.slice(
+        selection.startIndex,
+        selection.endIndex + 1
+      )
+
+      // Convert to HTML
+      const html = convertElementsToHTML(selectedElements)
+      const text = selectedElements.map(el => el.value).join('')
+
+      // Copy both HTML and plain text
+      const htmlBlob = new Blob([html], { type: 'text/html' })
+      const textBlob = new Blob([text], { type: 'text/plain' })
+
+      const item = new ClipboardItem({
+        'text/html': htmlBlob,
+        'text/plain': textBlob
+      })
+
+      await navigator.clipboard.write([item])
+      return { preventDefault: true }
+    }
+
+    function convertElementsToHTML(elements: IElement[]): string {
+      return elements
+        .map(el => {
+          let html = el.value || ''
+          if (el.bold) html = `<strong>${html}</strong>`
+          if (el.italic) html = `<em>${html}</em>`
+          if (el.underline) html = `<u>${html}</u>`
+          return html
+        })
+        .join('')
+    }
+    ```
+  </Tab>
+
+  <Tab title="Track Copy Events">
+    ```typescript
+    editor.override.copy = async () => {
+      const rangeText = editor.command.getRangeText()
+      
+      // Log copy event for analytics
+      analytics.track('content_copied', {
+        length: rangeText.length,
+        timestamp: Date.now()
+      })
+
+      // Allow default copy behavior
+      return { preventDefault: false }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Drop Override
+
+Customize drag-and-drop behavior:
+
+```typescript
+editor.override.drop = async (evt: DragEvent) => {
+  console.log('Drop event:', evt)
+
+  const files = evt.dataTransfer?.files
+  
+  if (!files || files.length === 0) return
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+
+    if (file.type.startsWith('image/')) {
+      // Handle image drop
+      const formData = new FormData()
+      formData.append('file', file)
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+
+        const { url } = await response.json()
+
+        editor.command.executeInsertElementList([{
+          type: ElementType.IMAGE,
+          value: url
+        }])
+      } catch (error) {
+        console.error('Upload failed:', error)
+      }
+    } else if (file.type === 'application/pdf') {
+      // Handle PDF drop
+      alert('PDF import coming soon!')
+    } else {
+      // Handle other file types
+      const text = await file.text()
+      editor.command.executeInsertElementList([{
+        value: text
+      }])
+    }
+  }
+
+  return { preventDefault: true }
+}
+```
+
+## Preventing Default Behavior
+
+Control whether the default editor behavior should execute:
+
+<Steps>
+  <Step title="Prevent Default">
+    Return `{ preventDefault: true }` to stop default behavior:
+
+    ```typescript
+    editor.override.paste = (evt) => {
+      // Custom logic here
+      return { preventDefault: true } // Default paste blocked
+    }
+    ```
+  </Step>
+
+  <Step title="Allow Default">
+    Return `{ preventDefault: false }` or nothing to allow default behavior:
+
+    ```typescript
+    editor.override.paste = (evt) => {
+      // Custom logic here
+      return { preventDefault: false } // Default paste continues
+    }
+
+    // Or simply return nothing
+    editor.override.copy = () => {
+      console.log('Copy tracked')
+      // Default copy behavior will execute
+    }
+    ```
+  </Step>
+
+  <Step title="Conditional Prevention">
+    Conditionally prevent default based on content:
+
+    ```typescript
+    editor.override.paste = (evt) => {
+      const text = evt?.clipboardData?.getData('text/plain')
+      
+      // Block paste if content contains forbidden words
+      if (text && containsForbiddenWords(text)) {
+        alert('Content contains forbidden words')
+        return { preventDefault: true }
+      }
+
+      // Allow default paste for clean content
+      return { preventDefault: false }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Real-World Examples
+
+<AccordionGroup>
+  <Accordion title="Markdown Paste Support">
+    Convert Markdown to editor elements when pasting:
+
+    ```typescript
+    import { markdownToElements } from './utils/markdown'
+
+    editor.override.paste = (evt) => {
+      if (!evt) return
+
+      const text = evt.clipboardData?.getData('text/plain')
+      
+      if (!text) return
+
+      // Check if content looks like Markdown
+      const hasMarkdown = /[#*_`\[\]]/g.test(text)
+
+      if (hasMarkdown) {
+        const elements = markdownToElements(text)
+        editor.command.executeInsertElementList(elements)
+        return { preventDefault: true }
+      }
+
+      // Let default paste handle non-Markdown
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Image Size Validation">
+    Validate image size before allowing paste:
+
+    ```typescript
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
+
+    editor.override.pasteImage = async (file) => {
+      if (file.size > MAX_IMAGE_SIZE) {
+        alert(`Image too large. Max size: ${MAX_IMAGE_SIZE / 1024 / 1024}MB`)
+        return { preventDefault: true }
+      }
+
+      // Compress image before inserting
+      const compressed = await compressImage(file)
+      const dataUrl = await blobToDataUrl(compressed)
+
+      editor.command.executeInsertElementList([{
+        type: ElementType.IMAGE,
+        value: dataUrl
+      }])
+
+      return { preventDefault: true }
+    }
+
+    async function compressImage(file: File | Blob): Promise<Blob> {
+      // Image compression logic
+      return file // Simplified
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Copy with Formatting Preservation">
+    Preserve rich formatting when copying:
+
+    ```typescript
+    editor.override.copy = async () => {
+      const range = editor.command.getRange()
+      const elements = editor.command.getElementList()
+      
+      const selected = elements.slice(range.startIndex, range.endIndex + 1)
+
+      // Create HTML with full formatting
+      const html = selected.map(el => {
+        let styles = []
+        if (el.bold) styles.push('font-weight: bold')
+        if (el.italic) styles.push('font-style: italic')
+        if (el.color) styles.push(`color: ${el.color}`)
+        if (el.size) styles.push(`font-size: ${el.size}px`)
+
+        const styleAttr = styles.length > 0 
+          ? ` style="${styles.join('; ')}"` 
+          : ''
+        
+        return `<span${styleAttr}>${el.value || ''}</span>`
+      }).join('')
+
+      const plainText = selected.map(el => el.value || '').join('')
+
+      const htmlBlob = new Blob([html], { type: 'text/html' })
+      const textBlob = new Blob([plainText], { type: 'text/plain' })
+
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': htmlBlob,
+        'text/plain': textBlob
+      })])
+
+      return { preventDefault: true }
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Smart File Drop Handler">
+    Handle multiple file types intelligently:
+
+    ```typescript
+    editor.override.drop = async (evt) => {
+      const files = evt.dataTransfer?.files
+      if (!files) return
+
+      for (const file of Array.from(files)) {
+        if (file.type.startsWith('image/')) {
+          await handleImageDrop(file)
+        } else if (file.type === 'text/plain') {
+          await handleTextDrop(file)
+        } else if (file.type === 'application/json') {
+          await handleJsonDrop(file)
+        } else {
+          console.warn('Unsupported file type:', file.type)
+        }
+      }
+
+      return { preventDefault: true }
+    }
+
+    async function handleImageDrop(file: File) {
+      const url = await uploadToServer(file)
+      editor.command.executeInsertElementList([{
+        type: ElementType.IMAGE,
+        value: url
+      }])
+    }
+
+    async function handleTextDrop(file: File) {
+      const text = await file.text()
+      editor.command.executeInsertElementList([{ value: text }])
+    }
+
+    async function handleJsonDrop(file: File) {
+      const json = await file.text()
+      const data = JSON.parse(json)
+      // Insert structured data as table or formatted text
+      editor.command.executeInsertElementList(formatJsonData(data))
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Removing Overrides
+
+To remove an override and restore default behavior:
+
+```typescript
+// Remove paste override
+editor.override.paste = undefined
+
+// Remove all overrides
+editor.override.paste = undefined
+editor.override.pasteImage = undefined
+editor.override.copy = undefined
+editor.override.drop = undefined
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Handle errors gracefully" icon="shield-check">
+    Always wrap async operations in try-catch blocks and provide user feedback on errors.
+  </Card>
+  
+  <Card title="Preserve default behavior when possible" icon="arrows-rotate">
+    Return `preventDefault: false` when you want to augment, not replace, default behavior.
+  </Card>
+  
+  <Card title="Validate input" icon="check">
+    Always validate pasted content, file sizes, and types before processing.
+  </Card>
+  
+  <Card title="Consider performance" icon="gauge-high">
+    Avoid heavy processing in override handlers. Use async operations for slow tasks.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Override handlers run on every paste/copy/drop event. Avoid expensive synchronous operations that could freeze the UI.
+</Warning>
+
+## Debugging Overrides
+
+Use console logging to debug override behavior:
+
+```typescript
+editor.override.paste = (evt) => {
+  console.group('Paste Override')
+  console.log('Event:', evt)
+  console.log('Plain text:', evt?.clipboardData?.getData('text/plain'))
+  console.log('HTML:', evt?.clipboardData?.getData('text/html'))
+  console.log('Types:', evt?.clipboardData?.types)
+  console.groupEnd()
+
+  // Your logic here
+}
+```
+
+## TypeScript Support
+
+All override methods are fully typed:
+
+```typescript
+import { Override, IOverrideResult } from 'canvas-editor'
+
+const customOverride: Override = {
+  paste: (evt?: ClipboardEvent): IOverrideResult => {
+    // TypeScript will enforce correct types
+    return { preventDefault: true }
+  },
+  pasteImage: async (file: File | Blob): Promise<IOverrideResult> => {
+    // Async overrides work too
+    return { preventDefault: true }
+  }
+}
+
+editor.override.paste = customOverride.paste
+editor.override.pasteImage = customOverride.pasteImage
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Plugin System" icon="plug" href="/advanced/plugins">
+    Create reusable plugins with overrides
+  </Card>
+  <Card title="Commands API" icon="terminal" href="/api/commands/text-operations">
+    Learn about available editor commands
+  </Card>
+  <Card title="Events" icon="bolt" href="/concepts/event-system">
+    Listen to editor events
+  </Card>
+  <Card title="Custom Shortcuts" icon="keyboard" href="/advanced/custom-shortcuts">
+    Register keyboard shortcuts
+  </Card>
+</CardGroup>

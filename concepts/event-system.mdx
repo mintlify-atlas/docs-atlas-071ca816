@@ -1,0 +1,572 @@
+---
+title: Event System
+description: Subscribe to editor events using Listener and EventBus
+---
+
+## Overview
+
+Canvas Editor provides two complementary event systems for reacting to changes:
+
+1. **Listener** - Legacy callback-based system (simple, direct assignment)
+2. **EventBus** - Modern pub/sub pattern (multiple subscribers, better decoupling)
+
+Both systems are initialized when you create an Editor instance and are available via `editor.listener` and `editor.eventBus`.
+
+## Listener (Legacy)
+
+The Listener system uses direct callback assignment. Each event type has a single handler.
+
+### Available Events
+
+```typescript
+class Listener {
+  rangeStyleChange: IRangeStyleChange | null
+  visiblePageNoListChange: IVisiblePageNoListChange | null
+  intersectionPageNoChange: IIntersectionPageNoChange | null
+  pageSizeChange: IPageSizeChange | null
+  pageScaleChange: IPageScaleChange | null
+  saved: ISaved | null
+  contentChange: IContentChange | null
+  controlChange: IControlChange | null
+  controlContentChange: IControlContentChange | null
+  pageModeChange: IPageModeChange | null
+  zoneChange: IZoneChange | null
+}
+```
+
+### Usage Example
+
+```typescript
+// Assign event handlers
+editor.listener.contentChange = () => {
+  console.log('Content has changed')
+  saveToBackend(editor.command.getValue())
+}
+
+editor.listener.rangeStyleChange = (payload) => {
+  console.log('Selection style:', payload)
+  updateToolbar(payload)
+}
+
+editor.listener.pageSizeChange = (pageCount) => {
+  console.log('Total pages:', pageCount)
+}
+
+// Remove handler
+editor.listener.contentChange = null
+```
+
+<Warning>
+Listener only supports **one handler per event**. Assigning a new handler will replace the previous one.
+</Warning>
+
+## EventBus (Recommended)
+
+The EventBus uses a publish/subscribe pattern, allowing multiple subscribers per event.
+
+### EventBus API
+
+```typescript
+class EventBus<EventMap> {
+  // Subscribe to an event
+  on<K extends keyof EventMap>(eventName: K, callback: EventMap[K]): void
+
+  // Emit an event (internal use)
+  emit<K extends keyof EventMap>(eventName: K, payload?: any): void
+
+  // Unsubscribe from an event
+  off<K extends keyof EventMap>(eventName: K, callback: EventMap[K]): void
+
+  // Check if event has subscribers
+  isSubscribe<K extends keyof EventMap>(eventName: K): boolean
+
+  // Clear all subscriptions (dangerous!)
+  dangerouslyClearAll(): void
+}
+```
+
+### Available Events
+
+The EventBus supports all Listener events **plus** additional low-level events:
+
+<Tabs>
+  <Tab title="Content Events">
+    ```typescript
+    // Content changed
+    editor.eventBus.on('contentChange', () => {
+      console.log('Content modified')
+    })
+
+    // Selection/range style changed
+    editor.eventBus.on('rangeStyleChange', (payload) => {
+      console.log('Bold:', payload.bold)
+      console.log('Italic:', payload.italic)
+      console.log('Font:', payload.font)
+      console.log('Size:', payload.size)
+      // ... all style properties
+    })
+
+    // Document saved
+    editor.eventBus.on('saved', (payload) => {
+      console.log('Saved data:', payload.data)
+      console.log('Version:', payload.version)
+    })
+    ```
+  </Tab>
+
+  <Tab title="Page Events">
+    ```typescript
+    // Visible pages changed (scroll)
+    editor.eventBus.on('visiblePageNoListChange', (pageNumbers) => {
+      console.log('Visible pages:', pageNumbers)
+    })
+
+    // Current page changed (intersection observer)
+    editor.eventBus.on('intersectionPageNoChange', (pageNo) => {
+      console.log('Current page:', pageNo)
+    })
+
+    // Page count changed
+    editor.eventBus.on('pageSizeChange', (count) => {
+      console.log('Total pages:', count)
+    })
+
+    // Zoom/scale changed
+    editor.eventBus.on('pageScaleChange', (scale) => {
+      console.log('Current scale:', scale)
+    })
+
+    // Page mode changed
+    editor.eventBus.on('pageModeChange', (mode) => {
+      console.log('Page mode:', mode) // PAGING or CONTINUOUS
+    })
+    ```
+  </Tab>
+
+  <Tab title="Control Events">
+    ```typescript
+    // Control value changed
+    editor.eventBus.on('controlChange', (payload) => {
+      console.log('Control ID:', payload.controlId)
+      console.log('New value:', payload.value)
+    })
+
+    // Control content changed (typing inside control)
+    editor.eventBus.on('controlContentChange', (payload) => {
+      console.log('Control ID:', payload.controlId)
+      console.log('Content:', payload.content)
+    })
+    ```
+  </Tab>
+
+  <Tab title="Mouse Events">
+    ```typescript
+    // Mouse events on canvas
+    editor.eventBus.on('mousemove', (evt) => {
+      console.log('Mouse position:', evt.clientX, evt.clientY)
+    })
+
+    editor.eventBus.on('mousedown', (evt) => {
+      console.log('Mouse down')
+    })
+
+    editor.eventBus.on('mouseup', (evt) => {
+      console.log('Mouse up')
+    })
+
+    editor.eventBus.on('click', (evt) => {
+      console.log('Click')
+    })
+
+    editor.eventBus.on('mouseenter', (evt) => {
+      console.log('Mouse entered canvas')
+    })
+
+    editor.eventBus.on('mouseleave', (evt) => {
+      console.log('Mouse left canvas')
+    })
+    ```
+  </Tab>
+
+  <Tab title="Image Events">
+    ```typescript
+    // Image size changed
+    editor.eventBus.on('imageSizeChange', (payload) => {
+      console.log('Image element:', payload.element)
+    })
+
+    // Image clicked
+    editor.eventBus.on('imageMousedown', (payload) => {
+      console.log('Image clicked:', payload.element)
+      console.log('Mouse event:', payload.evt)
+    })
+
+    // Image double-clicked
+    editor.eventBus.on('imageDblclick', (payload) => {
+      console.log('Image double-clicked:', payload.element)
+    })
+    ```
+  </Tab>
+
+  <Tab title="Other Events">
+    ```typescript
+    // Input event (keyboard input)
+    editor.eventBus.on('input', (evt) => {
+      console.log('Input event')
+    })
+
+    // Position context changed
+    editor.eventBus.on('positionContextChange', (payload) => {
+      console.log('Old context:', payload.oldValue)
+      console.log('New context:', payload.value)
+    })
+
+    // Zone changed (header, main, footer)
+    editor.eventBus.on('zoneChange', (zone) => {
+      console.log('Active zone:', zone) // HEADER, MAIN, or FOOTER
+    })
+
+    // Label clicked
+    editor.eventBus.on('labelMousedown', (payload) => {
+      console.log('Label clicked:', payload.element)
+    })
+    ```
+  </Tab>
+</Tabs>
+
+### Subscribing to Events
+
+```typescript
+// Define handler function
+const handleContentChange = () => {
+  console.log('Content changed')
+  autoSave()
+}
+
+// Subscribe
+editor.eventBus.on('contentChange', handleContentChange)
+
+// Multiple subscribers are supported
+editor.eventBus.on('contentChange', () => {
+  updateWordCount()
+})
+
+editor.eventBus.on('contentChange', () => {
+  markDocumentDirty()
+})
+```
+
+### Unsubscribing from Events
+
+```typescript
+const handler = (payload) => {
+  console.log('Range style:', payload)
+}
+
+// Subscribe
+editor.eventBus.on('rangeStyleChange', handler)
+
+// Unsubscribe (must use same function reference)
+editor.eventBus.off('rangeStyleChange', handler)
+```
+
+<Info>
+You must use the **same function reference** when unsubscribing. Arrow functions defined inline cannot be unsubscribed.
+</Info>
+
+### Checking Subscriptions
+
+```typescript
+if (editor.eventBus.isSubscribe('contentChange')) {
+  console.log('Someone is listening to content changes')
+}
+```
+
+## Event Payloads
+
+### IRangeStyle
+
+Emitted when selection style changes (toolbar state):
+
+```typescript
+interface IRangeStyle {
+  type: ElementType | null           // Selected element type
+  undo: boolean                      // Can undo
+  redo: boolean                      // Can redo
+  painter: boolean                   // Format painter active
+  font: string                       // Font family
+  size: number                       // Font size
+  bold: boolean                      // Bold active
+  italic: boolean                    // Italic active
+  underline: boolean                 // Underline active
+  strikeout: boolean                 // Strikeout active
+  color: string | null              // Text color
+  highlight: string | null          // Highlight color
+  rowFlex: RowFlex | null          // Alignment
+  rowMargin: number                 // Row margin
+  dashArray: number[]               // Dash pattern
+  level: TitleLevel | null          // Title level
+  listType: ListType | null         // List type
+  listStyle: ListStyle | null       // List style
+  groupIds: string[] | null         // Group IDs
+  textDecoration: ITextDecoration | null
+  extension?: unknown | null        // Custom data
+}
+```
+
+### IEditorResult (saved event)
+
+```typescript
+interface IEditorResult {
+  version: string          // Editor version
+  data: IEditorData       // Document data
+  options: IEditorOption  // Editor options
+}
+```
+
+### IControlChangeResult
+
+```typescript
+interface IControlChangeResult {
+  controlId: string       // Control identifier
+  value: any             // New control value
+}
+```
+
+### IPositionContextChangePayload
+
+```typescript
+interface IPositionContextChangePayload {
+  value: IPositionContext      // New position context
+  oldValue: IPositionContext   // Previous context
+}
+```
+
+## Common Patterns
+
+### Auto-save
+
+```typescript
+let saveTimeout: number
+
+editor.eventBus.on('contentChange', () => {
+  clearTimeout(saveTimeout)
+  saveTimeout = setTimeout(() => {
+    const data = editor.command.getValue()
+    saveToBackend(data)
+  }, 2000) // Debounce 2 seconds
+})
+```
+
+### Update Toolbar
+
+```typescript
+editor.eventBus.on('rangeStyleChange', (style) => {
+  // Update button states
+  document.querySelector('#bold-btn').classList.toggle('active', style.bold)
+  document.querySelector('#italic-btn').classList.toggle('active', style.italic)
+  
+  // Update font selector
+  document.querySelector('#font-select').value = style.font
+  
+  // Update size input
+  document.querySelector('#size-input').value = style.size.toString()
+  
+  // Enable/disable undo/redo
+  document.querySelector('#undo-btn').disabled = !style.undo
+  document.querySelector('#redo-btn').disabled = !style.redo
+})
+```
+
+### Page Number Display
+
+```typescript
+let currentPage = 1
+let totalPages = 1
+
+editor.eventBus.on('intersectionPageNoChange', (pageNo) => {
+  currentPage = pageNo + 1 // 0-indexed
+  updatePageDisplay()
+})
+
+editor.eventBus.on('pageSizeChange', (count) => {
+  totalPages = count
+  updatePageDisplay()
+})
+
+function updatePageDisplay() {
+  document.querySelector('#page-info').textContent = 
+    `Page ${currentPage} of ${totalPages}`
+}
+```
+
+### Track Changes
+
+```typescript
+let changeLog = []
+
+editor.eventBus.on('contentChange', () => {
+  changeLog.push({
+    timestamp: Date.now(),
+    user: getCurrentUser(),
+    action: 'edit'
+  })
+})
+
+editor.eventBus.on('imageMousedown', (payload) => {
+  changeLog.push({
+    timestamp: Date.now(),
+    user: getCurrentUser(),
+    action: 'image-click',
+    imageId: payload.element.id
+  })
+})
+```
+
+### Form Validation
+
+```typescript
+const controlValues = new Map()
+
+editor.eventBus.on('controlChange', (payload) => {
+  controlValues.set(payload.controlId, payload.value)
+  validateForm()
+})
+
+function validateForm() {
+  const requiredControls = ['name', 'email', 'phone']
+  const isValid = requiredControls.every(id => 
+    controlValues.has(id) && controlValues.get(id)
+  )
+  
+  document.querySelector('#submit-btn').disabled = !isValid
+}
+```
+
+## Cleanup
+
+Always clean up event subscriptions when destroying the editor:
+
+```typescript
+// Method 1: Unsubscribe individually
+const handler = () => { /* ... */ }
+editor.eventBus.on('contentChange', handler)
+// Later...
+editor.eventBus.off('contentChange', handler)
+
+// Method 2: Clear all (during destroy)
+editor.destroy() // Automatically calls eventBus.dangerouslyClearAll()
+
+// Method 3: Manual clear (use with caution)
+editor.eventBus.dangerouslyClearAll()
+```
+
+<Warning>
+`dangerouslyClearAll()` removes **all** subscriptions, including internal ones. Only use this when destroying the editor.
+</Warning>
+
+## Listener vs EventBus
+
+| Feature | Listener | EventBus |
+|---------|----------|----------|
+| Multiple subscribers | ❌ No | ✅ Yes |
+| Mouse events | ❌ No | ✅ Yes |
+| Image events | ❌ No | ✅ Yes |
+| Unsubscribe support | ✅ Set to null | ✅ `off()` method |
+| Easier to use | ✅ Simple assignment | Requires `on()`/`off()` |
+| Recommended for new code | ❌ Legacy | ✅ Preferred |
+
+<Tip>
+Use **EventBus** for new projects. It's more flexible and supports multiple subscribers.
+</Tip>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Store Handler References" icon="bookmark">
+    Store handlers in variables for easy unsubscribing:
+    ```typescript
+    const handleChange = () => { /* ... */ }
+    editor.eventBus.on('contentChange', handleChange)
+    // Later: editor.eventBus.off('contentChange', handleChange)
+    ```
+  </Card>
+
+  <Card title="Debounce Expensive Operations" icon="clock">
+    Debounce auto-save and other expensive operations:
+    ```typescript
+    let timeout
+    editor.eventBus.on('contentChange', () => {
+      clearTimeout(timeout)
+      timeout = setTimeout(save, 1000)
+    })
+    ```
+  </Card>
+
+  <Card title="Cleanup on Unmount" icon="trash">
+    Always unsubscribe when component unmounts:
+    ```typescript
+    // React example
+    useEffect(() => {
+      const handler = () => {}
+      editor.eventBus.on('contentChange', handler)
+      return () => editor.eventBus.off('contentChange', handler)
+    }, [])
+    ```
+  </Card>
+
+  <Card title="Type Safety" icon="shield">
+    Use TypeScript for full event type safety:
+    ```typescript
+    import type { EventBusMap } from 'canvas-editor'
+    
+    editor.eventBus.on('rangeStyleChange', (payload) => {
+      // payload is fully typed as IRangeStyle
+    })
+    ```
+  </Card>
+</CardGroup>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="When should I use Listener vs EventBus?">
+    Use **EventBus** for all new code. Listener is maintained for backward compatibility but EventBus is more powerful and flexible.
+  </Accordion>
+
+  <Accordion title="Can I emit custom events?">
+    No, you cannot emit custom events. The EventBus is for subscribing to internal editor events only. For custom application events, use a separate event system.
+  </Accordion>
+
+  <Accordion title="Do events fire during initialization?">
+    Some events may fire during editor initialization. If you need to ignore initial events, add a flag:
+
+    ```typescript
+    let initialized = false
+    editor.eventBus.on('contentChange', () => {
+      if (!initialized) return
+      // Handle change
+    })
+    setTimeout(() => { initialized = true }, 0)
+    ```
+  </Accordion>
+
+  <Accordion title="How do I prevent memory leaks?">
+    Always unsubscribe from events when components unmount or the editor is destroyed. Use the same function reference that was used to subscribe.
+  </Accordion>
+
+  <Accordion title="Can I stop event propagation?">
+    No, there's no concept of event propagation or stopping events. All subscribers will be notified.
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Commands" icon="terminal" href="/concepts/commands">
+    Learn how to execute operations
+  </Card>
+  <Card title="Editor Instance" icon="cube" href="/concepts/editor-instance">
+    Understand the Editor lifecycle
+  </Card>
+</CardGroup>

@@ -1,0 +1,567 @@
+---
+title: 'Form Controls'
+description: 'Interactive form controls including checkboxes, radio buttons, date pickers, and text inputs'
+icon: 'square-check'
+---
+
+Canvas Editor provides a comprehensive set of form controls for creating interactive documents. Controls can collect user input, validate data, and maintain state within the document.
+
+## Control Types
+
+<CardGroup cols={2}>
+  <Card title="Checkbox" icon="square-check">
+    Multi-select options with checkboxes
+  </Card>
+  <Card title="Radio" icon="circle-dot">
+    Single-select options with radio buttons
+  </Card>
+  <Card title="Text Input" icon="input-text">
+    Free-form text entry fields
+  </Card>
+  <Card title="Date Picker" icon="calendar">
+    Calendar-based date selection
+  </Card>
+  <Card title="Select" icon="list">
+    Dropdown selection lists
+  </Card>
+  <Card title="Number" icon="hashtag">
+    Numeric input with optional calculator
+  </Card>
+</CardGroup>
+
+## Checkbox Controls
+
+Create checkbox controls with multiple value options:
+
+```typescript
+import Editor, { ControlType, ElementType } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, {
+  main: [{ value: '' }]
+})
+
+// Insert checkbox control
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.CHECKBOX,
+      code: 'checkbox_1',
+      value: null,
+      valueSets: [
+        { value: 'Option 1', code: 'opt1' },
+        { value: 'Option 2', code: 'opt2' },
+        { value: 'Option 3', code: 'opt3' }
+      ]
+    }
+  }
+])
+```
+
+### Checkbox Configuration
+
+<CodeGroup>
+```typescript Vertical Layout
+{
+  type: 'control',
+  value: '',
+  control: {
+    type: ControlType.CHECKBOX,
+    code: 'preferences',
+    value: null,
+    flexDirection: FlexDirection.COLUMN,
+    valueSets: [
+      { value: 'Email notifications', code: 'email' },
+      { value: 'SMS notifications', code: 'sms' },
+      { value: 'Push notifications', code: 'push' }
+    ]
+  }
+}
+```
+
+```typescript With Min/Max
+{
+  type: 'control',
+  value: '',
+  control: {
+    type: ControlType.CHECKBOX,
+    code: 'skills',
+    value: null,
+    min: 1,  // Minimum selections required
+    max: 3,  // Maximum selections allowed
+    valueSets: [
+      { value: 'JavaScript', code: 'js' },
+      { value: 'TypeScript', code: 'ts' },
+      { value: 'Python', code: 'py' },
+      { value: 'Go', code: 'go' }
+    ]
+  }
+}
+```
+</CodeGroup>
+
+## Radio Controls
+
+Create radio button groups for single-selection:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.RADIO,
+      code: 'gender',
+      value: null,
+      valueSets: [
+        { value: 'Male', code: 'm' },
+        { value: 'Female', code: 'f' },
+        { value: 'Other', code: 'o' }
+      ]
+    }
+  }
+])
+```
+
+<Tip>
+Radio controls automatically enforce single selection - selecting a new option deselects the previous one.
+</Tip>
+
+## Text Input Controls
+
+Create text input fields:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.TEXT,
+      code: 'full_name',
+      value: null,
+      placeholder: 'Enter your full name',
+      minWidth: 200,
+      prefix: '[',
+      postfix: ']'
+    }
+  }
+])
+```
+
+### Text Control Options
+
+<Tabs>
+  <Tab title="Basic">
+    ```typescript
+    {
+      type: ControlType.TEXT,
+      code: 'username',
+      value: null,
+      placeholder: 'Username'
+    }
+    ```
+  </Tab>
+  <Tab title="With Styling">
+    ```typescript
+    {
+      type: ControlType.TEXT,
+      code: 'title',
+      value: null,
+      placeholder: 'Document title',
+      underline: true,
+      border: true,
+      font: 'Arial',
+      size: 16,
+      bold: true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Date Picker Controls
+
+Create date selection controls:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.DATE,
+      code: 'birth_date',
+      value: null,
+      dateFormat: 'YYYY-MM-DD',
+      placeholder: 'Select date'
+    }
+  }
+])
+```
+
+<Note>
+The date picker displays a calendar interface when activated, allowing users to select dates visually.
+</Note>
+
+## Select Controls
+
+Create dropdown selection controls:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.SELECT,
+      code: 'country',
+      value: null,
+      placeholder: 'Select country',
+      valueSets: [
+        { value: 'United States', code: 'us' },
+        { value: 'Canada', code: 'ca' },
+        { value: 'United Kingdom', code: 'uk' },
+        { value: 'Australia', code: 'au' }
+      ]
+    }
+  }
+])
+```
+
+### Multi-Select
+
+```typescript
+{
+  type: ControlType.SELECT,
+  code: 'languages',
+  value: null,
+  isMultiSelect: true,
+  multiSelectDelimiter: ', ',
+  valueSets: [
+    { value: 'English', code: 'en' },
+    { value: 'Spanish', code: 'es' },
+    { value: 'French', code: 'fr' },
+    { value: 'German', code: 'de' }
+  ]
+}
+```
+
+## Number Controls
+
+Create numeric input with optional calculator:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.NUMBER,
+      code: 'quantity',
+      value: null,
+      placeholder: '0'
+    }
+  }
+])
+```
+
+<CodeGroup>
+```typescript Basic Number
+{
+  type: ControlType.NUMBER,
+  code: 'age',
+  value: null
+}
+```
+
+```typescript With Calculator
+{
+  type: ControlType.NUMBER,
+  code: 'total',
+  value: null,
+  numberExclusiveOptions: {
+    calculatorDisabled: false  // Enable calculator
+  }
+}
+```
+</CodeGroup>
+
+## Setting Control Values
+
+### Set Single Control Value
+
+```typescript
+// Set control value by code
+editor.command.executeSetControlValue({
+  code: 'full_name',
+  value: 'John Doe'
+})
+
+// Set by control ID
+editor.command.executeSetControlValue({
+  id: 'control_uuid',
+  value: 'Jane Smith'
+})
+```
+
+### Set Multiple Control Values
+
+```typescript
+editor.command.executeSetControlValueList([
+  { code: 'full_name', value: 'John Doe' },
+  { code: 'email', value: 'john@example.com' },
+  { code: 'age', value: '30' }
+])
+```
+
+## Getting Control Values
+
+```typescript
+// Get all control values
+const allControls = editor.command.getControlValue()
+
+// Get specific control by code
+const nameControl = editor.command.getControlValue({ code: 'full_name' })
+
+// Get controls by group
+const groupControls = editor.command.getControlValue({ groupId: 'personal_info' })
+```
+
+### Control Value Structure
+
+```typescript
+// Returned value structure
+[
+  {
+    type: ControlType.TEXT,
+    code: 'full_name',
+    value: 'John Doe',        // Current value as string
+    innerText: 'John Doe',    // Display text
+    zone: EditorZone.MAIN,    // Location in document
+    elementList: [...]        // Full element data
+  }
+]
+```
+
+## Control Properties
+
+Update control properties:
+
+```typescript
+// Update single control properties
+editor.command.executeSetControlProperties({
+  code: 'email',
+  properties: {
+    placeholder: 'Enter email address',
+    underline: true,
+    disabled: false
+  }
+})
+
+// Update multiple controls
+editor.command.executeSetControlPropertiesList([
+  {
+    code: 'first_name',
+    properties: { disabled: true }
+  },
+  {
+    code: 'last_name',
+    properties: { disabled: true }
+  }
+])
+```
+
+## Control Rules
+
+Apply rules to control behavior:
+
+```typescript
+editor.command.executeInsertElementList([
+  {
+    type: 'control',
+    value: '',
+    control: {
+      type: ControlType.TEXT,
+      code: 'readonly_field',
+      value: null,
+      disabled: true,        // Disable editing
+      deletable: false,      // Prevent deletion
+      pasteDisabled: true,   // Disable paste
+      hide: false            // Control visibility
+    }
+  }
+])
+```
+
+<Warning>
+Controls with `deletable: false` cannot be removed by users, ensuring required fields remain in the document.
+</Warning>
+
+## Control Highlighting
+
+Highlight controls based on content:
+
+```typescript
+editor.command.executeSetControlHighlight([
+  {
+    ruleList: [
+      {
+        keyword: 'error',
+        backgroundColor: '#FFE5E5',
+        alpha: 0.5
+      },
+      {
+        keyword: 'warning',
+        backgroundColor: '#FFF3CD',
+        alpha: 0.5
+      }
+    ],
+    conceptId: 'validation_field'
+  }
+])
+```
+
+## Navigating Controls
+
+```typescript
+// Jump to next control
+editor.command.executeJumpControl()
+
+// Locate specific control
+editor.command.executeLocationControl({
+  position: LocationPosition.FIRST  // or LAST
+})
+```
+
+## Removing Controls
+
+```typescript
+// Remove control by code
+editor.command.executeRemoveControl({ code: 'temp_field' })
+
+// Remove control by ID
+editor.command.executeRemoveControl({ id: 'control_uuid' })
+```
+
+## Complete Example
+
+Create a form with multiple control types:
+
+```typescript
+import Editor, { ControlType, FlexDirection } from '@hufe921/canvas-editor'
+
+const container = document.querySelector('.editor')
+const editor = new Editor(container, {
+  main: [
+    { value: 'User Registration Form\n\n', size: 20, bold: true },
+    { value: 'Full Name: ' },
+    {
+      type: 'control',
+      value: '',
+      control: {
+        type: ControlType.TEXT,
+        code: 'full_name',
+        value: null,
+        placeholder: 'Enter full name',
+        minWidth: 200
+      }
+    },
+    { value: '\n\nGender: ' },
+    {
+      type: 'control',
+      value: '',
+      control: {
+        type: ControlType.RADIO,
+        code: 'gender',
+        value: null,
+        valueSets: [
+          { value: 'Male', code: 'm' },
+          { value: 'Female', code: 'f' }
+        ]
+      }
+    },
+    { value: '\n\nInterests: ' },
+    {
+      type: 'control',
+      value: '',
+      control: {
+        type: ControlType.CHECKBOX,
+        code: 'interests',
+        value: null,
+        flexDirection: FlexDirection.ROW,
+        valueSets: [
+          { value: 'Sports', code: 'sports' },
+          { value: 'Music', code: 'music' },
+          { value: 'Reading', code: 'reading' }
+        ]
+      }
+    },
+    { value: '\n\nBirth Date: ' },
+    {
+      type: 'control',
+      value: '',
+      control: {
+        type: ControlType.DATE,
+        code: 'birth_date',
+        value: null,
+        dateFormat: 'YYYY-MM-DD'
+      }
+    }
+  ]
+})
+
+// Pre-fill form
+editor.command.executeSetControlValueList([
+  { code: 'full_name', value: 'Jane Doe' },
+  { code: 'gender', value: 'f' },
+  { code: 'birth_date', value: '1990-01-15' }
+])
+
+// Get all form values
+function getFormData() {
+  const controls = editor.command.getControlValue()
+  const formData = {}
+  
+  controls.forEach(control => {
+    formData[control.code] = control.value
+  })
+  
+  console.log('Form Data:', formData)
+  return formData
+}
+```
+
+## Best Practices
+
+<Accordion title="Form Design">
+  - Group related controls together
+  - Provide clear labels for all controls
+  - Use appropriate control types for data (dates use date picker, not text)
+  - Set reasonable min/max constraints for checkboxes
+</Accordion>
+
+<Accordion title="Validation">
+  - Use control rules to enforce required fields
+  - Implement highlighting for validation errors
+  - Provide clear placeholder text as guidance
+  - Disable controls when appropriate (calculated fields, etc.)
+</Accordion>
+
+<Accordion title="User Experience">
+  - Use consistent styling across controls
+  - Provide visual feedback for control states
+  - Group related options logically
+  - Consider tab order for keyboard navigation
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Text Formatting" icon="text" href="/features/text-formatting">
+    Style control labels and content
+  </Card>
+  <Card title="Print & Export" icon="print" href="/features/print-export">
+    Export filled forms to PDF
+  </Card>
+</CardGroup>

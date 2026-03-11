@@ -1,0 +1,355 @@
+---
+title: Editor Enums
+description: Editor mode, page mode, paper direction, and rendering enums
+---
+
+Editor enums control the overall behavior and display mode of the editor.
+
+## EditorMode
+
+Defines the operating mode of the editor.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum EditorMode {
+  EDIT = 'edit',
+  CLEAN = 'clean',
+  READONLY = 'readonly',
+  FORM = 'form',
+  PRINT = 'print',
+  DESIGN = 'design',
+  GRAFFITI = 'graffiti'
+}
+```
+
+### Values
+
+<ParamField path="EDIT" type="'edit'">
+  **Edit Mode** (default) - Full editing capabilities with all auxiliary elements visible
+</ParamField>
+
+<ParamField path="CLEAN" type="'clean'">
+  **Clean Mode** - Hides auxiliary elements (control borders, placeholders, etc.) while still allowing editing
+</ParamField>
+
+<ParamField path="READONLY" type="'readonly'">
+  **Readonly Mode** - Document is view-only, no editing allowed
+</ParamField>
+
+<ParamField path="FORM" type="'form'">
+  **Form Mode** - Only form controls are editable, rest of document is read-only
+</ParamField>
+
+<ParamField path="PRINT" type="'print'">
+  **Print Mode** - Optimized for printing with auxiliary elements hidden and controls without values hidden
+</ParamField>
+
+<ParamField path="DESIGN" type="'design'">
+  **Design Mode** - Ignores readonly and deletable rules, allows full manipulation
+</ParamField>
+
+<ParamField path="GRAFFITI" type="'graffiti'">
+  **Graffiti Mode** - Drawing/annotation mode with selection disabled
+</ParamField>
+
+### Usage
+
+```typescript
+import Editor, { EditorMode } from '@hufe921/canvas-editor'
+
+// Set mode on initialization
+const editor = new Editor(container, data, {
+  mode: EditorMode.EDIT
+})
+
+// Change mode at runtime
+editor.command.executeMode(EditorMode.READONLY)
+editor.command.executeMode(EditorMode.FORM)
+editor.command.executeMode(EditorMode.PRINT)
+```
+
+### Mode Comparison
+
+| Feature | EDIT | CLEAN | READONLY | FORM | PRINT | DESIGN |
+|---------|------|-------|----------|------|-------|--------|
+| Edit text | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ |
+| Edit controls | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ |
+| Show aux elements | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ |
+| Show control borders | ✓ | ✗ | ✓ | ✓ | ✗ | ✓ |
+| Ignore rules | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+
+## PageMode
+
+Defines how pages are displayed.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum PageMode {
+  PAGING = 'paging',
+  CONTINUITY = 'continuity'
+}
+```
+
+### Values
+
+<ParamField path="PAGING" type="'paging'">
+  **Paging Mode** (default) - Multi-page view with page breaks and gaps between pages
+</ParamField>
+
+<ParamField path="CONTINUITY" type="'continuity'">
+  **Continuity Mode** - Continuous scroll without page breaks (like a long webpage)
+</ParamField>
+
+### Usage
+
+```typescript
+import { PageMode } from '@hufe921/canvas-editor'
+
+// Set on initialization
+const editor = new Editor(container, data, {
+  pageMode: PageMode.PAGING
+})
+
+// Change at runtime
+editor.command.executePageMode(PageMode.CONTINUITY)
+editor.command.executePageMode(PageMode.PAGING)
+```
+
+### Comparison
+
+**Paging Mode:**
+- Simulates printed pages
+- Shows page breaks
+- Page numbers visible
+- Gap between pages
+- Best for: documents that will be printed
+
+**Continuity Mode:**
+- Single continuous flow
+- No page breaks
+- Infinite scroll
+- Best for: web documents, note-taking
+
+## PaperDirection
+
+Defines paper orientation.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum PaperDirection {
+  VERTICAL = 'vertical',
+  HORIZONTAL = 'horizontal'
+}
+```
+
+### Values
+
+<ParamField path="VERTICAL" type="'vertical'">
+  **Portrait** - Vertical/tall orientation (default)
+</ParamField>
+
+<ParamField path="HORIZONTAL" type="'horizontal'">
+  **Landscape** - Horizontal/wide orientation
+</ParamField>
+
+### Usage
+
+```typescript
+import { PaperDirection } from '@hufe921/canvas-editor'
+
+// Set on initialization
+const editor = new Editor(container, data, {
+  paperDirection: PaperDirection.VERTICAL
+})
+
+// Change at runtime
+editor.command.executePaperDirection(PaperDirection.HORIZONTAL)
+editor.command.executePaperDirection(PaperDirection.VERTICAL)
+```
+
+## EditorZone
+
+Defines document zones/sections.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum EditorZone {
+  HEADER = 'header',
+  MAIN = 'main',
+  FOOTER = 'footer'
+}
+```
+
+### Values
+
+<ParamField path="HEADER" type="'header'">
+  Page header section (repeats on each page)
+</ParamField>
+
+<ParamField path="MAIN" type="'main'">
+  Main document content
+</ParamField>
+
+<ParamField path="FOOTER" type="'footer'">
+  Page footer section (repeats on each page)
+</ParamField>
+
+### Usage
+
+```typescript
+import { EditorZone } from '@hufe921/canvas-editor'
+
+// Listen for zone changes
+editor.eventBus.on('zoneChange', (zone: EditorZone) => {
+  if (zone === EditorZone.HEADER) {
+    console.log('Editing header')
+  } else if (zone === EditorZone.MAIN) {
+    console.log('Editing main content')
+  } else if (zone === EditorZone.FOOTER) {
+    console.log('Editing footer')
+  }
+})
+
+// Get control values by zone
+const controls = editor.command.getControlValue()
+const headerControls = controls.filter(c => c.zone === EditorZone.HEADER)
+const mainControls = controls.filter(c => c.zone === EditorZone.MAIN)
+```
+
+## RenderMode
+
+Defines rendering optimization strategy.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum RenderMode {
+  SPEED = 'speed',
+  COMPATIBILITY = 'compatibility'
+}
+```
+
+### Values
+
+<ParamField path="SPEED" type="'speed'">
+  **Speed Mode** (default) - Optimized for performance, faster rendering
+</ParamField>
+
+<ParamField path="COMPATIBILITY" type="'compatibility'">
+  **Compatibility Mode** - Better browser compatibility, may be slower
+</ParamField>
+
+### Usage
+
+```typescript
+import { RenderMode } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data, {
+  renderMode: RenderMode.SPEED
+})
+```
+
+## WordBreak
+
+Defines word breaking behavior.
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum WordBreak {
+  BREAK_ALL = 'break-all',
+  BREAK_WORD = 'break-word'
+}
+```
+
+### Values
+
+<ParamField path="BREAK_WORD" type="'break-word'">
+  **Break Word** (default) - Break lines at word boundaries when possible
+</ParamField>
+
+<ParamField path="BREAK_ALL" type="'break-all'">
+  **Break All** - Allow breaking anywhere in a word
+</ParamField>
+
+### Usage
+
+```typescript
+import { WordBreak } from '@hufe921/canvas-editor'
+
+const editor = new Editor(container, data, {
+  wordBreak: WordBreak.BREAK_WORD
+})
+```
+
+## EditorComponent
+
+Defines internal editor components (for advanced usage).
+
+```typescript src/editor/dataset/enum/Editor.ts
+enum EditorComponent {
+  COMPONENT = 'component',
+  MENU = 'menu',
+  MAIN = 'main',
+  FOOTER = 'footer',
+  CONTEXTMENU = 'contextmenu',
+  POPUP = 'popup',
+  CATALOG = 'catalog',
+  COMMENT = 'comment'
+}
+```
+
+## Complete Example
+
+```typescript
+import Editor, {
+  EditorMode,
+  PageMode,
+  PaperDirection,
+  RenderMode,
+  WordBreak,
+  EditorZone
+} from '@hufe921/canvas-editor'
+
+// Initialize with modes
+const editor = new Editor(container, data, {
+  mode: EditorMode.EDIT,
+  pageMode: PageMode.PAGING,
+  paperDirection: PaperDirection.VERTICAL,
+  renderMode: RenderMode.SPEED,
+  wordBreak: WordBreak.BREAK_WORD
+})
+
+// Mode switching workflow
+function switchToReadonly() {
+  editor.command.executeMode(EditorMode.READONLY)
+}
+
+function switchToFormMode() {
+  editor.command.executeMode(EditorMode.FORM)
+}
+
+function printDocument() {
+  editor.command.executeMode(EditorMode.PRINT)
+  editor.command.executePrint()
+  // After printing, switch back
+  setTimeout(() => {
+    editor.command.executeMode(EditorMode.EDIT)
+  }, 1000)
+}
+
+// Layout switching
+function toggleOrientation() {
+  const currentOptions = editor.command.getOptions()
+  const newDirection = currentOptions.paperDirection === PaperDirection.VERTICAL
+    ? PaperDirection.HORIZONTAL
+    : PaperDirection.VERTICAL
+  
+  editor.command.executePaperDirection(newDirection)
+}
+
+function togglePageMode() {
+  const html = editor.command.getHTML()
+  // Check current mode from options
+  editor.command.executePageMode(PageMode.CONTINUITY)
+}
+
+// Zone tracking
+editor.eventBus.on('zoneChange', (zone: EditorZone) => {
+  const indicator = document.querySelector('#zone-indicator')
+  indicator.textContent = `Editing: ${zone.toUpperCase()}`
+  indicator.className = `zone-${zone}`
+})
+```
